@@ -63,10 +63,26 @@ llena. Solo se muestra en `localhost`.
 | `bash crear-usuarios-prueba.sh` | Recrea las cuatro cuentas (hay que correrlo después de cada `aplicar-esquema.sh`) |
 | `bash subir-documentos-prueba.sh` | Sube los PDF de prueba al bucket privado para que el visor funcione |
 | `bash sql/generar-instalador.sh` | Regenera `sql/00-instalar.sql` tras tocar cualquier script |
+| `sql/98-usuarios-prueba.sql` | Prepara las 4 cuentas en un proyecto **hospedado** (los scripts `.sh` solo hablan con el Supabase local) |
 
 > Los datos del seed usan fechas relativas al momento de instalación. Si tras unos
 > días el panel muestra números raros ("0 solicitudes hoy"), corre
 > `aplicar-esquema.sh` y vuelven a ser frescas.
+
+---
+
+## Dónde está publicado
+
+**https://pakogq.github.io/EnlaceEnfermero/** — GitHub Pages, rama `main`, raíz.
+El despliegue es automático con cada push.
+
+`js/config.js` detecta el entorno solo con `ES_LOCAL`: en `localhost` apunta al
+Supabase de Docker y en cualquier otro dominio a las credenciales de producción.
+Por eso subir el repositorio nunca publica la configuración local.
+
+**Hasta que se capturen las credenciales de un proyecto hospedado, en línea sólo
+funciona el sitio público**, y con los datos de `datos-demo.js`. El login y los
+tres paneles necesitan una base real: ver `docs/conectar-supabase.md`.
 
 ---
 

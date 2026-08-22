@@ -43,10 +43,12 @@ prueba. No hay que crear nada a mano en el panel. Debe terminar en **Success** (
 
 Nueva consulta. Pega `sql/99-pruebas.sql` y **Run**.
 
-Comprueba 26 cosas: los folios, el reparto 60/40, que un turno encimado se
+Comprueba 53 cosas: los folios, el reparto 60/40, que un turno encimado se
 rechace, que el catálogo público no exponga tarifas ni notas internas, que un
-enfermero no pueda autoverificarse ni fijarse tarifa, y que el sitio público
-tenga permiso de hacer justo lo que necesita y nada más.
+enfermero no pueda autoverificarse ni fijarse tarifa, que el profesional conozca
+el domicilio sólo después de aceptar el turno, que el cliente vea quién lo cubre
+pero nunca cómo contactarlo, y que el sitio público tenga permiso de hacer justo
+lo que necesita y nada más.
 
 **Cada renglón del resultado debe decir `OK`.** El script hace `rollback` al
 final: no deja nada.
@@ -91,14 +93,58 @@ están instaladas.
 **Authentication → URL Configuration**. Agrega en *Site URL* y en *Redirect URLs*:
 
 - `http://localhost:8000` — para desarrollo
-- `https://TU-USUARIO.github.io/enlace-enfermero` — cuando publiques
+- `https://pakogq.github.io/EnlaceEnfermero` — el sitio ya publicado
 - `https://enlaceenfermero.mx` — cuando tengas dominio
 
 Sin esto, el inicio de sesión de la Fase 2 no va a funcionar.
 
 ---
 
-## 5. Comprobar que quedó bien
+## 5. Crear las cuentas de prueba
+
+Sin cuentas no se puede entrar a ninguno de los tres paneles. En el proyecto
+hospedado hay que crearlas a mano: el script `crear-usuarios-prueba.sh` sólo
+habla con el Supabase de tu Mac.
+
+**Authentication → Users → Add user → Create new user.** Cuatro veces:
+
+| Correo | Contraseña | Auto Confirm User |
+|---|---|---|
+| `admin@enlace.test` | `prueba1234` | **Sí** |
+| `coordinador@enlace.test` | `prueba1234` | **Sí** |
+| `enfermero@enlace.test` | `prueba1234` | **Sí** |
+| `cliente@enlace.test` | `prueba1234` | **Sí** |
+
+> **Marca "Auto Confirm User" en las cuatro.** Si no, Supabase manda un correo de
+> confirmación a un dominio que no existe y la cuenta nunca se activa.
+
+Las cuatro nacen con rol `cliente`, porque el rol viaja en los metadatos del
+registro y el panel de Supabase no los pide. Para corregirlo:
+
+**SQL Editor → New query.** Pega `sql/98-usuarios-prueba.sql` completo y **Run**.
+
+Ajusta los roles, liga la cuenta de enfermería al perfil `EE-00001` y la de
+cliente al hospital que trae el seed, para que los paneles tengan datos que
+mostrar. Al final imprime una tabla con las cuatro cuentas: **todas deben decir
+`lista`**. Si alguna dice `SIN CONFIRMAR`, vuelve a Authentication → Users y
+confírmala a mano.
+
+Después de esto puedes entrar a:
+
+| Cuenta | Panel |
+|---|---|
+| `admin@enlace.test` | `/admin` — 11 pantallas |
+| `coordinador@enlace.test` | `/admin` sin Pagos, Reportes ni Configuración |
+| `enfermero@enlace.test` | `/panel` — 7 pantallas |
+| `cliente@enlace.test` | `/cliente` — 6 pantallas |
+
+> El recuadro con estas cuentas sólo aparece en `localhost`. En el sitio
+> publicado hay que escribirlas a mano, a propósito: no tiene caso dejar
+> credenciales a la vista en una página pública.
+
+---
+
+## 6. Comprobar que quedó bien
 
 1. Levanta el sitio:
 
@@ -126,7 +172,7 @@ Deja una solicitud llamada `PRUEBA DE DIAGNOSTICO` en la base. Bórrala desde
 
 ---
 
-## 6. Quitar los datos de demostración
+## 7. Quitar los datos de demostración
 
 Cuando la base tenga información real, quita el respaldo local:
 
