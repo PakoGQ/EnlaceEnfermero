@@ -67,6 +67,7 @@ function raiz() {
    HEADER
    ========================================================================== */
 const NAV_PUBLICO = [
+  { href: 'index.html',      texto: 'Inicio' },
   { href: 'servicios.html',  texto: 'Servicios' },
   { href: 'enfermeros.html', texto: 'Enfermeros' },
   { href: 'nosotros.html',   texto: 'Nosotros' },
