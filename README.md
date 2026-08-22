@@ -3,8 +3,19 @@
 Plataforma web de la agencia de reclutamiento y colocación de personal de
 enfermería en la Zona Metropolitana de Guadalajara, Jalisco.
 
-La especificación completa del producto vive en [`CLAUDE.md`](CLAUDE.md).
-Ese documento manda sobre cualquier decisión técnica.
+**Vista previa:** https://pakogq.github.io/EnlaceEnfermero/
+
+> El sitio publicado corre con datos de demostración: todavía no está conectado
+> a una base de datos de producción, y lo indica con un aviso en pantalla.
+
+## Documentos
+
+| Archivo | Para qué |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Especificación maestra. Manda sobre cualquier decisión técnica |
+| [`ESTADO.md`](ESTADO.md) | Qué está hecho, cómo funciona y qué falta. **Empezar por aquí** |
+| [`docs/desarrollo-local.md`](docs/desarrollo-local.md) | Levantar el entorno completo en tu máquina |
+| [`docs/conectar-supabase.md`](docs/conectar-supabase.md) | Pasar a producción |
 
 ## Stack
 
