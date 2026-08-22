@@ -557,6 +557,7 @@ declare
   nuevo_folio text;
 begin
   insert into public.solicitudes (
+    cliente_id,
     tipo_servicio, nivel_requerido, especialidad_requerida, descripcion_paciente,
     entorno, tipo_paciente, nivel_atencion, procedimientos, cantidad_enfermeros,
     fecha_inicio, fecha_fin, turno, horas_por_turno, dias_semana,
@@ -564,6 +565,13 @@ begin
     enfermeros_solicitados, contacto_nombre, contacto_telefono, contacto_email
   )
   values (
+    -- Si quien envia el formulario trae sesion de cliente, la solicitud se
+    -- cuelga de su ficha. Sin esto, una solicitud hecha desde el panel del
+    -- cliente nacia huerfana y despues el no podia verla en su seguimiento.
+    -- No se toma del JSON a proposito: sale de auth.uid(), asi nadie puede
+    -- mandar solicitudes a nombre de otro. Un visitante anonimo sigue dando
+    -- null, como hasta ahora.
+    public.mi_cliente_id(),
     (p_datos ->> 'tipo_servicio')::tipo_servicio,
     nullif(p_datos ->> 'nivel_requerido', '')::nivel_enfermeria,
     coalesce((select array_agg(value) from jsonb_array_elements_text(p_datos -> 'especialidad_requerida')), '{}'),

@@ -104,6 +104,57 @@ as $$
 $$;
 
 -- ----------------------------------------------------------------------------
+-- CRUCES ENTRE `solicitudes` Y `asignaciones` — POR QUE VAN EN UNA FUNCION
+--
+-- La policy de solicitudes necesitaba mirar asignaciones, y la de asignaciones
+-- necesitaba mirar solicitudes. Cada subconsulta disparaba el RLS de la otra
+-- tabla, que disparaba el de la primera: Postgres corta con
+-- «infinite recursion detected in policy». El efecto era que NI el enfermero NI
+-- el cliente podian leer ninguna de las dos tablas; solo el staff se salvaba
+-- porque su policy evalua es_staff() y corta antes.
+--
+-- La salida es sacar el cruce a una funcion `security definer`: adentro corre
+-- como propietario, el RLS de la otra tabla no se evalua, y el ciclo se rompe.
+-- Ambas siguen filtrando por auth.uid(), asi que no aflojan nada.
+-- ----------------------------------------------------------------------------
+
+-- true si el enfermero en sesion tiene una asignacion YA COMPROMETIDA en esa
+-- solicitud. Una propuesta no cuenta a proposito: mientras la esta pensando no
+-- tiene por que conocer el domicilio del paciente (regla 10.8). El panel le
+-- muestra los datos del turno por sus propias funciones, que devuelven solo
+-- las columnas seguras.
+create or replace function public.tengo_asignacion_en(p_solicitud uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.asignaciones a
+    where a.solicitud_id = p_solicitud
+      and a.enfermero_id = public.mi_enfermero_id()
+      and a.estatus in ('aceptada', 'en_curso', 'completada')
+  );
+$$;
+
+-- true si la solicitud pertenece al cliente en sesion
+create or replace function public.solicitud_es_de_mi_cliente(p_solicitud uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.solicitudes s
+    where s.id = p_solicitud
+      and s.cliente_id = public.mi_cliente_id()
+  );
+$$;
+
+
+-- ----------------------------------------------------------------------------
 -- ACTIVAR RLS EN TODAS LAS TABLAS
 -- ----------------------------------------------------------------------------
 alter table public.usuarios          enable row level security;
@@ -230,15 +281,10 @@ create policy solicitudes_alta_publica on public.solicitudes
 create policy solicitudes_cliente_lee on public.solicitudes
   for select to authenticated using (cliente_id = public.mi_cliente_id());
 
--- El enfermero solo ve las solicitudes en las que tiene una asignacion
+-- El enfermero solo ve las solicitudes de los turnos que ya acepto.
+-- El cruce va por funcion para no recursar contra la policy de asignaciones.
 create policy solicitudes_enfermero_lee on public.solicitudes
-  for select to authenticated using (
-    exists (
-      select 1 from public.asignaciones a
-      where a.solicitud_id = solicitudes.id
-        and a.enfermero_id = public.mi_enfermero_id()
-    )
-  );
+  for select to authenticated using (public.tengo_asignacion_en(solicitudes.id));
 
 create policy solicitudes_staff on public.solicitudes
   for all to authenticated using (public.es_staff()) with check (public.es_staff());
@@ -256,13 +302,10 @@ create policy asignaciones_enfermero_responde on public.asignaciones
   using (enfermero_id = public.mi_enfermero_id())
   with check (enfermero_id = public.mi_enfermero_id());
 
+-- Igual que arriba: el cruce sale a una funcion para romper el ciclo
 create policy asignaciones_cliente_lee on public.asignaciones
   for select to authenticated using (
-    exists (
-      select 1 from public.solicitudes s
-      where s.id = asignaciones.solicitud_id
-        and s.cliente_id = public.mi_cliente_id()
-    )
+    public.solicitud_es_de_mi_cliente(asignaciones.solicitud_id)
   );
 
 create policy asignaciones_staff on public.asignaciones

@@ -22,73 +22,73 @@ insert into public.enfermeros (
 ) values
 
 ('María Fernanda Ruiz Delgado', 'especialista', '10482375', true, 'Universidad de Guadalajara',
- 12, '{uci,urgencias}', '{bls,acls,via_aerea,ventilacion}', '{Español,Inglés}',
+ 12, '{uci,urgencias}', '{bls,acls,via_aerea,ventilacion}', '{espanol,ingles}',
  'Especialista en cuidados intensivos con doce años en unidades de tercer nivel. Manejo de ventilación mecánica, monitoreo hemodinámico y atención de paciente crítico. Acostumbrada a trabajar bajo presión y a coordinarme con el equipo médico tratante.',
  '{guadalajara,zapopan,tlaquepaque}', true, true, true, false,
  175, 1400, 1950, 3100, 'verificado', true, 'SEED'),
 
 ('Jorge Alberto Medina Vargas', 'licenciado', '11738294', true, 'Universidad Autónoma de Guadalajara',
- 9, '{urgencias,cardiologia,medicina_interna}', '{bls,acls,medicamentos_iv}', '{Español}',
+ 9, '{urgencias,cardiologia,medicina_interna}', '{bls,acls,medicamentos_iv}', '{espanol}',
  'Licenciado en enfermería con nueve años en servicio de urgencias. Experiencia en triage, estabilización de paciente cardiológico y manejo de accesos vasculares. Disponible para turnos nocturnos y cobertura de fines de semana.',
  '{guadalajara,tlaquepaque,tonala}', true, true, true, true,
  130, 1050, 1470, 2350, 'verificado', true, 'SEED'),
 
 ('Claudia Ivette Sandoval Ríos', 'especialista', '09847162', true, 'Universidad de Guadalajara',
- 11, '{neonatologia,pediatria,materno_infantil}', '{bls,pals,nrp}', '{Español,Inglés}',
+ 11, '{neonatologia,pediatria,materno_infantil}', '{bls,pals,nrp}', '{espanol,ingles}',
  'Especialista en neonatología con once años en cuneros y terapia intensiva neonatal. Certificada en reanimación neonatal. Acompaño a las familias en el cuidado del recién nacido con paciencia y comunicación clara.',
  '{zapopan,guadalajara}', false, true, true, false,
  180, 1450, 2030, 3200, 'verificado', true, 'SEED'),
 
 ('Ricardo Emmanuel Ponce Aguilar', 'general', '12904583', true, 'Universidad del Valle de México',
- 6, '{medicina_interna,heridas,postoperatorio}', '{bls,heridas_avanzadas,cateteres}', '{Español}',
+ 6, '{medicina_interna,heridas,postoperatorio}', '{bls,heridas_avanzadas,cateteres}', '{espanol}',
  'Enfermero general con seis años de experiencia hospitalaria. Especializado en curación de heridas complejas, manejo de estomas y cuidado postoperatorio. Trabajo con protocolo y llevo registro puntual de la evolución del paciente.',
  '{guadalajara,tlaquepaque,el_salto}', true, true, false, false,
  110, 880, 1230, 1980, 'verificado', true, 'SEED'),
 
 ('Ana Lucía Gutiérrez Mora', 'licenciado', '10395827', true, 'Universidad de Guadalajara',
- 8, '{geriatria,paliativos,rehabilitacion}', '{bls,medicamentos_iv,muestras}', '{Español}',
+ 8, '{geriatria,paliativos,rehabilitacion}', '{bls,medicamentos_iv,muestras}', '{espanol}',
  'Licenciada en enfermería enfocada en el adulto mayor. Ocho años acompañando pacientes en casa: control de medicamentos, movilización, prevención de caídas y cuidados paliativos. Creo en el trato digno y en mantener informada a la familia.',
  '{zapopan,guadalajara,tlajomulco}', true, true, false, false,
  125, 1000, 1400, 2250, 'verificado', true, 'SEED'),
 
 ('Diana Patricia Ochoa Reynoso', 'especialista', '08726194', true, 'Instituto Politécnico Nacional',
- 14, '{quirofano,postoperatorio}', '{bls,acls,via_aerea}', '{Español,Inglés}',
+ 14, '{quirofano,postoperatorio}', '{bls,acls,via_aerea}', '{espanol,ingles}',
  'Enfermera instrumentista con catorce años en quirófano. Experiencia en cirugía general, traumatología y laparoscopía. Conozco los protocolos de asepsia y el manejo de instrumental especializado.',
  '{guadalajara,zapopan}', false, false, true, true,
  185, 1480, 2070, 3300, 'verificado', true, 'SEED'),
 
 ('Luis Ángel Barajas Cortés', 'tecnico', null, false, 'CONALEP Jalisco',
- 4, '{general,postoperatorio}', '{bls,muestras}', '{Español}',
+ 4, '{general,postoperatorio}', '{bls,muestras}', '{espanol}',
  'Técnico en enfermería con cuatro años de experiencia en hospitalización y recuperación postquirúrgica. Apoyo en signos vitales, higiene, movilización y toma de muestras. Puntual y con buena disposición para aprender.',
  '{tlaquepaque,tonala,guadalajara}', true, true, true, false,
  90, 720, 1010, 1620, 'verificado', true, 'SEED'),
 
 ('Verónica Alejandra Núñez Salas', 'licenciado', '11284736', true, 'Universidad de Guadalajara',
- 10, '{oncologia,paliativos,medicina_interna}', '{bls,cateteres,medicamentos_iv}', '{Español}',
+ 10, '{oncologia,paliativos,medicina_interna}', '{bls,cateteres,medicamentos_iv}', '{espanol}',
  'Licenciada en enfermería con diez años en el área oncológica. Manejo de catéteres centrales, administración de quimioterapia bajo indicación médica y control de efectos adversos. Trato cercano con el paciente y su familia.',
  '{guadalajara,zapopan,tlaquepaque}', false, true, false, false,
  135, 1080, 1510, 2420, 'verificado', true, 'SEED'),
 
 ('José Antonio Ramírez Padilla', 'especialista', '09163847', true, 'Universidad de Guadalajara',
- 13, '{nefrologia,medicina_interna}', '{bls,acls,cateteres}', '{Español}',
+ 13, '{nefrologia,medicina_interna}', '{bls,acls,cateteres}', '{espanol}',
  'Especialista en nefrología con trece años en unidades de hemodiálisis. Manejo de accesos vasculares, control de balance hídrico y seguimiento del paciente renal crónico. Experiencia en hemodiálisis domiciliaria.',
  '{guadalajara,tonala,el_salto,zapotlanejo}', true, true, true, true,
  170, 1360, 1900, 3050, 'verificado', true, 'SEED'),
 
 ('Gabriela Montserrat Estrada Lomelí', 'general', '12573948', true, 'Universidad Autónoma de Guadalajara',
- 7, '{materno_infantil,pediatria,general}', '{bls,pals,muestras}', '{Español}',
+ 7, '{materno_infantil,pediatria,general}', '{bls,pals,muestras}', '{espanol}',
  'Enfermera general con siete años en atención materno-infantil. Apoyo en control prenatal, lactancia y cuidado del recién nacido en domicilio. Comunicación clara y paciente con las mamás primerizas.',
  '{zapopan,tlajomulco,guadalajara}', true, true, false, false,
  115, 920, 1290, 2060, 'verificado', true, 'SEED'),
 
 ('Fernando Iván Cárdenas Sepúlveda', 'auxiliar', null, false, 'Cruz Roja Mexicana',
- 3, '{general,geriatria}', '{bls}', '{Español}',
+ 3, '{general,geriatria}', '{bls}', '{espanol}',
  'Auxiliar de enfermería con tres años de experiencia en asilos y cuidado domiciliario. Apoyo en higiene, alimentación asistida, movilización y acompañamiento. Responsable y con muy buena disposición.',
  '{tlaquepaque,tonala,el_salto,juanacatlan}', true, true, true, false,
  75, 600, 840, 1350, 'verificado', true, 'SEED'),
 
 ('Rosa Elena Villalobos Chávez', 'cuidador', null, false, 'Instituto de Formación en Cuidados',
- 9, '{geriatria,paliativos}', '{bls}', '{Español}',
+ 9, '{geriatria,paliativos}', '{bls}', '{espanol}',
  'Cuidadora de adulto mayor con nueve años de experiencia en domicilio. Especializada en pacientes con demencia y movilidad reducida. Manejo rutinas de estimulación, aseo y compañía. Referencias comprobables.',
  '{guadalajara,zapopan,tlajomulco,ixtlahuacan}', true, true, true, false,
  80, 640, 900, 1440, 'verificado', true, 'SEED');
@@ -239,6 +239,17 @@ from (values
 ) as v(tipo, nivel, entorno, paciente, atencion, procs, cantidad, dias_inicio,
        turno, horas, municipio, estatus, urgente, contacto, horas_atras);
 
+-- Domicilio del servicio en las dos que llegan a tener personal asignado.
+-- Sin esto no se puede ver la regla 10.8 en accion: el profesional conoce el
+-- domicilio solo despues de aceptar el turno, nunca mientras lo esta pensando.
+update public.solicitudes set direccion_servicio = v.direccion
+from (values
+  ('propuesta_enviada', 'Av. Patria 1890, Col. Jardines Universidad'),
+  ('confirmada',        'Camino Real a Colima 340, Col. Santa Fe')
+) as v(estatus, direccion)
+where public.solicitudes.origen = 'seed'
+  and public.solicitudes.estatus::text = v.estatus;
+
 -- ----------------------------------------------------------------------------
 -- Turnos de este mes: completados, en curso y propuestos
 -- Se reparten en fechas distintas por enfermero para no chocar con el
@@ -248,10 +259,17 @@ insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_
                                  hora_fin, tarifa_cliente, tarifa_enfermero, estatus)
 select
   -- Se reparten entre las solicitudes ya cerradas para que el tablero no
-  -- muestre decenas de turnos colgando de una sola solicitud abierta
+  -- muestre decenas de turnos colgando de una sola solicitud abierta.
+  -- El reparto es por semana y no por md5: con md5 el sorteo podia dejar a un
+  -- cliente entero sin turnos recientes, y entonces su panel se veia muerto
+  -- (gasto del mes en cero, nada por evaluar) aunque el sistema estuviera bien.
+  -- La semana 0 le toca a la primera solicitud por folio, que es la del
+  -- hospital ligado a la cuenta de prueba: asi siempre hay algo dentro de los
+  -- 15 dias en que se puede evaluar.
   (select sc.id from public.solicitudes sc
    where sc.estatus = 'completada'
-   order by md5(sc.id::text || v.semana::text) limit 1),
+   order by sc.folio
+   offset (v.semana % 3) limit 1),
   e.id,
   -- un turno por semana durante las ultimas tres, escalonado por perfil
   (date_trunc('week', current_date) - (v.semana || ' weeks')::interval)::date
@@ -297,6 +315,72 @@ select
   'propuesta', now() - interval '20 hours'
 from public.enfermeros e
 where e.nombre_completo in ('Claudia Ivette Sandoval Ríos', 'Verónica Alejandra Núñez Salas');
+
+-- El perfil ligado a la cuenta de prueba `enfermero@enlace.test` (EE-00001)
+-- necesita trabajo por delante, no solo historial: sin una propuesta que
+-- responder y un turno aceptado, el panel del enfermero se ve vacio y no hay
+-- forma de validarlo. Las fechas se separan de sus turnos completados para no
+-- chocar con validar_traslape().
+insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_inicio,
+                                 hora_fin, tarifa_cliente, tarifa_enfermero, estatus, created_at)
+select
+  (select id from public.solicitudes where origen = 'seed' and estatus = 'propuesta_enviada' limit 1),
+  e.id, current_date + 3, 'nocturno', '23:00', '07:00',
+  public.cobro_cliente(e.tarifa_turno_8), e.tarifa_turno_8,
+  'propuesta', now() - interval '6 hours'
+from public.enfermeros e
+where e.nombre_completo = 'María Fernanda Ruiz Delgado';
+
+insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_inicio,
+                                 hora_fin, tarifa_cliente, tarifa_enfermero, estatus)
+select
+  (select id from public.solicitudes where origen = 'seed' and estatus = 'confirmada' limit 1),
+  e.id, current_date + 6, 'guardia_12', '07:00', '19:00',
+  public.cobro_cliente(e.tarifa_turno_12), e.tarifa_turno_12,
+  'aceptada'
+from public.enfermeros e
+where e.nombre_completo = 'María Fernanda Ruiz Delgado';
+
+-- ----------------------------------------------------------------------------
+-- Cobros al cliente
+-- Uno pagado, uno pendiente y uno vencido: sin esto la pantalla de facturacion
+-- del cliente sale vacia y no hay forma de validarla. El monto sale de los
+-- turnos realmente facturados de cada solicitud, no de un numero inventado.
+-- ----------------------------------------------------------------------------
+-- Un cobro por solicitud y quincena, que es como factura la agencia. Agrupar
+-- solo por solicitud daria un cobro de decenas de miles: el seed cuelga muchos
+-- turnos de una misma solicitud cerrada.
+-- La numeracion va en una CTE aparte porque Postgres no admite funciones de
+-- ventana dentro de una condicion de JOIN.
+with cortes as (
+  select s.id                   as solicitud_id,
+         (date_trunc('month', a.fecha)
+          + case when extract(day from a.fecha) <= 15
+                 then interval '0 day' else interval '15 days' end)::date as desde,
+         case when extract(day from a.fecha) <= 15
+              then (date_trunc('month', a.fecha) + interval '14 days')::date
+              else (date_trunc('month', a.fecha) + interval '1 month'
+                    - interval '1 day')::date end                          as hasta,
+         sum(a.tarifa_cliente)  as total,
+         max(a.fecha)           as ultima
+  from public.solicitudes s
+  join public.asignaciones a on a.solicitud_id = s.id and a.estatus = 'completada'
+  where s.origen = 'seed'
+  group by s.id, date_trunc('month', a.fecha), (extract(day from a.fecha) <= 15)
+)
+insert into public.pagos (tipo, referencia_id, periodo_inicio, periodo_fin,
+                          monto, metodo, estatus, fecha_pago, notas)
+select 'cobro_cliente', c.solicitud_id, c.desde, c.hasta, c.total,
+       -- Lo viejo ya se pago; lo del corte en curso sigue abierto
+       case when c.ultima < current_date - 20 then 'transferencia' end,
+       case when c.ultima < current_date - 20 then 'pagado'
+            when c.ultima < current_date - 10 then 'vencido'
+            else 'pendiente' end::estatus_pago,
+       case when c.ultima < current_date - 20 then c.ultima + 5 end,
+       case when c.ultima < current_date - 20 then 'Factura CFDI enviada al correo registrado.'
+            when c.ultima < current_date - 10 then 'Venció el plazo acordado.'
+            else 'Factura enviada, en espera de pago.' end
+from cortes c;
 
 -- ----------------------------------------------------------------------------
 -- Documentos: al corriente, por vencer, vencidos y en espera de revision

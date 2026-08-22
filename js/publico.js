@@ -1244,7 +1244,9 @@ async function enviarSolicitud(datos) {
     municipio:              datos.get('municipio'),
     enfermeros_solicitados: (paramURL('enfermero') || '').split(',').filter(Boolean),
     urgente:                datos.get('urgente') === 'on',
-    origen:                 'landing',
+    // El canal por el que llego, para que la agencia sepa de donde viene el
+    // negocio. El panel del cliente lo sobreescribe; por defecto es la landing.
+    origen:                 window.ORIGEN_SOLICITUD || 'landing',
     codigo_referido:        paramURL('ref'),
     contacto_nombre:        datos.get('nombre'),
     contacto_telefono:      normalizarTelefono(datos.get('telefono')),

@@ -99,6 +99,17 @@ const CERTIFICACIONES = [
   { id: 'medicamentos_iv',  nombre: 'Aplicación de medicamentos IV' }
 ];
 
+/* Los idiomas se guardan por id, igual que especialidades y certificaciones.
+   Sin este catalogo el panel no sabia traducirlos y al guardar el perfil los
+   borraba, porque ninguna casilla coincidia con lo almacenado. */
+const IDIOMAS = [
+  { id: 'espanol', nombre: 'Español' },
+  { id: 'ingles',  nombre: 'Inglés' },
+  { id: 'frances', nombre: 'Francés' },
+  { id: 'aleman',  nombre: 'Alemán' },
+  { id: 'lsm',     nombre: 'Lengua de Señas Mexicana' }
+];
+
 const MUNICIPIOS = [
   { id: 'guadalajara',   nombre: 'Guadalajara' },
   { id: 'zapopan',       nombre: 'Zapopan' },

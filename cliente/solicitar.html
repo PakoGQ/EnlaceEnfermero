@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva solicitud — Enlace Enfermero</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/componentes.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/publico.css">
+  <link rel="stylesheet" href="../css/panel.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="panel">
+
+  <header id="panelCabecera"></header>
+  <aside id="panelNav"></aside>
+
+  <main class="panel-contenido">
+
+    <div class="panel-encabezado">
+      <div>
+        <h1>Nueva solicitud</h1>
+        <p>Entre más concreto seas, más rápido te proponemos a la persona correcta.</p>
+      </div>
+    </div>
+
+    <div class="tarjeta form-solicitud-panel">
+<div id="confirmacion" class="oculto"></div>
+
+      <div id="zonaFormulario">
+
+        <div id="preseleccionado" class="oculto"></div>
+
+        <div class="pasos" id="barraPasos"></div>
+
+        <form id="formSolicitud" novalidate>
+
+          <!-- ===== Paso 1: servicio ===== -->
+          <fieldset data-paso="1">
+            <h2 tabindex="-1">¿Qué tipo de servicio necesitas?</h2>
+
+            <div class="campo">
+              <label for="sTipoServicio">Tipo de servicio <span class="requerido">*</span></label>
+              <select id="sTipoServicio" name="tipo_servicio" required></select>
+            </div>
+
+            <div class="campo">
+              <label for="sEntorno">¿Dónde se presta el servicio? <span class="requerido">*</span></label>
+              <select id="sEntorno" name="entorno" required></select>
+            </div>
+
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="sNivel">Nivel de enfermería que buscas</label>
+                <select id="sNivel" name="nivel_requerido"></select>
+                <span class="ayuda">Si no estás seguro, déjalo en blanco y te asesoramos.</span>
+              </div>
+              <div class="campo">
+                <label for="sCantidad">¿Cuántas personas necesitas?</label>
+                <input type="number" id="sCantidad" name="cantidad" min="1" max="50" value="1">
+              </div>
+            </div>
+
+            <div class="campo">
+              <label class="check">
+                <input type="checkbox" name="urgente">
+                <span>Es urgente, lo necesito en menos de 24 horas</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- ===== Paso 2: detalles ===== -->
+          <fieldset data-paso="2" class="oculto">
+            <h2 tabindex="-1">Detalles del servicio</h2>
+
+            <p class="nota-cotizacion">
+              Con estos datos armamos tu cotización. No hay lista de precios fija:
+              la tarifa depende de lo que el paciente realmente necesita.
+            </p>
+
+            <div class="campo">
+              <label for="sTipoPaciente">Tipo de paciente</label>
+              <select id="sTipoPaciente" name="tipo_paciente"></select>
+            </div>
+
+            <div class="campo">
+              <span class="etiqueta">Nivel de atención que requiere <span class="requerido">*</span></span>
+              <div class="opciones-radio" id="sNivelAtencion" data-minimo-uno></div>
+            </div>
+
+            <div class="campo">
+              <span class="etiqueta">¿Qué procedimientos se necesitan?</span>
+              <div class="lista-checks lista-checks-corta" id="sProcedimientos"></div>
+              <span class="ayuda">Marca los que apliquen. Si no estás seguro, déjalo en blanco.</span>
+            </div>
+
+            <div class="campo">
+              <label for="sDescripcion">Cuéntanos más del paciente o del puesto</label>
+              <textarea id="sDescripcion" name="descripcion"
+                placeholder="Ejemplo: paciente de 78 años, postoperatorio de cadera, requiere apoyo para movilización y control de medicamentos."></textarea>
+              <span class="ayuda">Mientras más contexto tengamos, más precisa será la cotización.</span>
+            </div>
+
+            <div class="campo">
+              <span class="etiqueta">Especialidades que necesitas</span>
+              <div class="lista-checks lista-checks-corta" id="sEspecialidades"></div>
+            </div>
+
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="sFechaInicio">¿Cuándo inicia? <span class="requerido">*</span></label>
+                <input type="date" id="sFechaInicio" name="fecha_inicio" required>
+              </div>
+              <div class="campo">
+                <label for="sFechaFin">¿Cuándo termina?</label>
+                <input type="date" id="sFechaFin" name="fecha_fin">
+                <span class="ayuda">Déjalo vacío si es indefinido.</span>
+              </div>
+            </div>
+
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="sTurno">Turno</label>
+                <select id="sTurno" name="turno"></select>
+              </div>
+              <div class="campo">
+                <label for="sHoras">Horas por turno</label>
+                <input type="number" id="sHoras" name="horas" min="1" max="24" placeholder="8">
+              </div>
+            </div>
+
+            <div class="campo">
+              <span class="etiqueta">Días de la semana</span>
+              <div class="pastillas" id="sDias"></div>
+            </div>
+          </fieldset>
+
+          <!-- ===== Paso 3: ubicación ===== -->
+          <fieldset data-paso="3" class="oculto">
+            <h2 tabindex="-1">¿Dónde es el servicio?</h2>
+
+            <div class="campo">
+              <label for="sMunicipio">Municipio <span class="requerido">*</span></label>
+              <select id="sMunicipio" name="municipio" required></select>
+            </div>
+
+            <div class="campo">
+              <label for="sDireccion">Dirección o zona</label>
+              <input type="text" id="sDireccion" name="direccion"
+                     placeholder="Colonia, calle o nombre del hospital">
+              <span class="ayuda">Puedes darnos solo la colonia. La dirección exacta la confirmamos después.</span>
+            </div>
+          </fieldset>
+
+          <!-- ===== Paso 4: contacto ===== -->
+          <fieldset data-paso="4" class="oculto">
+            <h2 tabindex="-1">¿Cómo te contactamos?</h2>
+
+            <div class="campo">
+              <label for="sNombre">Tu nombre <span class="requerido">*</span></label>
+              <input type="text" id="sNombre" name="nombre" required autocomplete="name">
+            </div>
+
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="sTelefono">Teléfono o WhatsApp <span class="requerido">*</span></label>
+                <input type="tel" id="sTelefono" name="telefono" required
+                       autocomplete="tel" placeholder="33 1234 5678">
+              </div>
+              <div class="campo">
+                <label for="sEmail">Correo electrónico</label>
+                <input type="email" id="sEmail" name="email" autocomplete="email">
+              </div>
+            </div>
+
+            <div class="campo">
+              <label for="sTipoCliente">¿Quién solicita?</label>
+              <select id="sTipoCliente" name="tipo_cliente"></select>
+            </div>
+
+            <div class="campo">
+              <label class="check">
+                <input type="checkbox" name="privacidad" required>
+                <span>He leído y acepto el
+                  <a href="aviso-privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>
+                  y el tratamiento de mis datos personales. <span class="requerido">*</span></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="acciones-formulario">
+            <button type="button" class="btn btn-secundario oculto" id="btnAtras">Atrás</button>
+            <button type="button" class="btn btn-primario" id="btnSiguiente">Continuar</button>
+            <button type="submit" class="btn btn-primario oculto" id="btnEnviar">Enviar solicitud</button>
+          </div>
+        </form>
+
+        <p class="texto-sm txt-secundario txt-centro mt-bloque">
+          ¿Prefieres hablarlo? Escríbenos por
+          <a href="#" id="enlaceWa" target="_blank" rel="noopener">WhatsApp</a>.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/componentes.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/panel.js"></script>
+  <script src="../js/publico.js"></script>
+  <script src="../js/cliente-solicitar.js"></script>
+  <script>
+    iniciarPanel(['cliente'], 'solicitar.html').then(perfil => {
+      if (!perfil) return;
+      iniciarSolicitudCliente(perfil);
+    });
+  </script>
+
+</body>
+</html>

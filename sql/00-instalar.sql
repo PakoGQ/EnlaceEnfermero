@@ -514,6 +514,57 @@ as $$
 $$;
 
 -- ----------------------------------------------------------------------------
+-- CRUCES ENTRE `solicitudes` Y `asignaciones` — POR QUE VAN EN UNA FUNCION
+--
+-- La policy de solicitudes necesitaba mirar asignaciones, y la de asignaciones
+-- necesitaba mirar solicitudes. Cada subconsulta disparaba el RLS de la otra
+-- tabla, que disparaba el de la primera: Postgres corta con
+-- «infinite recursion detected in policy». El efecto era que NI el enfermero NI
+-- el cliente podian leer ninguna de las dos tablas; solo el staff se salvaba
+-- porque su policy evalua es_staff() y corta antes.
+--
+-- La salida es sacar el cruce a una funcion `security definer`: adentro corre
+-- como propietario, el RLS de la otra tabla no se evalua, y el ciclo se rompe.
+-- Ambas siguen filtrando por auth.uid(), asi que no aflojan nada.
+-- ----------------------------------------------------------------------------
+
+-- true si el enfermero en sesion tiene una asignacion YA COMPROMETIDA en esa
+-- solicitud. Una propuesta no cuenta a proposito: mientras la esta pensando no
+-- tiene por que conocer el domicilio del paciente (regla 10.8). El panel le
+-- muestra los datos del turno por sus propias funciones, que devuelven solo
+-- las columnas seguras.
+create or replace function public.tengo_asignacion_en(p_solicitud uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.asignaciones a
+    where a.solicitud_id = p_solicitud
+      and a.enfermero_id = public.mi_enfermero_id()
+      and a.estatus in ('aceptada', 'en_curso', 'completada')
+  );
+$$;
+
+-- true si la solicitud pertenece al cliente en sesion
+create or replace function public.solicitud_es_de_mi_cliente(p_solicitud uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.solicitudes s
+    where s.id = p_solicitud
+      and s.cliente_id = public.mi_cliente_id()
+  );
+$$;
+
+
+-- ----------------------------------------------------------------------------
 -- ACTIVAR RLS EN TODAS LAS TABLAS
 -- ----------------------------------------------------------------------------
 alter table public.usuarios          enable row level security;
@@ -640,15 +691,10 @@ create policy solicitudes_alta_publica on public.solicitudes
 create policy solicitudes_cliente_lee on public.solicitudes
   for select to authenticated using (cliente_id = public.mi_cliente_id());
 
--- El enfermero solo ve las solicitudes en las que tiene una asignacion
+-- El enfermero solo ve las solicitudes de los turnos que ya acepto.
+-- El cruce va por funcion para no recursar contra la policy de asignaciones.
 create policy solicitudes_enfermero_lee on public.solicitudes
-  for select to authenticated using (
-    exists (
-      select 1 from public.asignaciones a
-      where a.solicitud_id = solicitudes.id
-        and a.enfermero_id = public.mi_enfermero_id()
-    )
-  );
+  for select to authenticated using (public.tengo_asignacion_en(solicitudes.id));
 
 create policy solicitudes_staff on public.solicitudes
   for all to authenticated using (public.es_staff()) with check (public.es_staff());
@@ -666,13 +712,10 @@ create policy asignaciones_enfermero_responde on public.asignaciones
   using (enfermero_id = public.mi_enfermero_id())
   with check (enfermero_id = public.mi_enfermero_id());
 
+-- Igual que arriba: el cruce sale a una funcion para romper el ciclo
 create policy asignaciones_cliente_lee on public.asignaciones
   for select to authenticated using (
-    exists (
-      select 1 from public.solicitudes s
-      where s.id = asignaciones.solicitud_id
-        and s.cliente_id = public.mi_cliente_id()
-    )
+    public.solicitud_es_de_mi_cliente(asignaciones.solicitud_id)
   );
 
 create policy asignaciones_staff on public.asignaciones
@@ -1412,6 +1455,7 @@ declare
   nuevo_folio text;
 begin
   insert into public.solicitudes (
+    cliente_id,
     tipo_servicio, nivel_requerido, especialidad_requerida, descripcion_paciente,
     entorno, tipo_paciente, nivel_atencion, procedimientos, cantidad_enfermeros,
     fecha_inicio, fecha_fin, turno, horas_por_turno, dias_semana,
@@ -1419,6 +1463,13 @@ begin
     enfermeros_solicitados, contacto_nombre, contacto_telefono, contacto_email
   )
   values (
+    -- Si quien envia el formulario trae sesion de cliente, la solicitud se
+    -- cuelga de su ficha. Sin esto, una solicitud hecha desde el panel del
+    -- cliente nacia huerfana y despues el no podia verla en su seguimiento.
+    -- No se toma del JSON a proposito: sale de auth.uid(), asi nadie puede
+    -- mandar solicitudes a nombre de otro. Un visitante anonimo sigue dando
+    -- null, como hasta ahora.
+    public.mi_cliente_id(),
     (p_datos ->> 'tipo_servicio')::tipo_servicio,
     nullif(p_datos ->> 'nivel_requerido', '')::nivel_enfermeria,
     coalesce((select array_agg(value) from jsonb_array_elements_text(p_datos -> 'especialidad_requerida')), '{}'),
@@ -3573,6 +3624,1425 @@ begin
 end $$;
 
 -- ############################################################################
+-- ###  11-paneles.sql
+-- ############################################################################
+
+-- ============================================================================
+-- Enlace Enfermero — 11. Funciones del panel del enfermero
+-- Alimentan panel/index.html (CLAUDE.md 8.7).
+--
+-- Aqui el filtro va al reves que en 06-10: alla se comprueba que quien llama
+-- SEA de la agencia; aqui se comprueba que NO lo sea, o mas exacto, que quien
+-- llama tenga una ficha propia en `enfermeros`. Cada quien ve lo suyo y nada
+-- mas.
+--
+-- El unico dato en el que se puede confiar dentro de un security definer es
+-- auth.uid(), porque current_user pasa a ser el propietario de la funcion.
+-- Por eso todo cuelga de mi_enfermero_id(), que mira auth.uid() y nada mas.
+-- Un admin que llame a estas funciones sin tener ficha recibe un error: para
+-- ver los datos de un profesional tiene sus propias funciones en 09.
+-- ============================================================================
+
+-- CREATE OR REPLACE no admite cambiar el tipo de retorno de una funcion que
+-- devuelve tabla: hay que soltarlas antes.
+drop function if exists public.panel_enfermero_resumen();
+drop function if exists public.panel_enfermero_alertas();
+drop function if exists public.panel_enfermero_proximos(int);
+
+-- ----------------------------------------------------------------------------
+-- Ficha del enfermero en sesion, o error si quien llama no tiene una.
+-- Se repite en las tres funciones, asi que vive aparte.
+-- ----------------------------------------------------------------------------
+create or replace function public.mi_ficha_enfermero()
+returns uuid
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_enfermero_id();
+begin
+  if v_id is null then
+    raise exception 'Esta sección es solo para el personal de enfermería registrado'
+      using errcode = '42501';
+  end if;
+  return v_id;
+end;
+$$;
+
+comment on function public.mi_ficha_enfermero() is
+  'id de la ficha en `enfermeros` del usuario en sesion. Falla si no tiene. Base de todas las funciones del panel del enfermero.';
+
+-- ----------------------------------------------------------------------------
+-- Que tan completo esta el perfil
+-- Solo cuenta campos que el propio enfermero puede editar: verificacion,
+-- publicacion y tarifas son del admin (regla 10.6), asi que exigirselas seria
+-- pedirle algo que no depende de el.
+--
+-- Recibe un id y NO es security definer, a proposito: si lo fuera, cualquiera
+-- con sesion podria preguntar por el perfil de otro pasandole su uuid. Es un
+-- ayudante interno sin permiso de ejecucion; solo lo llaman las funciones de
+-- abajo, que ya resolvieron de quien se trata.
+-- ----------------------------------------------------------------------------
+create or replace function public.perfil_completo_pct(p_enfermero_id uuid)
+returns jsonb
+language plpgsql
+stable
+set search_path = public
+as $$
+declare
+  e            public.enfermeros%rowtype;
+  faltantes    jsonb := '[]'::jsonb;
+  total        int   := 9;
+  hechos       int   := 0;
+begin
+  select * into e from public.enfermeros where id = p_enfermero_id;
+  if not found then
+    return jsonb_build_object('pct', 0, 'faltantes', faltantes);
+  end if;
+
+  if e.foto_url is not null and e.foto_url <> '' then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Tu fotografía'); end if;
+
+  -- 80 caracteres es lo minimo para que una presentacion diga algo
+  if length(coalesce(e.bio, '')) >= 80 then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Tu presentación'); end if;
+
+  if coalesce(array_length(e.especialidades, 1), 0) > 0 then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Tus especialidades'); end if;
+
+  if coalesce(array_length(e.certificaciones, 1), 0) > 0 then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Tus certificaciones'); end if;
+
+  if coalesce(array_length(e.idiomas, 1), 0) > 0 then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Los idiomas que hablas'); end if;
+
+  if coalesce(array_length(e.zonas_cobertura, 1), 0) > 0 then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Las zonas donde puedes trabajar'); end if;
+
+  if coalesce(e.anios_experiencia, 0) > 0 then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Tus años de experiencia'); end if;
+
+  if e.institucion_egreso is not null and e.institucion_egreso <> '' then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Tu institución de egreso'); end if;
+
+  if e.fecha_nacimiento is not null then hechos := hechos + 1;
+  else faltantes := faltantes || jsonb_build_array('Tu fecha de nacimiento'); end if;
+
+  return jsonb_build_object(
+    'pct',       round((hechos::numeric / total) * 100)::int,
+    'hechos',    hechos,
+    'total',     total,
+    'faltantes', faltantes
+  );
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Los indicadores de la pantalla de inicio
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_enfermero_resumen()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id         uuid := public.mi_ficha_enfermero();
+  inicio_mes   date := date_trunc('month', current_date)::date;
+  e            public.enfermeros%rowtype;
+begin
+  select * into e from public.enfermeros where id = v_id;
+
+  return jsonb_build_object(
+
+    -- Identidad del profesional, para encabezar la pantalla
+    'folio',                 e.folio,
+    'nombre',                e.nombre_completo,
+    'nivel',                 e.nivel,
+    'foto_url',              e.foto_url,
+    'estatus_verificacion',  e.estatus_verificacion,
+    'publicado',             e.publicado,
+    'disponible_inmediato',  e.disponible_inmediato,
+
+    -- Trabajo por delante. `propuesta` es lo que espera su respuesta;
+    -- `aceptada` es lo que ya se comprometio a cubrir.
+    'propuestas_pendientes', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id
+        and estatus = 'propuesta'
+        and fecha >= current_date
+    ),
+
+    'turnos_proximos', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id
+        and estatus in ('aceptada', 'en_curso')
+        and fecha >= current_date
+    ),
+
+    'turno_en_curso', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'en_curso'
+    ),
+
+    -- Ganancias: lo que ya se gano (turnos completados) contra el mes pasado.
+    -- Es tarifa_enfermero, nunca tarifa_cliente: lo que la agencia factura no
+    -- es asunto del profesional.
+    'ganancias_mes', (
+      select coalesce(sum(tarifa_enfermero), 0) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'completada' and fecha >= inicio_mes
+    ),
+
+    'ganancias_mes_anterior', (
+      select coalesce(sum(tarifa_enfermero), 0) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'completada'
+        and fecha >= (inicio_mes - interval '1 month')::date
+        and fecha <  inicio_mes
+    ),
+
+    -- Lo comprometido a futuro: aun no es dinero ganado, pero ya esta agendado
+    'por_ganar', (
+      select coalesce(sum(tarifa_enfermero), 0) from public.asignaciones
+      where enfermero_id = v_id
+        and estatus in ('aceptada', 'en_curso')
+        and fecha >= current_date
+    ),
+
+    'turnos_completados_mes', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'completada' and fecha >= inicio_mes
+    ),
+
+    'calificacion',    e.calificacion_promedio,
+    'total_servicios', e.total_servicios,
+
+    'perfil', public.perfil_completo_pct(v_id)
+  );
+end;
+$$;
+
+comment on function public.panel_enfermero_resumen() is
+  'Indicadores de panel/index.html. Solo del enfermero en sesion: nunca expone tarifa_cliente ni comision.';
+
+-- ----------------------------------------------------------------------------
+-- Lo que requiere su atencion
+-- Misma logica que las alertas del admin, pero acotadas a su expediente y
+-- redactadas para el, no para la agencia.
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_enfermero_alertas()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id         uuid := public.mi_ficha_enfermero();
+  obligatorios tipo_documento[];
+  v_nivel      nivel_enfermeria;
+begin
+  select nivel into v_nivel from public.enfermeros where id = v_id;
+  obligatorios := public.documentos_obligatorios(v_nivel);
+
+  return jsonb_build_object(
+
+    -- Vencidos, separados en dos: solo los OBLIGATORIOS sacan el perfil del
+    -- catalogo (regla 10.3). Un BLS caducado no despublica a nadie; le cierra
+    -- la puerta a los turnos que pidan esa certificacion, que es distinto.
+    -- Meterlos en el mismo saco hace que el panel le diga a alguien que esta
+    -- fuera del catalogo cuando en realidad sigue publicado.
+    'documentos_vencidos', (
+      select count(*) from public.documentos
+      where enfermero_id = v_id
+        and fecha_vencimiento is not null
+        and fecha_vencimiento < current_date
+        and estatus <> 'rechazado'
+    ),
+
+    'vencidos_obligatorios', (
+      select count(*) from public.documentos
+      where enfermero_id = v_id
+        and tipo = any(obligatorios)
+        and fecha_vencimiento is not null
+        and fecha_vencimiento < current_date
+        and estatus <> 'rechazado'
+    ),
+
+    'documentos_por_vencer', (
+      select count(*) from public.documentos
+      where enfermero_id = v_id
+        and fecha_vencimiento is not null
+        and fecha_vencimiento between current_date and current_date + 30
+        and estatus <> 'rechazado'
+    ),
+
+    'documentos_rechazados', (
+      select count(*) from public.documentos
+      where enfermero_id = v_id and estatus = 'rechazado'
+    ),
+
+    'documentos_en_revision', (
+      select count(*) from public.documentos
+      where enfermero_id = v_id and estatus in ('pendiente', 'en_revision')
+    ),
+
+    -- Obligatorios que no ha entregado. Sin ellos no hay verificacion, y sin
+    -- verificacion no aparece en el catalogo (regla 10.1).
+    'obligatorios_faltantes', (
+      select count(*) from unnest(obligatorios) t
+      where not exists (
+        select 1 from public.documentos d
+        where d.enfermero_id = v_id and d.tipo = t and d.estatus <> 'rechazado'
+      )
+    ),
+
+    'propuestas_pendientes', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'propuesta' and fecha >= current_date
+    ),
+
+    -- Una propuesta que ya lleva mas de un dia esperando: el cliente esta
+    -- viendo pasar el tiempo y la agencia puede reasignar el turno.
+    'propuestas_urgentes', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id
+        and estatus = 'propuesta'
+        and fecha >= current_date
+        and (created_at < now() - interval '24 hours'
+             or fecha <= current_date + 2)
+    ),
+
+    -- Turnos que ya terminaron y siguen sin cerrar: sin checkout no entran al
+    -- corte de pago
+    'sin_cerrar', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id
+        and estatus = 'en_curso'
+        and fecha < current_date
+    )
+  );
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Sus proximos turnos
+--
+-- Muestra el municipio siempre, pero la direccion exacta y el nombre del sitio
+-- solo cuando ya acepto: mientras es una propuesta, todavia puede rechazarla y
+-- no tiene por que quedarse con el domicilio del paciente. El telefono y el
+-- correo del cliente no salen nunca (regla 10.8): la coordinacion pasa por la
+-- agencia.
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_enfermero_proximos(p_limite int default 5)
+returns table (
+  id                uuid,
+  folio_solicitud   text,
+  fecha             date,
+  turno             turno_tipo,
+  hora_inicio       time,
+  hora_fin          time,
+  estatus           estatus_asignacion,
+  tarifa_enfermero  numeric,
+  tipo_servicio     tipo_servicio,
+  entorno           text,
+  municipio         text,
+  direccion         text,
+  nivel_atencion    text,
+  procedimientos    text[],
+  descripcion       text,
+  horas_esperando   int
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_ficha_enfermero();
+begin
+  return query
+  select a.id,
+         s.folio,
+         a.fecha,
+         a.turno,
+         a.hora_inicio,
+         a.hora_fin,
+         a.estatus,
+         a.tarifa_enfermero,
+         s.tipo_servicio,
+         s.entorno::text,
+         s.municipio,
+         case when a.estatus in ('aceptada', 'en_curso')
+              then s.direccion_servicio end,
+         s.nivel_atencion::text,
+         s.procedimientos,
+         s.descripcion_paciente,
+         (extract(epoch from (now() - a.created_at)) / 3600)::int
+  from public.asignaciones a
+  join public.solicitudes s on s.id = a.solicitud_id
+  where a.enfermero_id = v_id
+    and a.estatus in ('propuesta', 'aceptada', 'en_curso')
+    and a.fecha >= current_date - 1        -- un turno de anoche sigue vigente
+  -- Primero lo que espera respuesta, luego lo mas cercano en el tiempo
+  order by (a.estatus = 'propuesta') desc, a.fecha, a.hora_inicio
+  limit greatest(p_limite, 1);
+end;
+$$;
+
+comment on function public.panel_enfermero_proximos(int) is
+  'Turnos propuestos, aceptados o en curso del enfermero en sesion. La direccion solo aparece una vez aceptado el turno.';
+
+-- ----------------------------------------------------------------------------
+-- Permisos: solo con sesion iniciada. Dentro, cada funcion exige que quien
+-- llama tenga ficha propia.
+-- ----------------------------------------------------------------------------
+do $$
+declare f text;
+begin
+  foreach f in array array[
+    'mi_ficha_enfermero()',
+    'panel_enfermero_resumen()', 'panel_enfermero_alertas()',
+    'panel_enfermero_proximos(int)'
+  ] loop
+    execute format('revoke all on function public.%s from public', f);
+    execute format('grant execute on function public.%s to authenticated', f);
+  end loop;
+end $$;
+
+-- El ayudante no se expone a nadie: solo lo invocan las funciones de arriba,
+-- que corren como propietario y ya comprobaron de quien son los datos.
+revoke all on function public.perfil_completo_pct(uuid) from public;
+
+-- ============================================================================
+-- MIS TURNOS, HISTORIAL, DOCUMENTOS, DISPONIBILIDAD Y GANANCIAS
+--
+-- Mismo criterio que arriba: nada recibe un id de enfermero, todo cuelga de
+-- mi_ficha_enfermero(). Y todo lo que toca `solicitudes` pasa por aqui, porque
+-- la policy de esa tabla solo le abre las solicitudes de turnos YA aceptados:
+-- para una propuesta, estas funciones son la unica forma de ver el turno, y
+-- devuelven solo columnas seguras.
+-- ============================================================================
+
+drop function if exists public.panel_enfermero_turnos(text, int);
+drop function if exists public.responder_propuesta(uuid, boolean, text);
+drop function if exists public.registrar_mi_asistencia(uuid, text);
+drop function if exists public.mis_documentos();
+drop function if exists public.subir_mi_documento(tipo_documento, text, date, date);
+drop function if exists public.mis_ganancias(date, date);
+drop function if exists public.aplicar_plantilla_disponibilidad(date, date, int[], turno_tipo[], boolean);
+
+-- ----------------------------------------------------------------------------
+-- Lista de turnos, para "Mis turnos" y para "Historial"
+--
+-- p_grupo: 'activos'   -> lo que sigue vivo: propuesta, aceptada, en curso
+--          'historial' -> lo cerrado: completada, rechazada, no asistio, cancelada
+--          'todos'
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_enfermero_turnos(
+  p_grupo  text default 'activos',
+  p_limite int  default 100
+)
+returns table (
+  id                uuid,
+  folio_solicitud   text,
+  fecha             date,
+  turno             turno_tipo,
+  hora_inicio       time,
+  hora_fin          time,
+  estatus           estatus_asignacion,
+  tarifa_enfermero  numeric,
+  tipo_servicio     tipo_servicio,
+  entorno           text,
+  municipio         text,
+  direccion         text,
+  nivel_atencion    text,
+  procedimientos    text[],
+  descripcion       text,
+  checkin_at        timestamptz,
+  checkout_at       timestamptz,
+  motivo_rechazo    text,
+  calificacion      int,
+  creado_at         timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_ficha_enfermero();
+begin
+  return query
+  select a.id,
+         s.folio,
+         a.fecha,
+         a.turno,
+         a.hora_inicio,
+         a.hora_fin,
+         a.estatus,
+         a.tarifa_enfermero,
+         s.tipo_servicio,
+         s.entorno::text,
+         s.municipio,
+         -- El domicilio solo despues de aceptar (regla 10.8)
+         case when a.estatus in ('aceptada', 'en_curso', 'completada')
+              then s.direccion_servicio end,
+         s.nivel_atencion::text,
+         s.procedimientos,
+         s.descripcion_paciente,
+         a.checkin_at,
+         a.checkout_at,
+         a.motivo_rechazo,
+         (select e.calificacion_general from public.evaluaciones e
+          where e.asignacion_id = a.id limit 1),
+         a.created_at
+  from public.asignaciones a
+  join public.solicitudes s on s.id = a.solicitud_id
+  where a.enfermero_id = v_id
+    and case p_grupo
+          when 'activos'   then a.estatus in ('propuesta', 'aceptada', 'en_curso')
+          when 'historial' then a.estatus in ('completada', 'rechazada', 'no_asistio', 'cancelada')
+          else true
+        end
+  -- En lo activo urge primero lo que espera respuesta; en lo cerrado, lo reciente
+  order by case when p_grupo = 'historial' then null
+                else (a.estatus = 'propuesta') end desc nulls last,
+           case when p_grupo = 'historial' then a.fecha end desc,
+           case when p_grupo <> 'historial' then a.fecha end asc,
+           a.hora_inicio
+  limit greatest(p_limite, 1);
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Aceptar o rechazar una propuesta
+--
+-- Las transiciones validas ya las impone proteger_campos_asignacion; aqui se
+-- comprueba ademas que el turno sea suyo y se exige motivo al rechazar, para
+-- que la agencia sepa por que se cayo y pueda reasignar con criterio.
+-- ----------------------------------------------------------------------------
+create or replace function public.responder_propuesta(
+  p_asignacion uuid,
+  p_acepta     boolean,
+  p_motivo     text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id  uuid := public.mi_ficha_enfermero();
+  a     public.asignaciones%rowtype;
+begin
+  select * into a from public.asignaciones
+  where id = p_asignacion and enfermero_id = v_id;
+
+  if not found then
+    raise exception 'Ese turno no existe o no es tuyo' using errcode = '42501';
+  end if;
+
+  if a.estatus <> 'propuesta' then
+    raise exception 'Este turno ya no está esperando respuesta (está %)', a.estatus
+      using errcode = 'P0001';
+  end if;
+
+  if not p_acepta and coalesce(trim(p_motivo), '') = '' then
+    raise exception 'Dinos por qué lo rechazas' using errcode = 'P0001';
+  end if;
+
+  -- Aceptar un turno que se encima con otro ya aceptado no lo bloquea el
+  -- validador de traslapes, porque este no inserta: valida a mano.
+  if p_acepta and exists (
+    select 1 from public.asignaciones o
+    where o.enfermero_id = v_id
+      and o.id <> a.id
+      and o.fecha = a.fecha
+      and o.estatus in ('aceptada', 'en_curso')
+      and (a.hora_inicio, a.hora_fin) overlaps (o.hora_inicio, o.hora_fin)
+  ) then
+    raise exception 'Ya tienes otro turno aceptado que se encima con este'
+      using errcode = 'P0001';
+  end if;
+
+  update public.asignaciones
+  set estatus        = (case when p_acepta then 'aceptada' else 'rechazada' end)::estatus_asignacion,
+      motivo_rechazo = case when p_acepta then null else trim(p_motivo) end
+  where id = p_asignacion;
+
+  return jsonb_build_object(
+    'ok', true,
+    'estatus', case when p_acepta then 'aceptada' else 'rechazada' end,
+    'mensaje', case when p_acepta
+                    then 'Turno aceptado. Te esperamos.'
+                    else 'Turno rechazado. Gracias por avisar a tiempo.' end
+  );
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Marcar entrada y salida del turno
+-- Sin salida registrada el turno no entra al corte de pago, asi que el mensaje
+-- lo dice explicitamente.
+--
+-- Lleva "mi" en el nombre a proposito: `registrar_asistencia()` ya existe en
+-- 09-operacion.sql y es la del admin. Como este archivo corre despues, un
+-- nombre igual la habria sobreescrito y roto el registro de asistencia del
+-- panel de la agencia.
+-- ----------------------------------------------------------------------------
+create or replace function public.registrar_mi_asistencia(
+  p_asignacion uuid,
+  p_tipo       text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_ficha_enfermero();
+  a    public.asignaciones%rowtype;
+begin
+  select * into a from public.asignaciones
+  where id = p_asignacion and enfermero_id = v_id;
+
+  if not found then
+    raise exception 'Ese turno no existe o no es tuyo' using errcode = '42501';
+  end if;
+
+  if p_tipo = 'entrada' then
+    if a.estatus <> 'aceptada' then
+      raise exception 'Solo puedes marcar entrada en un turno aceptado'
+        using errcode = 'P0001';
+    end if;
+    -- Un turno se abre el mismo dia, no con dias de anticipacion
+    if a.fecha > current_date then
+      raise exception 'Todavía no es el día de este turno' using errcode = 'P0001';
+    end if;
+
+    update public.asignaciones
+    set estatus = 'en_curso', checkin_at = now()
+    where id = p_asignacion;
+
+    return jsonb_build_object('ok', true, 'estatus', 'en_curso',
+      'mensaje', 'Entrada registrada. Buen turno.');
+
+  elsif p_tipo = 'salida' then
+    if a.estatus <> 'en_curso' then
+      raise exception 'Este turno no está en curso' using errcode = 'P0001';
+    end if;
+
+    update public.asignaciones
+    set estatus = 'completada', checkout_at = now()
+    where id = p_asignacion;
+
+    return jsonb_build_object('ok', true, 'estatus', 'completada',
+      'mensaje', 'Salida registrada. El turno ya entra a tu próximo corte.');
+  end if;
+
+  raise exception 'Movimiento no reconocido' using errcode = 'P0001';
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Mi expediente documental
+-- Devuelve tanto lo entregado como los huecos: un obligatorio que falta se
+-- lista igual, con id nulo, para que la pantalla lo pinte como pendiente de
+-- subir en vez de simplemente no mencionarlo.
+-- ----------------------------------------------------------------------------
+create or replace function public.mis_documentos()
+returns table (
+  id                uuid,
+  tipo              tipo_documento,
+  archivo_url       text,
+  fecha_emision     date,
+  fecha_vencimiento date,
+  estatus           estatus_verif,
+  motivo_rechazo    text,
+  obligatorio       boolean,
+  dias_para_vencer  int
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id         uuid := public.mi_ficha_enfermero();
+  obligatorios tipo_documento[];
+  v_nivel      nivel_enfermeria;
+begin
+  select e.nivel into v_nivel from public.enfermeros e where e.id = v_id;
+  obligatorios := public.documentos_obligatorios(v_nivel);
+
+  return query
+  select d.id, d.tipo, d.archivo_url, d.fecha_emision, d.fecha_vencimiento,
+         d.estatus, d.motivo_rechazo,
+         d.tipo = any(obligatorios),
+         case when d.fecha_vencimiento is null then null
+              else (d.fecha_vencimiento - current_date)::int end
+  from public.documentos d
+  where d.enfermero_id = v_id
+
+  union all
+
+  -- Los obligatorios que aun no entrega
+  select null::uuid, t, null, null, null, null::estatus_verif, null, true, null
+  from unnest(obligatorios) t
+  where not exists (
+    select 1 from public.documentos d2
+    where d2.enfermero_id = v_id and d2.tipo = t and d2.estatus <> 'rechazado'
+  )
+
+  order by 8 desc, 6 nulls first, 2;
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Registrar o renovar un documento
+--
+-- Va por funcion y no por INSERT directo por una razon concreta: al renovar
+-- hay que devolver el estatus a 'pendiente' para que la agencia lo revise otra
+-- vez, y el trigger proteger_campos_documento le prohibe al enfermero tocar
+-- ese campo. Adentro de un security definer el trigger si deja pasar el
+-- cambio, porque current_user es el propietario.
+--
+-- El archivo ya debe estar en Storage bajo `<enfermero_id>/...`; la policy del
+-- bucket lo exige y aqui se vuelve a comprobar.
+-- ----------------------------------------------------------------------------
+create or replace function public.subir_mi_documento(
+  p_tipo        tipo_documento,
+  p_archivo_url text,
+  p_emision     date default null,
+  p_vencimiento date default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id      uuid := public.mi_ficha_enfermero();
+  v_previo  uuid;
+  v_renueva boolean;
+begin
+  if coalesce(trim(p_archivo_url), '') = '' then
+    raise exception 'Falta el archivo' using errcode = 'P0001';
+  end if;
+
+  -- El archivo tiene que vivir en su propia carpeta: si no, estaria
+  -- registrando a su nombre un archivo de alguien mas.
+  if split_part(replace(p_archivo_url, 'documentos/', ''), '/', 1) <> v_id::text then
+    raise exception 'El archivo no corresponde a tu expediente' using errcode = '42501';
+  end if;
+
+  if p_vencimiento is not null and p_vencimiento < current_date then
+    raise exception 'Ese documento ya está vencido: sube uno vigente'
+      using errcode = 'P0001';
+  end if;
+
+  select d.id into v_previo from public.documentos d
+  where d.enfermero_id = v_id and d.tipo = p_tipo and d.estatus <> 'rechazado'
+  limit 1;
+
+  v_renueva := v_previo is not null;
+
+  if v_renueva then
+    update public.documentos
+    set archivo_url       = p_archivo_url,
+        fecha_emision     = p_emision,
+        fecha_vencimiento = p_vencimiento,
+        estatus           = 'pendiente',
+        verificado_por    = null,
+        verificado_at     = null,
+        motivo_rechazo    = null
+    where id = v_previo;
+  else
+    insert into public.documentos (enfermero_id, tipo, archivo_url,
+                                   fecha_emision, fecha_vencimiento, estatus)
+    values (v_id, p_tipo, p_archivo_url, p_emision, p_vencimiento, 'pendiente');
+  end if;
+
+  return jsonb_build_object(
+    'ok', true,
+    'renovado', v_renueva,
+    'mensaje', case when v_renueva
+                    then 'Documento actualizado. Lo revisamos en 24 a 48 horas.'
+                    else 'Documento recibido. Lo revisamos en 24 a 48 horas.' end
+  );
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Plantilla semanal de disponibilidad
+--
+-- Marcar dia por dia en el celular es inviable; casi todo el mundo trabaja con
+-- un patron fijo. p_dias usa la convencion de Postgres: 0 domingo, 6 sabado.
+-- ----------------------------------------------------------------------------
+create or replace function public.aplicar_plantilla_disponibilidad(
+  p_desde      date,
+  p_hasta      date,
+  p_dias       int[],
+  p_turnos     turno_tipo[],
+  p_disponible boolean default true
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id    uuid := public.mi_ficha_enfermero();
+  v_filas int  := 0;
+begin
+  if p_hasta < p_desde then
+    raise exception 'El rango de fechas está al revés' using errcode = 'P0001';
+  end if;
+  if p_hasta > current_date + 180 then
+    raise exception 'Solo puedes programar hasta 6 meses hacia adelante'
+      using errcode = 'P0001';
+  end if;
+  if coalesce(array_length(p_dias, 1), 0) = 0
+     or coalesce(array_length(p_turnos, 1), 0) = 0 then
+    raise exception 'Elige al menos un día y un turno' using errcode = 'P0001';
+  end if;
+
+  with fechas as (
+    select d::date as fecha
+    from generate_series(greatest(p_desde, current_date), p_hasta, '1 day') d
+    where extract(dow from d)::int = any(p_dias)
+  ),
+  guardadas as (
+    insert into public.disponibilidad (enfermero_id, fecha, turno, disponible)
+    select v_id, f.fecha, t, p_disponible
+    from fechas f cross join unnest(p_turnos) t
+    on conflict (enfermero_id, fecha, turno)
+      do update set disponible = excluded.disponible
+    returning 1
+  )
+  select count(*) into v_filas from guardadas;
+
+  return jsonb_build_object('ok', true, 'turnos', v_filas,
+    'mensaje', v_filas || ' turnos actualizados.');
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Ganancias por quincena
+--
+-- El corte de la agencia es quincenal, asi que el agregado tiene que estar en
+-- la misma unidad o el profesional no puede cuadrar lo que recibe. Solo cuenta
+-- turnos completados: lo aceptado todavia no se gano.
+-- ----------------------------------------------------------------------------
+create or replace function public.mis_ganancias(
+  p_desde date default null,
+  p_hasta date default null
+)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id    uuid := public.mi_ficha_enfermero();
+  v_desde date := coalesce(p_desde, (date_trunc('month', current_date) - interval '5 months')::date);
+  v_hasta date := coalesce(p_hasta, current_date);
+begin
+  return jsonb_build_object(
+
+    'total_periodo', (
+      select coalesce(sum(tarifa_enfermero), 0) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'completada'
+        and fecha between v_desde and v_hasta
+    ),
+
+    'turnos_periodo', (
+      select count(*) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'completada'
+        and fecha between v_desde and v_hasta
+    ),
+
+    'comprometido', (
+      select coalesce(sum(tarifa_enfermero), 0) from public.asignaciones
+      where enfermero_id = v_id
+        and estatus in ('aceptada', 'en_curso') and fecha >= current_date
+    ),
+
+    'promedio_turno', (
+      select coalesce(round(avg(tarifa_enfermero), 2), 0) from public.asignaciones
+      where enfermero_id = v_id and estatus = 'completada'
+        and fecha between v_desde and v_hasta
+    ),
+
+    -- Se devuelven los limites reales de la quincena y en que mitad cae, no un
+    -- texto ya armado: to_char('TMMonth') depende del lc_time del servidor y
+    -- en esta base sale en ingles. La etiqueta la arma el navegador con
+    -- Intl y siempre en es-MX.
+    'quincenas', coalesce((
+      select jsonb_agg(q order by q->>'inicio' desc)
+      from (
+        select jsonb_build_object(
+                 'inicio', (date_trunc('month', a.fecha)
+                            + case when extract(day from a.fecha) <= 15
+                                   then interval '0 day' else interval '15 days' end)::date,
+                 'fin',    case when extract(day from a.fecha) <= 15
+                                then (date_trunc('month', a.fecha) + interval '14 days')::date
+                                else (date_trunc('month', a.fecha) + interval '1 month'
+                                      - interval '1 day')::date end,
+                 'mitad',  case when extract(day from a.fecha) <= 15 then 1 else 2 end,
+                 'turnos', count(*),
+                 'monto',  sum(a.tarifa_enfermero)
+               ) as q
+        from public.asignaciones a
+        where a.enfermero_id = v_id and a.estatus = 'completada'
+          and a.fecha between v_desde and v_hasta
+        group by date_trunc('month', a.fecha),
+                 (extract(day from a.fecha) <= 15)
+      ) t
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
+do $$
+declare f text;
+begin
+  foreach f in array array[
+    'panel_enfermero_turnos(text, int)',
+    'responder_propuesta(uuid, boolean, text)',
+    'registrar_mi_asistencia(uuid, text)',
+    'mis_documentos()',
+    'subir_mi_documento(tipo_documento, text, date, date)',
+    'aplicar_plantilla_disponibilidad(date, date, int[], turno_tipo[], boolean)',
+    'mis_ganancias(date, date)'
+  ] loop
+    execute format('revoke all on function public.%s from public', f);
+    execute format('grant execute on function public.%s to authenticated', f);
+  end loop;
+end $$;
+
+-- ============================================================================
+-- PANEL DEL CLIENTE (CLAUDE.md 8.8)
+--
+-- Mismo criterio invertido que arriba, pero contra `clientes`: todo cuelga de
+-- mi_ficha_cliente() y ninguna funcion recibe el id de a quien consultar.
+--
+-- REGLA QUE MANDA EN TODO ESTE BLOQUE (regla 10.8 y CLAUDE.md 6):
+-- al cliente se le muestra QUIEN va a cubrir su turno, nunca COMO contactarlo.
+-- De `enfermeros` solo salen nombre, folio, nivel, foto, calificacion,
+-- experiencia y especialidades. Cedula completa, tarifas y notas internas no
+-- se seleccionan aqui ni por descuido, y el telefono ni siquiera vive en esa
+-- tabla. Si el cliente puede llamarle directo al profesional, la agencia se
+-- queda sin comision y el negocio deja de existir.
+-- ============================================================================
+
+drop function if exists public.panel_cliente_resumen();
+drop function if exists public.panel_cliente_solicitudes(text, int);
+drop function if exists public.panel_cliente_solicitud_detalle(uuid);
+drop function if exists public.panel_cliente_personal();
+drop function if exists public.panel_cliente_evaluables();
+drop function if exists public.guardar_evaluacion(uuid, int, int, int, text, boolean);
+drop function if exists public.panel_cliente_facturacion();
+
+-- ----------------------------------------------------------------------------
+-- Ficha del cliente en sesion, o error si quien llama no tiene una
+-- ----------------------------------------------------------------------------
+create or replace function public.mi_ficha_cliente()
+returns uuid
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_cliente_id();
+begin
+  if v_id is null then
+    raise exception 'Esta sección es solo para clientes registrados'
+      using errcode = '42501';
+  end if;
+  return v_id;
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Indicadores de la pantalla de inicio
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_cliente_resumen()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id       uuid := public.mi_ficha_cliente();
+  inicio_mes date := date_trunc('month', current_date)::date;
+  c          public.clientes%rowtype;
+begin
+  select * into c from public.clientes where id = v_id;
+
+  return jsonb_build_object(
+    'razon_social', coalesce(c.razon_social, c.nombre_contacto),
+    'tipo',         c.tipo,
+
+    'solicitudes_activas', (
+      select count(*) from public.solicitudes
+      where cliente_id = v_id
+        and estatus in ('nueva', 'en_busqueda', 'propuesta_enviada', 'confirmada', 'en_curso')
+    ),
+
+    'turnos_programados', (
+      select count(*) from public.asignaciones a
+      join public.solicitudes s on s.id = a.solicitud_id
+      where s.cliente_id = v_id
+        and a.estatus in ('aceptada', 'en_curso')
+        and a.fecha >= current_date
+    ),
+
+    'turno_en_curso', (
+      select count(*) from public.asignaciones a
+      join public.solicitudes s on s.id = a.solicitud_id
+      where s.cliente_id = v_id and a.estatus = 'en_curso'
+    ),
+
+    -- Cuanta gente distinta ha pasado por sus turnos: mide continuidad, que
+    -- para un paciente importa tanto como la cobertura
+    'personal_distinto', (
+      select count(distinct a.enfermero_id) from public.asignaciones a
+      join public.solicitudes s on s.id = a.solicitud_id
+      where s.cliente_id = v_id and a.estatus in ('completada', 'en_curso', 'aceptada')
+    ),
+
+    -- Es tarifa_cliente: lo que le facturamos. El reparto con el profesional
+    -- no es asunto suyo.
+    'gasto_mes', (
+      select coalesce(sum(a.tarifa_cliente), 0) from public.asignaciones a
+      join public.solicitudes s on s.id = a.solicitud_id
+      where s.cliente_id = v_id and a.estatus = 'completada' and a.fecha >= inicio_mes
+    ),
+
+    'por_pagar', (
+      select coalesce(sum(p.monto), 0) from public.pagos p
+      join public.solicitudes s on s.id = p.referencia_id
+      where s.cliente_id = v_id and p.tipo = 'cobro_cliente'
+        and p.estatus in ('pendiente', 'parcial', 'vencido')
+    ),
+
+    'pagos_vencidos', (
+      select count(*) from public.pagos p
+      join public.solicitudes s on s.id = p.referencia_id
+      where s.cliente_id = v_id and p.tipo = 'cobro_cliente' and p.estatus = 'vencido'
+    ),
+
+    -- La evaluacion expira a los 15 dias (regla 10.7)
+    'por_evaluar', (
+      select count(*) from public.asignaciones a
+      join public.solicitudes s on s.id = a.solicitud_id
+      where s.cliente_id = v_id
+        and a.estatus = 'completada'
+        and a.fecha >= current_date - 15
+        and not exists (select 1 from public.evaluaciones e where e.asignacion_id = a.id)
+    ),
+
+    'solicitudes_sin_cubrir', (
+      select count(*) from public.solicitudes
+      where cliente_id = v_id
+        and estatus in ('nueva', 'en_busqueda')
+        and created_at < now() - interval '24 hours'
+    )
+  );
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Sus solicitudes, con cuanto se ha cubierto de cada una
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_cliente_solicitudes(
+  p_grupo  text default 'activas',
+  p_limite int  default 100
+)
+returns table (
+  id              uuid,
+  folio           text,
+  tipo_servicio   tipo_servicio,
+  nivel_requerido nivel_enfermeria,
+  nivel_atencion  text,
+  entorno         text,
+  municipio       text,
+  fecha_inicio    date,
+  fecha_fin       date,
+  turno           turno_tipo,
+  cantidad        int,
+  estatus         estatus_solicitud,
+  urgente         boolean,
+  cotizada        boolean,
+  turnos_totales  int,
+  turnos_cubiertos int,
+  creada_at       timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_ficha_cliente();
+begin
+  return query
+  select s.id, s.folio, s.tipo_servicio, s.nivel_requerido,
+         s.nivel_atencion::text, s.entorno::text, s.municipio,
+         s.fecha_inicio, s.fecha_fin, s.turno, s.cantidad_enfermeros,
+         s.estatus, s.urgente,
+         -- Al cliente se le dice SI ya se cotizo, no cuanto: el monto lo ve
+         -- en su factura, no en el seguimiento
+         s.tarifa_ofrecida_cliente is not null,
+         (select count(*)::int from public.asignaciones a
+          where a.solicitud_id = s.id and a.estatus <> 'rechazada'),
+         (select count(*)::int from public.asignaciones a
+          where a.solicitud_id = s.id
+            and a.estatus in ('aceptada', 'en_curso', 'completada')),
+         s.created_at
+  from public.solicitudes s
+  where s.cliente_id = v_id
+    and case p_grupo
+          when 'activas'   then s.estatus in ('nueva','en_busqueda','propuesta_enviada','confirmada','en_curso')
+          when 'historial' then s.estatus in ('completada','cancelada')
+          else true
+        end
+  order by s.urgente desc, s.created_at desc
+  limit greatest(p_limite, 1);
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Detalle de una solicitud: linea de tiempo y quien la esta cubriendo
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_cliente_solicitud_detalle(p_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id  uuid := public.mi_ficha_cliente();
+  s     public.solicitudes%rowtype;
+  pasos jsonb;
+  orden int;
+begin
+  select * into s from public.solicitudes where id = p_id and cliente_id = v_id;
+  if not found then
+    raise exception 'Esa solicitud no existe o no es tuya' using errcode = '42501';
+  end if;
+
+  -- Posicion del estatus actual dentro del recorrido normal. Una cancelada
+  -- queda en -1 y la interfaz la pinta aparte.
+  orden := case s.estatus
+             when 'nueva' then 0 when 'en_busqueda' then 1
+             when 'propuesta_enviada' then 2 when 'confirmada' then 3
+             when 'en_curso' then 4 when 'completada' then 5
+             else -1 end;
+
+  pasos := (
+    select jsonb_agg(jsonb_build_object(
+             'titulo', p.titulo, 'detalle', p.detalle,
+             'hecho',  orden >= p.pos, 'actual', orden = p.pos)
+           order by p.pos)
+    from (values
+      (0, 'Recibimos tu solicitud',  'Ya tiene folio y está en nuestra bandeja.'),
+      (1, 'Buscando personal',       'Cruzamos tu necesidad con el personal verificado disponible.'),
+      (2, 'Te enviamos una propuesta','Revisamos disponibilidad y te compartimos los perfiles.'),
+      (3, 'Servicio confirmado',     'El personal aceptó y los turnos quedaron agendados.'),
+      (4, 'Servicio en curso',       'El personal está cubriendo los turnos.'),
+      (5, 'Servicio completado',     'Terminó el periodo contratado.')
+    ) as p(pos, titulo, detalle)
+  );
+
+  return jsonb_build_object(
+    'id',    s.id,
+    'folio', s.folio,
+    'estatus', s.estatus,
+    'cancelada', s.estatus = 'cancelada',
+    'tipo_servicio', s.tipo_servicio,
+    'nivel_requerido', s.nivel_requerido,
+    'nivel_atencion', s.nivel_atencion,
+    'entorno', s.entorno,
+    'tipo_paciente', s.tipo_paciente,
+    'procedimientos', to_jsonb(coalesce(s.procedimientos, '{}')),
+    'descripcion', s.descripcion_paciente,
+    'municipio', s.municipio,
+    'direccion', s.direccion_servicio,
+    'fecha_inicio', s.fecha_inicio,
+    'fecha_fin', s.fecha_fin,
+    'turno', s.turno,
+    'horas_por_turno', s.horas_por_turno,
+    'cantidad', s.cantidad_enfermeros,
+    'urgente', s.urgente,
+    'creada_at', s.created_at,
+    'pasos', pasos,
+
+    -- Quien cubre el turno, SIN nada que permita contactarlo por fuera
+    'personal', coalesce((
+      select jsonb_agg(jsonb_build_object(
+               'asignacion_id', a.id,
+               'fecha', a.fecha,
+               'turno', a.turno,
+               'hora_inicio', a.hora_inicio,
+               'hora_fin', a.hora_fin,
+               'estatus', a.estatus,
+               'enfermero_id', e.id,
+               'nombre', e.nombre_completo,
+               'folio', e.folio,
+               'nivel', e.nivel,
+               'foto_url', e.foto_url,
+               'calificacion', e.calificacion_promedio,
+               'anios_experiencia', e.anios_experiencia,
+               'especialidades', to_jsonb(coalesce(e.especialidades, '{}')),
+               'ya_evaluado', exists (
+                 select 1 from public.evaluaciones ev where ev.asignacion_id = a.id)
+             ) order by a.fecha)
+      from public.asignaciones a
+      join public.enfermeros e on e.id = a.enfermero_id
+      where a.solicitud_id = s.id
+        -- Las propuestas todavia no son de su incumbencia: si el profesional
+        -- la rechaza, el cliente nunca deberia haber sabido su nombre
+        and a.estatus in ('aceptada', 'en_curso', 'completada', 'no_asistio')
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Personal que ha trabajado con este cliente
+-- Sirve para "solicitar de nuevo a esta persona" (CLAUDE.md 8.8)
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_cliente_personal()
+returns table (
+  enfermero_id      uuid,
+  folio             text,
+  nombre            text,
+  nivel             nivel_enfermeria,
+  foto_url          text,
+  calificacion      numeric,
+  anios_experiencia int,
+  especialidades    text[],
+  turnos_contigo    int,
+  ultimo_turno      date,
+  activo_ahora      boolean
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_ficha_cliente();
+begin
+  return query
+  select e.id, e.folio, e.nombre_completo, e.nivel, e.foto_url,
+         e.calificacion_promedio, e.anios_experiencia, e.especialidades,
+         count(*)::int,
+         max(a.fecha),
+         bool_or(a.estatus in ('aceptada', 'en_curso') and a.fecha >= current_date)
+  from public.asignaciones a
+  join public.solicitudes s on s.id = a.solicitud_id
+  join public.enfermeros  e on e.id = a.enfermero_id
+  where s.cliente_id = v_id
+    and a.estatus in ('completada', 'en_curso', 'aceptada')
+  group by e.id, e.folio, e.nombre_completo, e.nivel, e.foto_url,
+           e.calificacion_promedio, e.anios_experiencia, e.especialidades
+  order by bool_or(a.estatus in ('aceptada','en_curso') and a.fecha >= current_date) desc,
+           max(a.fecha) desc;
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Turnos que puede evaluar
+-- Solo completados y dentro de 15 dias (regla 10.7). Se devuelven tambien los
+-- que ya vencieron, marcados, para que no parezca que se perdieron.
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_cliente_evaluables()
+returns table (
+  asignacion_id uuid,
+  fecha         date,
+  turno         turno_tipo,
+  folio         text,
+  enfermero_id  uuid,
+  nombre        text,
+  nivel         nivel_enfermeria,
+  foto_url      text,
+  dias_restantes int,
+  vencida       boolean
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_ficha_cliente();
+begin
+  return query
+  select a.id, a.fecha, a.turno, s.folio,
+         e.id, e.nombre_completo, e.nivel, e.foto_url,
+         (15 - (current_date - a.fecha))::int,
+         (current_date - a.fecha) > 15
+  from public.asignaciones a
+  join public.solicitudes s on s.id = a.solicitud_id
+  join public.enfermeros  e on e.id = a.enfermero_id
+  where s.cliente_id = v_id
+    and a.estatus = 'completada'
+    and a.fecha >= current_date - 30
+    and not exists (select 1 from public.evaluaciones ev where ev.asignacion_id = a.id)
+  order by a.fecha desc;
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Guardar una evaluacion
+--
+-- La policy evaluaciones_cliente_crea ya exige turno completado, suyo y dentro
+-- de 15 dias. Aqui se repiten las comprobaciones para poder devolver un mensaje
+-- que se entienda, en vez del "permission denied" pelado de PostgREST.
+-- ----------------------------------------------------------------------------
+create or replace function public.guardar_evaluacion(
+  p_asignacion  uuid,
+  p_puntualidad int,
+  p_trato       int,
+  p_competencia int,
+  p_comentario  text default null,
+  p_publica     boolean default true
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id   uuid := public.mi_ficha_cliente();
+  a      public.asignaciones%rowtype;
+  v_gral numeric;
+begin
+  select a2.* into a
+  from public.asignaciones a2
+  join public.solicitudes s on s.id = a2.solicitud_id
+  where a2.id = p_asignacion and s.cliente_id = v_id;
+
+  if not found then
+    raise exception 'Ese turno no existe o no es de un servicio tuyo'
+      using errcode = '42501';
+  end if;
+
+  if a.estatus <> 'completada' then
+    raise exception 'Solo puedes evaluar un turno que ya terminó' using errcode = 'P0001';
+  end if;
+
+  if current_date - a.fecha > 15 then
+    raise exception 'El plazo para evaluar este turno venció (son 15 días)'
+      using errcode = 'P0001';
+  end if;
+
+  if exists (select 1 from public.evaluaciones e where e.asignacion_id = p_asignacion) then
+    raise exception 'Este turno ya lo evaluaste' using errcode = 'P0001';
+  end if;
+
+  if p_puntualidad not between 1 and 5
+     or p_trato not between 1 and 5
+     or p_competencia not between 1 and 5 then
+    raise exception 'Las calificaciones van de 1 a 5' using errcode = 'P0001';
+  end if;
+
+  -- La general es el promedio de los tres criterios: pedirla por separado
+  -- invita a contradecirse consigo mismo
+  v_gral := round((p_puntualidad + p_trato + p_competencia)::numeric / 3);
+
+  insert into public.evaluaciones (asignacion_id, cliente_id, enfermero_id,
+                                   puntualidad, trato, competencia_tecnica,
+                                   calificacion_general, comentario, publica)
+  values (p_asignacion, v_id, a.enfermero_id,
+          p_puntualidad, p_trato, p_competencia,
+          v_gral::int, nullif(trim(coalesce(p_comentario, '')), ''), p_publica);
+
+  return jsonb_build_object('ok', true, 'calificacion', v_gral,
+    'mensaje', 'Gracias. Tu evaluación nos ayuda a mejorar el servicio.');
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Facturacion: lo cobrado y lo pendiente
+-- ----------------------------------------------------------------------------
+create or replace function public.panel_cliente_facturacion()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := public.mi_ficha_cliente();
+begin
+  return jsonb_build_object(
+
+    'total_pagado', (
+      select coalesce(sum(p.monto), 0) from public.pagos p
+      join public.solicitudes s on s.id = p.referencia_id
+      where s.cliente_id = v_id and p.tipo = 'cobro_cliente' and p.estatus = 'pagado'
+    ),
+
+    'total_pendiente', (
+      select coalesce(sum(p.monto), 0) from public.pagos p
+      join public.solicitudes s on s.id = p.referencia_id
+      where s.cliente_id = v_id and p.tipo = 'cobro_cliente'
+        and p.estatus in ('pendiente', 'parcial', 'vencido')
+    ),
+
+    'cobros', coalesce((
+      select jsonb_agg(jsonb_build_object(
+               'id', p.id,
+               'folio', s.folio,
+               'periodo_inicio', p.periodo_inicio,
+               'periodo_fin', p.periodo_fin,
+               'monto', p.monto,
+               'metodo', p.metodo,
+               'estatus', p.estatus,
+               'fecha_pago', p.fecha_pago,
+               'comprobante_url', p.comprobante_url,
+               'notas', p.notas,
+               'turnos', (
+                 select count(*) from public.asignaciones a
+                 where a.solicitud_id = s.id and a.estatus = 'completada'
+                   and a.fecha between p.periodo_inicio and p.periodo_fin)
+             ) order by p.periodo_inicio desc)
+      from public.pagos p
+      join public.solicitudes s on s.id = p.referencia_id
+      where s.cliente_id = v_id and p.tipo = 'cobro_cliente'
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
+do $$
+declare f text;
+begin
+  foreach f in array array[
+    'mi_ficha_cliente()', 'panel_cliente_resumen()',
+    'panel_cliente_solicitudes(text, int)',
+    'panel_cliente_solicitud_detalle(uuid)',
+    'panel_cliente_personal()', 'panel_cliente_evaluables()',
+    'guardar_evaluacion(uuid, int, int, int, text, boolean)',
+    'panel_cliente_facturacion()'
+  ] loop
+    execute format('revoke all on function public.%s from public', f);
+    execute format('grant execute on function public.%s to authenticated', f);
+  end loop;
+end $$;
+
+-- ############################################################################
 -- ###  05-seed.sql
 -- ############################################################################
 
@@ -3600,73 +5070,73 @@ insert into public.enfermeros (
 ) values
 
 ('María Fernanda Ruiz Delgado', 'especialista', '10482375', true, 'Universidad de Guadalajara',
- 12, '{uci,urgencias}', '{bls,acls,via_aerea,ventilacion}', '{Español,Inglés}',
+ 12, '{uci,urgencias}', '{bls,acls,via_aerea,ventilacion}', '{espanol,ingles}',
  'Especialista en cuidados intensivos con doce años en unidades de tercer nivel. Manejo de ventilación mecánica, monitoreo hemodinámico y atención de paciente crítico. Acostumbrada a trabajar bajo presión y a coordinarme con el equipo médico tratante.',
  '{guadalajara,zapopan,tlaquepaque}', true, true, true, false,
  175, 1400, 1950, 3100, 'verificado', true, 'SEED'),
 
 ('Jorge Alberto Medina Vargas', 'licenciado', '11738294', true, 'Universidad Autónoma de Guadalajara',
- 9, '{urgencias,cardiologia,medicina_interna}', '{bls,acls,medicamentos_iv}', '{Español}',
+ 9, '{urgencias,cardiologia,medicina_interna}', '{bls,acls,medicamentos_iv}', '{espanol}',
  'Licenciado en enfermería con nueve años en servicio de urgencias. Experiencia en triage, estabilización de paciente cardiológico y manejo de accesos vasculares. Disponible para turnos nocturnos y cobertura de fines de semana.',
  '{guadalajara,tlaquepaque,tonala}', true, true, true, true,
  130, 1050, 1470, 2350, 'verificado', true, 'SEED'),
 
 ('Claudia Ivette Sandoval Ríos', 'especialista', '09847162', true, 'Universidad de Guadalajara',
- 11, '{neonatologia,pediatria,materno_infantil}', '{bls,pals,nrp}', '{Español,Inglés}',
+ 11, '{neonatologia,pediatria,materno_infantil}', '{bls,pals,nrp}', '{espanol,ingles}',
  'Especialista en neonatología con once años en cuneros y terapia intensiva neonatal. Certificada en reanimación neonatal. Acompaño a las familias en el cuidado del recién nacido con paciencia y comunicación clara.',
  '{zapopan,guadalajara}', false, true, true, false,
  180, 1450, 2030, 3200, 'verificado', true, 'SEED'),
 
 ('Ricardo Emmanuel Ponce Aguilar', 'general', '12904583', true, 'Universidad del Valle de México',
- 6, '{medicina_interna,heridas,postoperatorio}', '{bls,heridas_avanzadas,cateteres}', '{Español}',
+ 6, '{medicina_interna,heridas,postoperatorio}', '{bls,heridas_avanzadas,cateteres}', '{espanol}',
  'Enfermero general con seis años de experiencia hospitalaria. Especializado en curación de heridas complejas, manejo de estomas y cuidado postoperatorio. Trabajo con protocolo y llevo registro puntual de la evolución del paciente.',
  '{guadalajara,tlaquepaque,el_salto}', true, true, false, false,
  110, 880, 1230, 1980, 'verificado', true, 'SEED'),
 
 ('Ana Lucía Gutiérrez Mora', 'licenciado', '10395827', true, 'Universidad de Guadalajara',
- 8, '{geriatria,paliativos,rehabilitacion}', '{bls,medicamentos_iv,muestras}', '{Español}',
+ 8, '{geriatria,paliativos,rehabilitacion}', '{bls,medicamentos_iv,muestras}', '{espanol}',
  'Licenciada en enfermería enfocada en el adulto mayor. Ocho años acompañando pacientes en casa: control de medicamentos, movilización, prevención de caídas y cuidados paliativos. Creo en el trato digno y en mantener informada a la familia.',
  '{zapopan,guadalajara,tlajomulco}', true, true, false, false,
  125, 1000, 1400, 2250, 'verificado', true, 'SEED'),
 
 ('Diana Patricia Ochoa Reynoso', 'especialista', '08726194', true, 'Instituto Politécnico Nacional',
- 14, '{quirofano,postoperatorio}', '{bls,acls,via_aerea}', '{Español,Inglés}',
+ 14, '{quirofano,postoperatorio}', '{bls,acls,via_aerea}', '{espanol,ingles}',
  'Enfermera instrumentista con catorce años en quirófano. Experiencia en cirugía general, traumatología y laparoscopía. Conozco los protocolos de asepsia y el manejo de instrumental especializado.',
  '{guadalajara,zapopan}', false, false, true, true,
  185, 1480, 2070, 3300, 'verificado', true, 'SEED'),
 
 ('Luis Ángel Barajas Cortés', 'tecnico', null, false, 'CONALEP Jalisco',
- 4, '{general,postoperatorio}', '{bls,muestras}', '{Español}',
+ 4, '{general,postoperatorio}', '{bls,muestras}', '{espanol}',
  'Técnico en enfermería con cuatro años de experiencia en hospitalización y recuperación postquirúrgica. Apoyo en signos vitales, higiene, movilización y toma de muestras. Puntual y con buena disposición para aprender.',
  '{tlaquepaque,tonala,guadalajara}', true, true, true, false,
  90, 720, 1010, 1620, 'verificado', true, 'SEED'),
 
 ('Verónica Alejandra Núñez Salas', 'licenciado', '11284736', true, 'Universidad de Guadalajara',
- 10, '{oncologia,paliativos,medicina_interna}', '{bls,cateteres,medicamentos_iv}', '{Español}',
+ 10, '{oncologia,paliativos,medicina_interna}', '{bls,cateteres,medicamentos_iv}', '{espanol}',
  'Licenciada en enfermería con diez años en el área oncológica. Manejo de catéteres centrales, administración de quimioterapia bajo indicación médica y control de efectos adversos. Trato cercano con el paciente y su familia.',
  '{guadalajara,zapopan,tlaquepaque}', false, true, false, false,
  135, 1080, 1510, 2420, 'verificado', true, 'SEED'),
 
 ('José Antonio Ramírez Padilla', 'especialista', '09163847', true, 'Universidad de Guadalajara',
- 13, '{nefrologia,medicina_interna}', '{bls,acls,cateteres}', '{Español}',
+ 13, '{nefrologia,medicina_interna}', '{bls,acls,cateteres}', '{espanol}',
  'Especialista en nefrología con trece años en unidades de hemodiálisis. Manejo de accesos vasculares, control de balance hídrico y seguimiento del paciente renal crónico. Experiencia en hemodiálisis domiciliaria.',
  '{guadalajara,tonala,el_salto,zapotlanejo}', true, true, true, true,
  170, 1360, 1900, 3050, 'verificado', true, 'SEED'),
 
 ('Gabriela Montserrat Estrada Lomelí', 'general', '12573948', true, 'Universidad Autónoma de Guadalajara',
- 7, '{materno_infantil,pediatria,general}', '{bls,pals,muestras}', '{Español}',
+ 7, '{materno_infantil,pediatria,general}', '{bls,pals,muestras}', '{espanol}',
  'Enfermera general con siete años en atención materno-infantil. Apoyo en control prenatal, lactancia y cuidado del recién nacido en domicilio. Comunicación clara y paciente con las mamás primerizas.',
  '{zapopan,tlajomulco,guadalajara}', true, true, false, false,
  115, 920, 1290, 2060, 'verificado', true, 'SEED'),
 
 ('Fernando Iván Cárdenas Sepúlveda', 'auxiliar', null, false, 'Cruz Roja Mexicana',
- 3, '{general,geriatria}', '{bls}', '{Español}',
+ 3, '{general,geriatria}', '{bls}', '{espanol}',
  'Auxiliar de enfermería con tres años de experiencia en asilos y cuidado domiciliario. Apoyo en higiene, alimentación asistida, movilización y acompañamiento. Responsable y con muy buena disposición.',
  '{tlaquepaque,tonala,el_salto,juanacatlan}', true, true, true, false,
  75, 600, 840, 1350, 'verificado', true, 'SEED'),
 
 ('Rosa Elena Villalobos Chávez', 'cuidador', null, false, 'Instituto de Formación en Cuidados',
- 9, '{geriatria,paliativos}', '{bls}', '{Español}',
+ 9, '{geriatria,paliativos}', '{bls}', '{espanol}',
  'Cuidadora de adulto mayor con nueve años de experiencia en domicilio. Especializada en pacientes con demencia y movilidad reducida. Manejo rutinas de estimulación, aseo y compañía. Referencias comprobables.',
  '{guadalajara,zapopan,tlajomulco,ixtlahuacan}', true, true, true, false,
  80, 640, 900, 1440, 'verificado', true, 'SEED');
@@ -3817,6 +5287,17 @@ from (values
 ) as v(tipo, nivel, entorno, paciente, atencion, procs, cantidad, dias_inicio,
        turno, horas, municipio, estatus, urgente, contacto, horas_atras);
 
+-- Domicilio del servicio en las dos que llegan a tener personal asignado.
+-- Sin esto no se puede ver la regla 10.8 en accion: el profesional conoce el
+-- domicilio solo despues de aceptar el turno, nunca mientras lo esta pensando.
+update public.solicitudes set direccion_servicio = v.direccion
+from (values
+  ('propuesta_enviada', 'Av. Patria 1890, Col. Jardines Universidad'),
+  ('confirmada',        'Camino Real a Colima 340, Col. Santa Fe')
+) as v(estatus, direccion)
+where public.solicitudes.origen = 'seed'
+  and public.solicitudes.estatus::text = v.estatus;
+
 -- ----------------------------------------------------------------------------
 -- Turnos de este mes: completados, en curso y propuestos
 -- Se reparten en fechas distintas por enfermero para no chocar con el
@@ -3826,10 +5307,17 @@ insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_
                                  hora_fin, tarifa_cliente, tarifa_enfermero, estatus)
 select
   -- Se reparten entre las solicitudes ya cerradas para que el tablero no
-  -- muestre decenas de turnos colgando de una sola solicitud abierta
+  -- muestre decenas de turnos colgando de una sola solicitud abierta.
+  -- El reparto es por semana y no por md5: con md5 el sorteo podia dejar a un
+  -- cliente entero sin turnos recientes, y entonces su panel se veia muerto
+  -- (gasto del mes en cero, nada por evaluar) aunque el sistema estuviera bien.
+  -- La semana 0 le toca a la primera solicitud por folio, que es la del
+  -- hospital ligado a la cuenta de prueba: asi siempre hay algo dentro de los
+  -- 15 dias en que se puede evaluar.
   (select sc.id from public.solicitudes sc
    where sc.estatus = 'completada'
-   order by md5(sc.id::text || v.semana::text) limit 1),
+   order by sc.folio
+   offset (v.semana % 3) limit 1),
   e.id,
   -- un turno por semana durante las ultimas tres, escalonado por perfil
   (date_trunc('week', current_date) - (v.semana || ' weeks')::interval)::date
@@ -3875,6 +5363,72 @@ select
   'propuesta', now() - interval '20 hours'
 from public.enfermeros e
 where e.nombre_completo in ('Claudia Ivette Sandoval Ríos', 'Verónica Alejandra Núñez Salas');
+
+-- El perfil ligado a la cuenta de prueba `enfermero@enlace.test` (EE-00001)
+-- necesita trabajo por delante, no solo historial: sin una propuesta que
+-- responder y un turno aceptado, el panel del enfermero se ve vacio y no hay
+-- forma de validarlo. Las fechas se separan de sus turnos completados para no
+-- chocar con validar_traslape().
+insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_inicio,
+                                 hora_fin, tarifa_cliente, tarifa_enfermero, estatus, created_at)
+select
+  (select id from public.solicitudes where origen = 'seed' and estatus = 'propuesta_enviada' limit 1),
+  e.id, current_date + 3, 'nocturno', '23:00', '07:00',
+  public.cobro_cliente(e.tarifa_turno_8), e.tarifa_turno_8,
+  'propuesta', now() - interval '6 hours'
+from public.enfermeros e
+where e.nombre_completo = 'María Fernanda Ruiz Delgado';
+
+insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_inicio,
+                                 hora_fin, tarifa_cliente, tarifa_enfermero, estatus)
+select
+  (select id from public.solicitudes where origen = 'seed' and estatus = 'confirmada' limit 1),
+  e.id, current_date + 6, 'guardia_12', '07:00', '19:00',
+  public.cobro_cliente(e.tarifa_turno_12), e.tarifa_turno_12,
+  'aceptada'
+from public.enfermeros e
+where e.nombre_completo = 'María Fernanda Ruiz Delgado';
+
+-- ----------------------------------------------------------------------------
+-- Cobros al cliente
+-- Uno pagado, uno pendiente y uno vencido: sin esto la pantalla de facturacion
+-- del cliente sale vacia y no hay forma de validarla. El monto sale de los
+-- turnos realmente facturados de cada solicitud, no de un numero inventado.
+-- ----------------------------------------------------------------------------
+-- Un cobro por solicitud y quincena, que es como factura la agencia. Agrupar
+-- solo por solicitud daria un cobro de decenas de miles: el seed cuelga muchos
+-- turnos de una misma solicitud cerrada.
+-- La numeracion va en una CTE aparte porque Postgres no admite funciones de
+-- ventana dentro de una condicion de JOIN.
+with cortes as (
+  select s.id                   as solicitud_id,
+         (date_trunc('month', a.fecha)
+          + case when extract(day from a.fecha) <= 15
+                 then interval '0 day' else interval '15 days' end)::date as desde,
+         case when extract(day from a.fecha) <= 15
+              then (date_trunc('month', a.fecha) + interval '14 days')::date
+              else (date_trunc('month', a.fecha) + interval '1 month'
+                    - interval '1 day')::date end                          as hasta,
+         sum(a.tarifa_cliente)  as total,
+         max(a.fecha)           as ultima
+  from public.solicitudes s
+  join public.asignaciones a on a.solicitud_id = s.id and a.estatus = 'completada'
+  where s.origen = 'seed'
+  group by s.id, date_trunc('month', a.fecha), (extract(day from a.fecha) <= 15)
+)
+insert into public.pagos (tipo, referencia_id, periodo_inicio, periodo_fin,
+                          monto, metodo, estatus, fecha_pago, notas)
+select 'cobro_cliente', c.solicitud_id, c.desde, c.hasta, c.total,
+       -- Lo viejo ya se pago; lo del corte en curso sigue abierto
+       case when c.ultima < current_date - 20 then 'transferencia' end,
+       case when c.ultima < current_date - 20 then 'pagado'
+            when c.ultima < current_date - 10 then 'vencido'
+            else 'pendiente' end::estatus_pago,
+       case when c.ultima < current_date - 20 then c.ultima + 5 end,
+       case when c.ultima < current_date - 20 then 'Factura CFDI enviada al correo registrado.'
+            when c.ultima < current_date - 10 then 'Venció el plazo acordado.'
+            else 'Factura enviada, en espera de pago.' end
+from cortes c;
 
 -- ----------------------------------------------------------------------------
 -- Documentos: al corriente, por vencer, vencidos y en espera de revision

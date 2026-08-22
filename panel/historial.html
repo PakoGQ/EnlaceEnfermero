@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi panel — Enlace Enfermero</title>
+  <title>Historial — Enlace Enfermero</title>
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#0D6EFD">
   <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
@@ -28,42 +28,16 @@
 
     <div class="panel-encabezado">
       <div>
-        <h1 id="saludo">Inicio</h1>
-        <p id="fechaHoy"></p>
-        <div class="estado-perfil" id="estadoPerfil"></div>
+        <h1>Mi historial</h1>
+        <p>Los turnos que ya cerraste.</p>
       </div>
     </div>
 
-    <!-- Indicadores del profesional -->
-    <section class="kpis" id="kpis" aria-label="Tus indicadores">
+    <section class="kpis" id="kpisHistorial" aria-label="Resumen">
       <div class="tarjeta kpis-ancho-total"><div class="spinner"></div></div>
     </section>
 
-    <!-- Lo que requiere su atención -->
-    <section class="bloque-panel" aria-labelledby="tituloAlertas">
-      <h2 id="tituloAlertas" class="titulo-bloque">Requiere tu atención</h2>
-      <div class="lista-alertas" id="alertas"></div>
-    </section>
-
-    <div class="panel-columnas">
-
-      <!-- Próximos turnos -->
-      <section class="tarjeta" aria-labelledby="tituloTurnos">
-        <div class="tarjeta-cabecera">
-          <div>
-            <h3 id="tituloTurnos">Tus próximos turnos</h3>
-            <p class="texto-sm txt-secundario">Propuestos, aceptados y en curso.</p>
-          </div>
-        </div>
-        <div id="proximosTurnos"><div class="spinner"></div></div>
-      </section>
-
-      <!-- Avance del perfil -->
-      <section class="tarjeta" id="avancePerfil" aria-label="Avance de tu perfil">
-        <div class="spinner"></div>
-      </section>
-
-    </div>
+    <section id="listaHistorial" aria-label="Turnos cerrados"><div class="spinner"></div></section>
 
   </main>
 
@@ -76,18 +50,11 @@
   <script src="../js/panel.js"></script>
   <script src="../js/admin-comun.js"></script>
   <script src="../js/enfermero-comun.js"></script>
-  <script src="../js/panel-enfermero.js"></script>
+  <script src="../js/enfermero-historial.js"></script>
   <script>
-    iniciarPanel(['enfermero'], 'index.html').then(perfil => {
+    iniciarPanel(['enfermero'], 'historial.html').then(perfil => {
       if (!perfil) return;
-
-      document.getElementById('saludo').textContent = `¡Hola, ${perfil.nombre}!`;
-      document.getElementById('fechaHoy').textContent =
-        new Intl.DateTimeFormat('es-MX', {
-          weekday: 'long', day: 'numeric', month: 'long'
-        }).format(new Date()).replace(/^\w/, c => c.toUpperCase());
-
-      iniciarPanelEnfermero();
+      iniciarHistorial();
     });
   </script>
 

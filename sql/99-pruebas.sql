@@ -295,5 +295,378 @@ begin
   perform set_config('request.jwt.claim.sub', '', true);
 end $$;
 
+-- ----------------------------------------------------------------------------
+-- PANEL DEL ENFERMERO
+--
+-- Aqui el filtro va al reves que en el panel de la agencia: no se comprueba
+-- que quien llama SEA staff, sino que tenga ficha propia en `enfermeros`.
+-- Todo cuelga de mi_enfermero_id(), que mira auth.uid(): es el unico dato que
+-- no cambia al entrar en un security definer.
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  id_prueba uuid := '99999999-9999-9999-9999-999999999999';
+  id_admin  uuid;
+  resumen   jsonb;
+  dir_prop  text;
+  dir_acep  text;
+begin
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', id_prueba)::text, true);
+
+  -- Ve lo suyo, y lo suyo es lo que le toca
+  resumen := public.panel_enfermero_resumen();
+  if resumen->>'folio' = (select folio from public.enfermeros where usuario_id = id_prueba)
+  then raise notice 'El enfermero ve su propio resumen: OK';
+  else raise warning 'El enfermero no ve su propio resumen: FALLA';
+  end if;
+
+  -- El resumen habla de lo que el gana, nunca de lo que la agencia factura
+  if not (resumen ? 'tarifa_cliente' or resumen ? 'comision') then
+    raise notice 'El resumen no expone el ingreso de la agencia: OK';
+  else
+    raise warning 'El resumen expone datos de la agencia: FALLA';
+  end if;
+
+  -- Quien no tiene ficha no entra, aunque traiga sesion valida
+  begin
+    perform set_config('request.jwt.claims',
+                       json_build_object('sub', gen_random_uuid())::text, true);
+    perform public.panel_enfermero_resumen();
+    raise warning 'Un usuario sin ficha entra al panel del enfermero: FALLA';
+  exception when insufficient_privilege then
+    raise notice 'Un usuario sin ficha NO entra: OK (bloqueado)';
+  end;
+
+  -- Y el admin tampoco: para ver a un profesional tiene sus propias funciones
+  select id into id_admin from public.usuarios where rol = 'admin' limit 1;
+  if id_admin is not null then
+    begin
+      perform set_config('request.jwt.claims',
+                         json_build_object('sub', id_admin)::text, true);
+      perform public.panel_enfermero_alertas();
+      raise warning 'El admin entra al panel del enfermero: FALLA';
+    exception when insufficient_privilege then
+      raise notice 'El admin NO entra por la puerta del enfermero: OK (bloqueado)';
+    end;
+  end if;
+
+  -- Regla 10.8: el domicilio se conoce al aceptar, no al recibir la propuesta
+  update public.solicitudes set direccion_servicio = 'Calle De Prueba 100'
+  where cliente_id = (select id from public.clientes where nombre_contacto = 'Cliente De Prueba');
+
+  insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno,
+                                   hora_inicio, hora_fin, tarifa_cliente,
+                                   tarifa_enfermero, estatus)
+  select s.id, e.id, current_date + 31, 'nocturno', '23:00', '07:00',
+         1200, public.pago_enfermero(1200), 'propuesta'
+  from public.solicitudes s, public.enfermeros e
+  where e.usuario_id = id_prueba
+    and s.cliente_id = (select id from public.clientes where nombre_contacto = 'Cliente De Prueba');
+
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', id_prueba)::text, true);
+
+  select p.direccion into dir_prop
+  from public.panel_enfermero_proximos(10) p where p.estatus = 'propuesta';
+
+  update public.asignaciones set estatus = 'aceptada'
+  where enfermero_id = (select id from public.enfermeros where usuario_id = id_prueba)
+    and estatus = 'propuesta';
+
+  select p.direccion into dir_acep
+  from public.panel_enfermero_proximos(10) p where p.estatus = 'aceptada';
+
+  if dir_prop is null and dir_acep is not null then
+    raise notice 'El domicilio aparece solo al aceptar el turno: OK';
+  else
+    raise warning 'El domicilio se filtra antes de aceptar: FALLA (propuesta=%, aceptada=%)',
+                  coalesce(dir_prop,'nulo'), coalesce(dir_acep,'nulo');
+  end if;
+
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- ----------------------------------------------------------------------------
+-- RECURSION ENTRE `solicitudes` Y `asignaciones`
+--
+-- Las dos policies se miraban entre si y Postgres cortaba con «infinite
+-- recursion detected in policy»: ni el enfermero ni el cliente podian leer
+-- ninguna de las dos tablas, y el staff no lo notaba porque su policy evalua
+-- es_staff() y corta antes. Se rompio sacando el cruce a un security definer.
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  id_prueba uuid := '99999999-9999-9999-9999-999999999999';
+  n int;
+begin
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', id_prueba)::text, true);
+  begin
+    select count(*) into n from public.asignaciones;
+    raise notice 'Un enfermero puede leer sus asignaciones: OK';
+  exception when others then
+    raise warning 'Las asignaciones siguen recursando: FALLA -> %', sqlerrm;
+  end;
+
+  begin
+    select count(*) into n from public.solicitudes;
+    raise notice 'Un enfermero puede leer sus solicitudes: OK';
+  exception when others then
+    raise warning 'Las solicitudes siguen recursando: FALLA -> %', sqlerrm;
+  end;
+
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- ----------------------------------------------------------------------------
+-- CICLO DE VIDA DE UN TURNO DESDE EL PANEL DEL ENFERMERO
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  id_prueba uuid := '99999999-9999-9999-9999-999999999999';
+  v_ficha   uuid;
+  v_asig    uuid;
+  r         jsonb;
+begin
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', id_prueba)::text, true);
+
+  select id into v_ficha from public.enfermeros where usuario_id = id_prueba;
+
+  insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno,
+                                   hora_inicio, hora_fin, tarifa_cliente,
+                                   tarifa_enfermero, estatus)
+  select s.id, v_ficha, current_date, 'matutino', '07:00', '15:00',
+         1000, public.pago_enfermero(1000), 'propuesta'
+  from public.solicitudes s
+  where s.cliente_id = (select id from public.clientes where nombre_contacto = 'Cliente De Prueba')
+  limit 1
+  returning id into v_asig;
+
+  -- Rechazar sin decir por que deja a la agencia sin informacion para reasignar
+  begin
+    perform public.responder_propuesta(v_asig, false, null);
+    raise warning 'Se rechazo un turno sin motivo: FALLA';
+  exception when others then
+    raise notice 'Rechazar sin motivo: OK (bloqueado)';
+  end;
+
+  r := public.responder_propuesta(v_asig, true);
+  if r->>'estatus' = 'aceptada'
+  then raise notice 'Aceptar una propuesta: OK';
+  else raise warning 'No se pudo aceptar la propuesta: FALLA'; end if;
+
+  -- Una propuesta ya respondida no se responde otra vez
+  begin
+    perform public.responder_propuesta(v_asig, true);
+    raise warning 'Se respondio dos veces la misma propuesta: FALLA';
+  exception when others then
+    raise notice 'Responder dos veces: OK (bloqueado)';
+  end;
+
+  r := public.registrar_mi_asistencia(v_asig, 'entrada');
+  if r->>'estatus' = 'en_curso'
+  then raise notice 'Marcar entrada: OK';
+  else raise warning 'No se registro la entrada: FALLA'; end if;
+
+  r := public.registrar_mi_asistencia(v_asig, 'salida');
+  if r->>'estatus' = 'completada'
+  then raise notice 'Marcar salida cierra el turno: OK';
+  else raise warning 'No se registro la salida: FALLA'; end if;
+
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- ----------------------------------------------------------------------------
+-- EL EXPEDIENTE ES SUYO Y DE NADIE MAS
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  id_prueba uuid := '99999999-9999-9999-9999-999999999999';
+  ajeno     uuid;
+begin
+  select id into ajeno from public.enfermeros
+  where usuario_id is distinct from id_prueba limit 1;
+
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', id_prueba)::text, true);
+
+  begin
+    perform public.subir_mi_documento('ine', 'documentos/' || ajeno || '/ajeno.pdf');
+    raise warning 'Registro a su nombre un archivo de otra carpeta: FALLA';
+  exception when insufficient_privilege then
+    raise notice 'Registrar un archivo de otro: OK (bloqueado)';
+  end;
+
+  begin
+    perform public.subir_mi_documento(
+      'ine', 'documentos/' || public.mi_enfermero_id() || '/viejo.pdf',
+      null, current_date - 1);
+    raise warning 'Acepto un documento ya vencido: FALLA';
+  exception when insufficient_privilege then
+    raise warning 'Error equivocado al subir vencido: FALLA';
+  when others then
+    raise notice 'Subir un documento vencido: OK (bloqueado)';
+  end;
+
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- La funcion del admin y la del enfermero son distintas: si compartieran
+-- nombre, la de 11-paneles.sql sobreescribiria la de 09-operacion.sql y el
+-- panel de la agencia se quedaria sin registro de asistencia.
+select 'Asistencia: el admin y el enfermero tienen funciones distintas' as prueba,
+       case when (select count(*) from pg_proc where proname = 'registrar_asistencia') = 1
+             and (select count(*) from pg_proc where proname = 'registrar_mi_asistencia') = 1
+            then 'OK' else 'FALLA' end as resultado;
+
+-- ----------------------------------------------------------------------------
+-- PANEL DEL CLIENTE
+--
+-- Lo que se juega aqui es el modelo de negocio: el cliente tiene que ver QUIEN
+-- cubre su turno, pero nunca COMO contactarlo. Si puede llamarle directo al
+-- profesional, la agencia se queda sin comision (CLAUDE.md 6 y regla 10.8).
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  id_cli   uuid := '88888888-8888-8888-8888-888888888888';
+  v_ficha  uuid;
+  v_sol    uuid;
+  v_asig   uuid;
+  d        jsonb;
+  r        jsonb;
+  n        int;
+begin
+  -- Un cliente propio para la prueba, con su solicitud y su turno cerrado
+  insert into auth.users (id, email, raw_user_meta_data)
+  values (id_cli, 'cliente.prueba@enlaceenfermero.mx',
+          '{"nombre":"Cliente","rol":"cliente"}'::jsonb);
+
+  -- El trigger tg_ficha_cliente ya le creo una ficha vacia al insertar el
+  -- usuario; se descarta para poder ligarlo al cliente que si tiene solicitud
+  -- (usuario_id es unico en `clientes`).
+  delete from public.clientes where usuario_id = id_cli;
+
+  update public.clientes set usuario_id = id_cli
+  where nombre_contacto = 'Cliente De Prueba'
+  returning id into v_ficha;
+
+  select s.id into v_sol from public.solicitudes s where s.cliente_id = v_ficha limit 1;
+
+  insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno,
+                                   hora_inicio, hora_fin, tarifa_cliente,
+                                   tarifa_enfermero, estatus)
+  select v_sol, e.id, current_date - 2, 'matutino', '07:00', '15:00',
+         1000, public.pago_enfermero(1000), 'completada'
+  from public.enfermeros e where e.nombre_completo = 'Enfermero De Prueba'
+  returning id into v_asig;
+
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', id_cli)::text, true);
+
+  -- 1. Ve lo suyo
+  r := public.panel_cliente_resumen();
+  if r ? 'solicitudes_activas'
+  then raise notice 'El cliente ve su resumen: OK';
+  else raise warning 'El cliente no ve su resumen: FALLA'; end if;
+
+  -- 2. LO CRITICO: el detalle no puede traer como contactar al profesional
+  d := public.panel_cliente_solicitud_detalle(v_sol);
+  if (d->'personal')::text ~* 'telefono|whatsapp|correo|email|cedula|tarifa|notas_internas'
+  then raise warning 'El detalle expone contacto, cedula o tarifas: FALLA';
+  else raise notice 'El detalle no expone contacto ni tarifas: OK';
+  end if;
+
+  -- 4. Evaluar solo lo completado, una vez, y con calificaciones validas
+  r := public.guardar_evaluacion(v_asig, 5, 4, 5, 'Prueba automatica', false);
+  if (r->>'calificacion')::int = 5
+  then raise notice 'Guardar una evaluacion: OK';
+  else raise warning 'La evaluacion no se guardo bien: FALLA'; end if;
+
+  begin
+    perform public.guardar_evaluacion(v_asig, 5, 5, 5);
+    raise warning 'Se evaluo dos veces el mismo turno: FALLA';
+  exception when others then
+    raise notice 'Evaluar dos veces: OK (bloqueado)';
+  end;
+
+  begin
+    perform public.guardar_evaluacion(v_asig, 0, 5, 5);
+    raise warning 'Acepto una calificacion fuera de 1 a 5: FALLA';
+  exception when others then
+    raise notice 'Calificacion fuera de rango: OK (bloqueada)';
+  end;
+
+  -- 5. Una solicitud enviada con sesion se cuelga de su ficha sola
+  declare f text;
+  begin
+    f := public.crear_solicitud(jsonb_build_object(
+           'tipo_servicio', 'turno_hospitalario',
+           'fecha_inicio', (current_date + 3)::text,
+           'municipio', 'guadalajara',
+           'contacto_nombre', 'Cliente De Prueba'));
+    select count(*) into n from public.panel_cliente_solicitudes('todas') where folio = f;
+    if n = 1
+    then raise notice 'La solicitud del panel queda ligada al cliente: OK';
+    else raise warning 'La solicitud nacio huerfana: FALLA'; end if;
+  end;
+
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- La tabla `enfermeros` tiene que seguir cerrada para el cliente: sus datos le
+-- llegan por las funciones del panel, que filtran columnas. Esta comprobacion
+-- va fuera del bloque DO de arriba a proposito: ahi dentro se corre como
+-- propietario y el RLS ni siquiera se evalua, asi que siempre pasaria.
+do $$
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', '88888888-8888-8888-8888-888888888888')::text, true);
+  execute 'set local role authenticated';
+
+  begin
+    perform 1 from public.enfermeros limit 1;
+    if found then
+      raise warning 'El cliente lee la tabla enfermeros directo: FALLA';
+    else
+      raise notice 'El cliente NO lee la tabla enfermeros: OK';
+    end if;
+  exception when others then
+    raise notice 'El cliente NO lee la tabla enfermeros: OK (bloqueado)';
+  end;
+
+  execute 'reset role';
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- Un enfermero no entra por la puerta del cliente ni al reves
+do $$
+declare id_enf uuid := '99999999-9999-9999-9999-999999999999';
+begin
+  perform set_config('request.jwt.claims',
+                     json_build_object('sub', id_enf)::text, true);
+  begin
+    perform public.panel_cliente_resumen();
+    raise warning 'Un enfermero entro al panel del cliente: FALLA';
+  exception when insufficient_privilege then
+    raise notice 'Un enfermero NO entra al panel del cliente: OK (bloqueado)';
+  end;
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- El ayudante que calcula el avance del perfil recibe un id cualquiera, asi
+-- que no puede quedar al alcance del navegador: seria preguntar por el perfil
+-- de otro. Solo lo llaman las funciones del panel, que corren como propietario.
+select 'Ayudante de perfil fuera del alcance del navegador' as prueba,
+       case when not has_function_privilege('authenticated',
+                       'public.perfil_completo_pct(uuid)', 'execute')
+            then 'OK' else 'FALLA' end as resultado
+union all
+select 'Panel del enfermero cerrado a visitantes',
+       case when not has_function_privilege('anon',
+                       'public.panel_enfermero_resumen()', 'execute')
+            then 'OK' else 'FALLA' end;
+
 -- Todo lo insertado se descarta
 rollback;

@@ -973,3 +973,498 @@ a.alerta-panel:hover { text-decoration: none; transform: translateX(3px); box-sh
 @media (min-width: 1280px) {
   .kpis-reporte { grid-template-columns: repeat(6, 1fr); }
 }
+
+/* ==========================================================================
+   PANEL DEL PROFESIONAL
+   ========================================================================== */
+
+/* Estado del perfil bajo el saludo: folio, verificación y visibilidad */
+/* Ocupa la rejilla completa: lo usan el spinner y el mensaje de error que
+   sustituyen a los indicadores mientras cargan o si algo falla. */
+.kpis-ancho-total { grid-column: 1 / -1; }
+
+.estado-perfil {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2);
+  margin-top: var(--e3);
+}
+
+/* Son cuatro indicadores, no seis: en pantalla ancha se reparten en cuatro
+   columnas para que no queden dos huecos al final de la fila. */
+.panel .kpis:has(> .kpi:nth-child(4):last-child) { grid-template-columns: repeat(2, 1fr); }
+
+/* --- Tarjeta de turno --- */
+.lista-turnos { display: flex; flex-direction: column; gap: var(--e3); }
+
+.turno {
+  display: flex;
+  gap: var(--e4);
+  padding: var(--e4);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  background: var(--blanco);
+  transition: box-shadow var(--trans);
+}
+.turno:hover { box-shadow: var(--sombra-sm); }
+/* Lo que espera respuesta se distingue de un vistazo */
+.turno-propuesta { border-left: 3px solid var(--azul-600); background: var(--azul-050); }
+
+.turno-fecha {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  padding: var(--e2) 0;
+  border-radius: var(--radio-sm);
+  background: var(--azul-100);
+  color: var(--azul-800);
+  line-height: 1.1;
+}
+.turno-fecha strong { font-size: 1.375rem; font-family: var(--fuente-titulo); }
+.turno-dia-sem, .turno-mes {
+  font-size: .625rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  opacity: .8;
+}
+
+.turno-cuerpo { flex: 1; display: flex; flex-direction: column; gap: var(--e2); min-width: 0; }
+.turno-top { display: flex; align-items: center; justify-content: space-between; gap: var(--e2); }
+.turno-cuando { font-size: .75rem; font-weight: 600; color: var(--gris-600); }
+.turno-titulo { font-size: .9375rem; color: var(--azul-900); }
+
+.turno-datos { display: flex; flex-direction: column; gap: var(--e1); }
+.turno-datos span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8125rem;
+  color: var(--gris-600);
+}
+.turno-datos svg { flex-shrink: 0; color: var(--gris-400); }
+/* Las líneas de dato alinean el icono con el inicio del texto, no con su
+   centro: una dirección de dos renglones dejaba el pin flotando a media altura. */
+.turno-datos > span { align-items: flex-start; }
+.turno-datos > span svg { margin-top: 2px; }
+/* La aclaración va en su propio renglón, sangrada a la altura del texto */
+.turno-nota {
+  font-size: .75rem;
+  color: var(--gris-400);
+  font-style: italic;
+  padding-inline-start: 21px;
+}
+
+.turno-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e2);
+  flex-wrap: wrap;
+  margin-top: var(--e1);
+}
+/* Es lo que se lleva el profesional, nunca lo que la agencia factura */
+.turno-pago { font-size: 1rem; font-weight: 700; color: var(--exito); }
+.turno-espera { font-size: .75rem; font-weight: 600; color: var(--azul-700); }
+
+.avance-pct {
+  font-size: 1.5rem;
+  font-family: var(--fuente-titulo);
+  color: var(--azul-600);
+  flex-shrink: 0;
+  line-height: 1;
+}
+/* En móvil el texto de la tarjeta envuelve y el porcentaje quedaba encajado a
+   media frase. Se alinea arriba y se le deja aire. Va por :has() y no por id
+   para que aplique en todas las tarjetas de avance: perfil y expediente. */
+.tarjeta-cabecera:has(> .avance-pct) { align-items: flex-start; gap: var(--e4); }
+
+@media (min-width: 1280px) {
+  .panel .kpis:has(> .kpi:nth-child(4):last-child) { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* --- Acciones dentro de la tarjeta de turno --- */
+.turno-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2);
+  margin-top: var(--e3);
+  padding-top: var(--e3);
+  border-top: 1px solid var(--gris-200);
+}
+.turno-acciones .btn { flex: 1; min-width: 130px; }
+
+.turno-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.turno-chips .chip { font-size: .6875rem; padding: 2px 8px; }
+
+.turno-asistencia { font-size: .75rem; color: var(--gris-600); }
+.turno-calif { display: inline-flex; align-items: center; }
+.turno-motivo {
+  font-size: .75rem;
+  color: var(--error);
+  background: var(--error-bg);
+  padding: var(--e2);
+  border-radius: var(--radio-sm);
+}
+
+/* --- Lista de documentos del profesional --- */
+.lista-documentos {
+  display: flex;
+  flex-direction: column;
+  background: var(--blanco);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  overflow: hidden;
+}
+.lista-documentos .fila-documento {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e3);
+  padding: var(--e4);
+  border-bottom: 1px solid var(--gris-200);
+}
+.lista-documentos .fila-documento:last-child { border-bottom: 0; }
+/* Lo que exige acción se distingue sin tener que leer el badge */
+.doc-pendiente { background: var(--alerta-bg); }
+.lista-documentos .doc-datos { gap: var(--e1); }
+.lista-documentos .doc-datos .badge { align-self: flex-start; }
+.lista-documentos .doc-acciones { flex-direction: column; }
+.solo-ancho { display: none; }
+
+/* --- Calendario de disponibilidad --- */
+/* minmax(0,1fr) y no 1fr: con `1fr` el ancho minimo de cada celda es su
+   min-content, y en 375px las siete columnas no caben, asi que la rejilla se
+   desbordaba y el domingo quedaba cortado fuera de la pantalla. */
+.cal-cabecera,
+.cal-rejilla { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--e1); }
+.cal-cabecera {
+  margin-bottom: var(--e2);
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--gris-400);
+  text-align: center;
+  text-transform: uppercase;
+}
+.dia-vacio { aspect-ratio: 1; }
+.dia {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-sm);
+  background: var(--blanco);
+  color: var(--gris-900);
+  font-family: var(--fuente-texto);
+  cursor: pointer;
+  transition: background var(--trans), border-color var(--trans);
+}
+.dia:hover:not(:disabled) { border-color: var(--azul-400); background: var(--azul-050); }
+.dia:disabled, .dia.pasado { opacity: .35; cursor: default; }
+.dia-num { font-size: .875rem; font-weight: 500; }
+.dia.es-hoy { border-color: var(--azul-600); border-width: 2px; font-weight: 700; }
+.dia.con-turnos { background: var(--azul-100); border-color: var(--azul-400); }
+.dia-conteo {
+  display: grid;
+  place-items: center;
+  min-width: 17px; height: 17px;
+  border-radius: var(--radio-full);
+  background: var(--azul-600);
+  color: var(--blanco);
+  font-size: .625rem;
+  font-weight: 700;
+}
+.cal-pie {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: var(--e4);
+  font-size: .8125rem;
+  color: var(--gris-600);
+}
+.cal-pie svg { flex-shrink: 0; margin-top: 2px; color: var(--gris-400); }
+
+/* --- Ganancias por quincena --- */
+.lista-quincenas { display: flex; flex-direction: column; gap: var(--e3); }
+.quincena {
+  padding: var(--e4);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  background: var(--blanco);
+}
+.quincena-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e3);
+}
+.quincena-top strong { display: block; font-size: .9375rem; color: var(--azul-900); }
+.quincena-rango { font-size: .75rem; color: var(--gris-600); }
+.quincena-monto {
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--exito);
+}
+.nota-corte,
+.nota-bloqueada {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: var(--e4);
+  padding: var(--e3);
+  border-radius: var(--radio-sm);
+  background: var(--gris-050);
+  font-size: .8125rem;
+  color: var(--gris-600);
+}
+.nota-corte svg, .nota-bloqueada svg { flex-shrink: 0; margin-top: 2px; color: var(--gris-400); }
+
+/* --- Formulario de perfil --- */
+.form-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--e5);
+  padding-top: var(--e5);
+  border-top: 1px solid var(--gris-200);
+}
+.form-acciones .btn { width: 100%; }
+
+@media (min-width: 640px) {
+  .solo-ancho { display: inline; }
+  .lista-documentos .fila-documento { align-items: center; }
+  .lista-documentos .doc-acciones { flex-direction: row; }
+  .form-acciones .btn { width: auto; }
+  /* En móvil los botones ocupan todo el ancho porque se tocan con el pulgar;
+     en pantalla grande estirados a 900px se ven absurdos. */
+  .turno-acciones { justify-content: flex-end; }
+  .turno-acciones .btn { flex: 0 0 auto; }
+}
+
+/* Valor guardado que ya no existe en el catálogo: se muestra para que no se
+   pierda al guardar, pero se distingue del resto. */
+.check-fuera span { color: #B54708; font-style: italic; }
+
+/* ==========================================================================
+   PANEL DEL CLIENTE
+   ========================================================================== */
+
+/* --- Ficha de un profesional: quién cubre el turno, nunca cómo contactarlo --- */
+.profesional {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3);
+  margin-top: var(--e3);
+  border-radius: var(--radio-sm);
+  background: var(--azul-050);
+}
+.profesional-foto {
+  flex-shrink: 0;
+  width: 46px; height: 46px;
+  border-radius: var(--radio-full);
+  object-fit: cover;
+  box-shadow: 0 0 0 2px var(--azul-400);
+}
+.profesional-inicial {
+  display: grid;
+  place-items: center;
+  background: var(--azul-200);
+  color: var(--azul-800);
+  font-weight: 700;
+  font-size: .9375rem;
+}
+.profesional-datos { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.profesional-datos strong { font-size: .9375rem; color: var(--azul-900); }
+.profesional-nivel { font-size: .75rem; color: var(--gris-600); }
+.profesional-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e2);
+  font-size: .75rem;
+  color: var(--gris-600);
+}
+.profesional-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.profesional-chips .chip { font-size: .625rem; padding: 1px 7px; }
+
+/* --- Tarjeta de solicitud --- */
+.lista-solicitudes { display: flex; flex-direction: column; gap: var(--e3); }
+.solicitud {
+  padding: var(--e4);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+  background: var(--blanco);
+}
+.solicitud.urgente { border-left: 3px solid var(--error); }
+.solicitud-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e3);
+}
+.solicitud-top strong { display: block; font-size: .9375rem; color: var(--azul-900); }
+.solicitud-folio {
+  display: block;
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--azul-700);
+  letter-spacing: .03em;
+}
+.solicitud-datos { display: flex; flex-direction: column; gap: var(--e1); margin-bottom: var(--e3); }
+.solicitud-datos span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8125rem;
+  color: var(--gris-600);
+}
+.solicitud-datos svg { flex-shrink: 0; color: var(--gris-400); }
+.solicitud-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  flex-wrap: wrap;
+  padding-top: var(--e3);
+  border-top: 1px solid var(--gris-200);
+}
+.solicitud-cobertura { font-size: .8125rem; font-weight: 600; }
+.solicitud-cobertura.completa   { color: var(--exito); }
+.solicitud-cobertura.incompleta { color: var(--gris-600); }
+
+/* --- Línea de tiempo del seguimiento --- */
+.linea-tiempo { list-style: none; display: flex; flex-direction: column; gap: 0; }
+.paso-tiempo {
+  position: relative;
+  display: flex;
+  gap: var(--e3);
+  padding-bottom: var(--e5);
+}
+/* El hilo que une los pasos; el último no lo lleva */
+.paso-tiempo:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 11px; top: 24px; bottom: 0;
+  width: 2px;
+  background: var(--gris-200);
+}
+.paso-tiempo.hecho:not(:last-child)::before { background: var(--exito); }
+.paso-marca {
+  z-index: 1;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 24px; height: 24px;
+  border-radius: var(--radio-full);
+  border: 2px solid var(--gris-200);
+  background: var(--blanco);
+  color: var(--blanco);
+}
+.paso-tiempo.hecho .paso-marca { border-color: var(--exito); background: var(--exito); }
+.paso-tiempo.actual .paso-marca {
+  border-color: var(--azul-600);
+  box-shadow: 0 0 0 4px var(--azul-100);
+}
+.paso-tiempo > div { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
+.paso-tiempo strong { font-size: .875rem; color: var(--gris-400); }
+.paso-tiempo span   { font-size: .75rem; color: var(--gris-400); }
+.paso-tiempo.hecho strong { color: var(--azul-900); }
+.paso-tiempo.hecho span   { color: var(--gris-600); }
+.paso-tiempo.actual strong { color: var(--azul-600); }
+
+/* --- Rejilla de personal --- */
+.rejilla-personal { display: grid; grid-template-columns: 1fr; gap: var(--e4); }
+.tarjeta-personal { display: flex; flex-direction: column; }
+.tarjeta-personal .profesional { margin-top: 0; }
+/* El botón se pega al fondo para que quede a la misma altura en toda la fila:
+   las tarjetas crecen distinto según cuántas especialidades tenga cada quien. */
+.tarjeta-personal > .btn { margin-top: auto; }
+.personal-historial {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--e2);
+  margin: var(--e3) 0;
+  font-size: .75rem;
+  color: var(--gris-600);
+}
+
+/* --- Selector de estrellas para evaluar --- */
+.calif-grupo { border: 0; margin-bottom: var(--e5); }
+.calif-grupo legend { font-size: .875rem; font-weight: 600; color: var(--azul-900); }
+.calif-grupo .ayuda { display: block; margin-bottom: var(--e2); }
+.calif-estrellas { display: flex; gap: var(--e1); }
+.calif-estrella input {
+  position: absolute;
+  opacity: 0;
+  width: 1px; height: 1px;
+}
+.calif-estrella span {
+  display: grid;
+  place-items: center;
+  padding: var(--e1);
+  color: var(--gris-200);
+  cursor: pointer;
+  transition: color var(--trans), transform var(--trans);
+}
+.calif-estrella span:hover { transform: scale(1.12); }
+/* Se pintan todas las estrellas hasta la elegida. El selector de hermanos solo
+   mira hacia adelante y aquí el input va dentro del label, así que no sirve.
+   Se resuelve como el medidor de contraseña de más arriba: el JS pone
+   data-valor en el contenedor y el CSS pinta hasta esa posición. */
+.calif-estrellas[data-valor="1"] .calif-estrella:nth-child(-n+1) span,
+.calif-estrellas[data-valor="2"] .calif-estrella:nth-child(-n+2) span,
+.calif-estrellas[data-valor="3"] .calif-estrella:nth-child(-n+3) span,
+.calif-estrellas[data-valor="4"] .calif-estrella:nth-child(-n+4) span,
+.calif-estrellas[data-valor="5"] .calif-estrella:nth-child(-n+5) span { color: var(--alerta); }
+.calif-estrella input:focus-visible + span {
+  outline: 3px solid var(--azul-600);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Cobros --- */
+.quincena-vencida { border-left: 3px solid var(--error); }
+/* En Ganancias el monto es lo que el profesional gana y va en verde. Aquí es
+   lo que el cliente debe, así que se queda neutro: el estatus lo dice el badge. */
+.cobro-derecha .quincena-monto { color: var(--azul-900); }
+.cobro-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: var(--e1); }
+.cobro-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+  font-size: .75rem;
+  color: var(--gris-600);
+}
+.cobro-detalle span { display: flex; align-items: center; gap: 5px; }
+.cobro-detalle svg  { flex-shrink: 0; color: var(--gris-400); }
+.cobro-detalle .btn { align-self: flex-start; margin-top: var(--e2); }
+
+/* Turno cuyo plazo de evaluación ya venció */
+.turno-vencido { opacity: .6; }
+
+/* El formulario público dentro del panel no necesita su ancho de landing */
+.form-solicitud-panel { padding: var(--e5); }
+.form-solicitud-panel .encabezado-seccion { display: none; }
+
+@media (min-width: 768px) {
+  .rejilla-personal { grid-template-columns: repeat(2, 1fr); }
+  .solicitud-datos { flex-direction: row; flex-wrap: wrap; gap: var(--e1) var(--e4); }
+}
+@media (min-width: 1280px) {
+  .rejilla-personal { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Separación puntual sin recurrir a estilo en línea (CLAUDE.md regla 4) */
+.mt-bloque { margin-top: var(--e5); }
+.mb-bloque { margin-bottom: var(--e4); }

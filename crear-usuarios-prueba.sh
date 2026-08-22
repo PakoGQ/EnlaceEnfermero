@@ -75,13 +75,22 @@ where nombre_completo = 'María Fernanda Ruiz Delgado'
   and usuario_id is null;" 2>/dev/null && echo "  OK"
 
 # La ficha de cliente la crea el trigger tg_ficha_cliente al insertarse el
-# usuario. Aqui solo se completan los datos de institucion para la prueba.
-echo "Completando la ficha de cliente..."
+# usuario, pero nace vacia. Se descarta y en su lugar la cuenta se liga al
+# hospital que el seed ya dejo con solicitudes, turnos y pagos: sin historia
+# el panel del cliente no se puede validar (se ve igual que uno recien creado).
+echo "Ligando la cuenta de cliente con el hospital del seed..."
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -q -c "
-update public.clientes set tipo = 'hospital',
-                           razon_social = 'Hospital San Rafael',
-                           municipio = 'guadalajara'
-where usuario_id = (select id from public.usuarios where email = 'cliente@enlace.test');" 2>/dev/null && echo "  OK"
+delete from public.clientes c
+where c.usuario_id = (select id from public.usuarios where email = 'cliente@enlace.test')
+  and not exists (select 1 from public.solicitudes s where s.cliente_id = c.id);
+
+update public.clientes
+set usuario_id      = (select id from public.usuarios where email = 'cliente@enlace.test'),
+    nombre_contacto = 'Norma Bañuelos',
+    tipo            = 'hospital',
+    municipio       = 'guadalajara'
+where razon_social = 'Hospital San Rafael'
+  and notas = 'SEED';" 2>/dev/null && echo "  OK"
 
 echo
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -X -c "

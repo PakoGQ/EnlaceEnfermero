@@ -32,7 +32,7 @@ begin;
 
 CABECERA
 
-for f in 01-schema.sql 02-rls.sql 03-funciones.sql 04-vistas.sql 06-dashboard.sql 07-solicitudes.sql 08-documentos.sql 09-operacion.sql 10-finanzas.sql 05-seed.sql; do
+for f in 01-schema.sql 02-rls.sql 03-funciones.sql 04-vistas.sql 06-dashboard.sql 07-solicitudes.sql 08-documentos.sql 09-operacion.sql 10-finanzas.sql 11-paneles.sql 05-seed.sql; do
   {
     echo ""
     echo "-- ############################################################################"

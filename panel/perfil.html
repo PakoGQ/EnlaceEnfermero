@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi perfil — Enlace Enfermero</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/componentes.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/panel.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="panel">
+
+  <header id="panelCabecera"></header>
+  <aside id="panelNav"></aside>
+
+  <main class="panel-contenido">
+
+    <div class="panel-encabezado">
+      <div>
+        <h1>Mi perfil profesional</h1>
+        <p>Así te ven los clientes en el catálogo.</p>
+      </div>
+    </div>
+
+    <section class="tarjeta bloque-panel" id="avancePerfil"><div class="spinner"></div></section>
+
+    <form id="formPerfil" class="tarjeta" novalidate>
+      <div id="camposPerfil"><div class="spinner"></div></div>
+    </form>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/componentes.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/panel.js"></script>
+  <script src="../js/admin-comun.js"></script>
+  <script src="../js/enfermero-comun.js"></script>
+  <script src="../js/enfermero-perfil.js"></script>
+  <script>
+    iniciarPanel(['enfermero'], 'perfil.html').then(perfil => {
+      if (!perfil) return;
+      iniciarMiPerfil();
+    });
+  </script>
+
+</body>
+</html>

@@ -3,22 +3,23 @@
 > Documento de continuidad. Léelo junto con `CLAUDE.md`, que es la especificación
 > maestra. Aquí está **qué se construyó, cómo funciona y qué falta**.
 >
-> Última actualización: 22 de agosto de 2026
+> Última actualización: 22 de agosto de 2026 (Fase 3 en curso)
 
 ---
 
 ## Resumen en una línea
 
-Fases 0, 1 y 2 completas y verificadas. El sitio público captura solicitudes y
-registros; la agencia opera el negocio completo desde su panel. Falta la Fase 3
-(paneles de enfermero y cliente) y migrar de Supabase local a producción.
+**Fase 3 completa.** Los tres paneles funcionan y el ciclo de negocio corre de
+punta a punta: el cliente solicita → la agencia cotiza y propone → el profesional
+acepta → cubre el turno y marca entrada y salida → el cliente evalúa → se
+factura. Falta la Fase 4 (automatización) y migrar a Supabase Pro.
 
 | Fase | Alcance | Estado |
 |---|---|---|
 | 0 | Cimientos: estructura, tokens, SQL base | **Completada** |
 | 1 | Sitio público: catálogo, perfiles, formularios | **Completada** |
 | 2 | Autenticación y panel de la agencia | **Completada** |
-| 3 | Paneles de enfermero y cliente | **Pendiente** |
+| 3 | Paneles de enfermero y cliente | **Completada** |
 | 4 | Automatización, WhatsApp y agente IA | No iniciada |
 
 ---
@@ -118,7 +119,22 @@ Sin frameworks ni build step. HTML + CSS + JS vanilla, y Supabase por CDN.
 | `auth.js` | Login, registro, recuperación, guardia de rutas por rol |
 | `panel.js` | Estructura compartida de los tres paneles |
 | `admin-comun.js` | Tablas, filtros, modales de formulario, exportación CSV |
-| `panel-admin.js` | Dashboard: KPIs, alertas, gráfica Canvas |
+| `panel-admin.js` | Dashboard de la agencia: KPIs, alertas, gráfica Canvas |
+| `panel-enfermero.js` | Inicio del profesional: KPIs, alertas, turnos, avance de perfil |
+| `enfermero-comun.js` | Tarjeta de turno y sus acciones, compartidas por tres pantallas |
+| `enfermero-turnos.js` | Mis turnos: aceptar, rechazar, entrada y salida |
+| `enfermero-disponibilidad.js` | Calendario mensual y plantilla semanal |
+| `enfermero-documentos.js` | Expediente: subir y renovar, con URL firmada |
+| `enfermero-perfil.js` | Edición del perfil profesional |
+| `enfermero-historial.js` | Turnos cerrados y hoja de servicio |
+| `enfermero-ganancias.js` | Ingresos por quincena |
+| `cliente-comun.js` | Ficha de profesional sin datos de contacto, selector de estrellas |
+| `cliente-inicio.js` | Resumen, alertas y próximos turnos del cliente |
+| `cliente-solicitudes.js` | Seguimiento con línea de tiempo |
+| `cliente-personal.js` | Quién ha trabajado con él y "solicitar de nuevo" |
+| `cliente-evaluar.js` | Evaluación de 3 criterios |
+| `cliente-facturacion.js` | Cobros por periodo |
+| `cliente-solicitar.js` | Precarga del formulario público dentro del panel |
 | `admin-solicitudes.js` | Tablero kanban y motor de match |
 | `admin-documentos.js` | Bandeja de verificación y visor |
 | `admin-asignaciones.js` | Seguimiento de turnos y asistencia |
@@ -147,7 +163,8 @@ en una transacción: si algo falla, no se aplica nada.
 | `08-documentos.sql` | Verificación documental |
 | `09-operacion.sql` | Asignaciones, calendario, enfermeros, clientes |
 | `10-finanzas.sql` | Pagos, reportes, referidos, configuración |
-| `99-pruebas.sql` | **28 verificaciones.** Hace rollback, no deja datos |
+| `11-paneles.sql` | Paneles del enfermero y del cliente: todo lo que consumen sus pantallas |
+| `99-pruebas.sql` | **53 verificaciones.** Hace rollback, no deja datos |
 
 ---
 
@@ -185,7 +202,57 @@ ignoran los campos reservados al admin aunque vengan en el JSON.
 `CREATE OR REPLACE` no lo permite. Por eso `06` a `10` empiezan con
 `DROP FUNCTION IF EXISTS`.
 
-### 5. El motor de match
+### 5. En los paneles privados el filtro va al revés
+
+En `06` a `10` cada función pregunta *«¿quien llama **es** de la agencia?»* con
+`es_staff_estricto()`. En `11-paneles.sql` la pregunta es la contraria:
+*«¿quien llama tiene ficha propia?»*, vía `mi_enfermero_id()`.
+
+Dos consecuencias que no son obvias:
+
+- Un **admin recibe error** al llamar `panel_enfermero_resumen()`. No es un bug:
+  para ver a un profesional tiene sus propias funciones en `09-operacion.sql`.
+- Ninguna función del panel **recibe un id como parámetro**. Si lo recibiera, se
+  le podría pasar el de otro. El único ayudante que sí lo recibe,
+  `perfil_completo_pct()`, no es `security definer` y **no tiene permiso de
+  ejecución**: solo lo llaman las funciones de arriba.
+
+### 6. Dos policies que se miran entre sí recursan
+
+La de `solicitudes` consultaba `asignaciones` y la de `asignaciones` consultaba
+`solicitudes`. Cada subconsulta disparaba el RLS de la otra tabla, que disparaba
+el de la primera, y Postgres cortaba con
+`infinite recursion detected in policy`.
+
+**El efecto era que ni el enfermero ni el cliente podían leer ninguna de las dos
+tablas.** No se había notado porque el staff se salva: su policy evalúa
+`es_staff()` y corta antes, y el sitio público no lee esas tablas.
+
+Se rompió sacando el cruce a funciones `security definer`
+(`tengo_asignacion_en()` y `solicitud_es_de_mi_cliente()`): adentro corren como
+propietario, el RLS de la otra tabla no se evalúa y el ciclo se cierra. Siguen
+filtrando por `auth.uid()`, así que no aflojan nada.
+
+**Regla para lo que viene:** cualquier policy nueva que consulte otra tabla con
+RLS tiene que hacerlo por función `security definer`, no con un `exists` directo.
+
+### 7. El cliente nunca toca la tabla `enfermeros`
+
+Su RLS no le abre ni una fila, y es a propósito. Todo lo que el cliente ve de un
+profesional —nombre, folio, nivel, foto, calificación, experiencia y
+especialidades— sale de las funciones de `11-paneles.sql`, que seleccionan esas
+columnas y ninguna más.
+
+No es una precaución abstracta: si el cliente obtiene el teléfono del
+profesional, lo contrata directo y la agencia se queda sin comisión
+(`CLAUDE.md` §6 y regla 10.8). Por eso también el detalle de una solicitud sólo
+muestra al personal que **ya aceptó**: mientras es una propuesta, el profesional
+todavía puede rechazarla y el cliente no tendría por qué haber sabido su nombre.
+
+`99-pruebas.sql` comprueba las dos cosas: que el detalle no traiga contacto ni
+tarifas, y que la tabla siga cerrada.
+
+### 8. El motor de match
 
 `sugerir_enfermeros(solicitud_id)` cruza nivel (jerárquico: un especialista
 cubre un puesto de auxiliar, no al revés), zona, disponibilidad en la fecha,
@@ -235,14 +302,19 @@ No dependen de la interfaz. Verificadas en `99-pruebas.sql`:
 
 \* Solo rol admin.
 
-### Panel del enfermero (Fase 3) — **pendiente**
-`panel/index.html` existe con la navegación puesta y el contenido en blanco.
-Faltan: inicio, perfil, documentos, disponibilidad, asignaciones, historial,
-ganancias.
+### Panel del enfermero (Fase 3) — **completo**
+Las 7 pantallas funcionan: `index.html` (inicio) `asignaciones.html` (mis turnos)
+`disponibilidad.html` `documentos.html` `perfil.html` `historial.html`
+`ganancias.html`. Todas contra `sql/11-paneles.sql`.
 
-### Panel del cliente (Fase 3) — **pendiente**
-`cliente/index.html` igual. Faltan: inicio, nueva solicitud, solicitudes,
-personal, evaluar, facturación.
+### Panel del cliente (Fase 3) — **completo**
+Las 6 pantallas funcionan: `index.html` `solicitar.html` `solicitudes.html`
+`personal.html` `evaluar.html` `facturacion.html`.
+
+`solicitar.html` **reutiliza el formulario del sitio público**, no una copia:
+mismo markup, misma lógica de `publico.js`, sólo con los datos de contacto
+precargados. Así no hay dos formularios que se desincronicen al primer cambio
+de negocio.
 
 ---
 
@@ -250,31 +322,23 @@ personal, evaluar, facturación.
 
 ### Fase 3 — Paneles de enfermero y cliente
 
-**Enfermero** (`/panel`, guardia `['enfermero']`):
-- **Inicio** — próximos turnos, ganancias del mes, calificación, alertas de
-  documentos por vencer, porcentaje de perfil completo.
-- **Perfil** — edición de todo salvo verificación, publicación y tarifas
-  (el trigger `proteger_campos_enfermero` ya lo impide en la base).
-- **Documentos** — subir y renovar. **Ojo:** la política de Storage exige que
-  la ruta sea `<enfermero_id>/<archivo>`.
-- **Disponibilidad** — calendario mensual con clic para marcar turnos y
-  plantilla semanal repetible.
-- **Asignaciones** — aceptar o rechazar con motivo, y check-in/check-out. Las
-  transiciones permitidas ya están en `proteger_campos_asignacion`:
-  `propuesta → aceptada|rechazada`, `aceptada → en_curso`, `en_curso → completada`.
-- **Historial y Ganancias** — agregado por quincena con estatus de pago.
+**Enfermero** (`/panel`) — **hecho.** Las 7 pantallas están construidas y
+verificadas. Lo que quedó pendiente ahí es de producto, no de código: decidir si
+el registro por `unete.html` crea cuenta siempre, porque hoy 12 de los 13
+perfiles del catálogo no tienen una y el panel sólo rinde si la gente lo usa.
 
-**Cliente** (`/cliente`, guardia `['cliente']`):
-- **Inicio** — servicios activos, próximo turno, personal asignado.
-- **Nueva solicitud** — el mismo formulario, precargado con sus datos.
-- **Solicitudes** — seguimiento con línea de tiempo.
-- **Personal** — quién está o estuvo asignado, con "solicitar de nuevo".
-- **Evaluar** — 4 criterios más comentario. Solo sobre asignaciones
-  `completada` y dentro de 15 días; la policy ya lo restringe.
-- **Facturación** — historial y descarga de comprobantes.
+**Cliente** (`/cliente`) — **hecho.** Las 6 pantallas están construidas y
+verificadas.
 
-Faltan funciones SQL para estos paneles (algo como `11-paneles.sql`), siempre
-con `es_staff_estricto()` invertido: cada quien ve solo lo suyo.
+### Fase 4 — Automatización e IA
+
+No iniciar hasta que las fases 1-3 estén validadas en producción con clientes
+reales (`CLAUDE.md` §9). Lo que toca: escenarios de Make.com, WhatsApp Business
+API, programa de referidos con deep links y el agente conversacional.
+
+Dos cosas que la Fase 3 dejó listas para engancharse ahí:
+- `alertar_documentos_por_vencer()` ya existe y nadie la consume todavía.
+- Nada despublica un perfil cuando un documento caduca solo (ver cabos sueltos).
 
 ### Antes de salir a producción
 
@@ -293,6 +357,30 @@ con `es_staff_estricto()` invertido: cada quien ve solo lo suyo.
    `aviso-privacidad.html` y `terminos.html`, y revisión de un abogado.
 7. **Capturar WhatsApp y correo reales** en configuración y en `config.js`.
 
+### Cabos sueltos detectados (22 de agosto)
+
+Ninguno bloquea seguir, pero conviene no olvidarlos:
+
+0. **El enfermero ve el teléfono del cliente una vez que acepta el turno.** La
+   policy `solicitudes_enfermero_lee` es row-level, no column-level: al abrirle
+   la solicitud del turno aceptado le abre también `contacto_telefono` y
+   `contacto_email`. Las pantallas del panel no los muestran —salen de
+   funciones que devuelven sólo columnas seguras—, pero con la consola abierta
+   son alcanzables. Choca con el modelo de negocio (la coordinación pasa por la
+   agencia). Se cierra con una vista de columnas acotadas o quitándole el SELECT
+   directo y dejando sólo las funciones. **Decisión pendiente.**
+1. **Nada despublica un perfil cuando un documento se vence solo.** La regla 10.3
+   sí se aplica al *rechazar* un documento, pero el vencimiento es un hecho que
+   ocurre por el paso del tiempo y ningún trigger lo detecta. Hoy la única señal
+   es la alerta del dashboard. Se resuelve con una tarea programada (Fase 4) o
+   con una revisión al entrar al panel.
+2. **`diagnostico()` da un falso positivo dentro de un panel.** Su prueba 5
+   asume que no hay sesión, así que al correrlo desde `/panel` marca *«GRAVE: la
+   tabla enfermeros es legible sin sesión»* cuando en realidad el enfermero está
+   leyendo su propia fila, que es justo lo que debe pasar. Verificado con `curl`
+   como `anon`: la tabla responde `permission denied`. Conviene que la función
+   avise que se corra desde una página pública, o que compruebe la sesión antes.
+
 ### Riesgos anotados
 
 - **Reclasificación laboral.** Si la agencia impone tarifas, horarios y
@@ -310,7 +398,7 @@ con `es_staff_estricto()` invertido: cada quien ve solo lo suyo.
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/99-pruebas.sql
 ```
 
-**28 comprobaciones, todas deben decir `OK`.** Cubren folios, reparto 60/40,
+**53 comprobaciones, todas deben decir `OK`.** Cubren folios, reparto 60/40,
 traslapes, permisos del sitio público, aislamiento de datos sensibles y acceso
 al panel. No dejan datos.
 

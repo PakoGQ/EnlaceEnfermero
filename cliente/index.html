@@ -25,6 +25,7 @@
   <aside id="panelNav"></aside>
 
   <main class="panel-contenido">
+
     <div class="panel-encabezado">
       <div>
         <h1 id="saludo">Inicio</h1>
@@ -35,11 +36,49 @@
       </div>
     </div>
 
-    <div class="tarjeta">
-      <h2>En construcción</h2>
-      <p class="txt-secundario">Aquí van tus servicios activos, el próximo turno
-         programado y quién está asignado.</p>
+    <section class="kpis" id="kpis" aria-label="Resumen de tus servicios">
+      <div class="tarjeta kpis-ancho-total"><div class="spinner"></div></div>
+    </section>
+
+    <section class="bloque-panel" aria-labelledby="tituloAlertas">
+      <h2 id="tituloAlertas" class="titulo-bloque">Requiere tu atención</h2>
+      <div class="lista-alertas" id="alertas"></div>
+    </section>
+
+    <div class="panel-columnas">
+      <section class="tarjeta" aria-labelledby="tituloProximos">
+        <div class="tarjeta-cabecera">
+          <div>
+            <h3 id="tituloProximos">Próximos turnos</h3>
+            <p class="texto-sm txt-secundario">Quién llega y cuándo.</p>
+          </div>
+        </div>
+        <div id="proximosTurnos"><div class="spinner"></div></div>
+      </section>
+
+      <section class="tarjeta" aria-labelledby="tituloAtajos">
+        <div class="tarjeta-cabecera"><h3 id="tituloAtajos">Atajos</h3></div>
+        <div class="atajos">
+          <a href="solicitar.html" class="atajo">
+            <span class="atajo-icono" data-icono="inbox"></span>
+            <div><strong>Solicitar personal</strong><span>Nueva solicitud</span></div>
+          </a>
+          <a href="solicitudes.html" class="atajo">
+            <span class="atajo-icono" data-icono="documento"></span>
+            <div><strong>Mis solicitudes</strong><span>Seguimiento</span></div>
+          </a>
+          <a href="personal.html" class="atajo">
+            <span class="atajo-icono" data-icono="usuarios"></span>
+            <div><strong>Personal</strong><span>Quién ha trabajado contigo</span></div>
+          </a>
+          <a href="evaluar.html" class="atajo">
+            <span class="atajo-icono" data-icono="estrella"></span>
+            <div><strong>Evaluar</strong><span>Califica un servicio</span></div>
+          </a>
+        </div>
+      </section>
     </div>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -49,11 +88,13 @@
   <script src="../js/componentes.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/panel.js"></script>
+  <script src="../js/admin-comun.js"></script>
+  <script src="../js/cliente-comun.js"></script>
+  <script src="../js/cliente-inicio.js"></script>
   <script>
     iniciarPanel(['cliente'], 'index.html').then(perfil => {
       if (!perfil) return;
-      document.getElementById('saludo').textContent =
-        '¡Hola, ' + perfil.nombre + '!';
+      iniciarInicioCliente();
     });
   </script>
 
