@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no encontrada — Enlace Enfermero</title>
+  <meta name="description" content="La página que buscas no existe o cambió de dirección.">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/publico.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <a href="#contenido" class="salta-contenido">Saltar al contenido</a>
+  <header id="header"></header>
+
+  <main id="contenido" class="con-header-fijo">
+
+    <section class="seccion-lg">
+      <div class="contenedor contenedor-angosto txt-centro">
+        <p class="error-numero">404</p>
+        <h1>No encontramos esta página</h1>
+        <p class="txt-secundario" style="max-width:460px;margin:var(--e4) auto var(--e6)">
+          Puede que el enlace esté mal escrito o que la página haya cambiado de dirección.
+          Desde aquí puedes seguir a donde ibas.
+        </p>
+        <div class="flex envuelve gap-3" style="justify-content:center">
+          <a href="index.html" class="btn btn-primario btn-lg">Ir al inicio</a>
+          <a href="enfermeros.html" class="btn btn-secundario btn-lg">Ver personal</a>
+          <a href="contacto.html" class="btn btn-fantasma btn-lg">Contacto</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+
+  <script>
+    iniciarPagina('');
+
+  </script>
+
+</body>
+</html>

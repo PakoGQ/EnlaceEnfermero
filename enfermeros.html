@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal de enfermería disponible — Enlace Enfermero</title>
+  <meta name="description" content="Consulta el catálogo de enfermeros verificados en la Zona Metropolitana de Guadalajara. Filtra por nivel, especialidad, municipio y disponibilidad.">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/publico.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <a href="#contenido" class="salta-contenido">Saltar al contenido</a>
+  <header id="header"></header>
+
+  <main id="contenido" class="con-header-fijo">
+
+    <section class="encabezado-pagina">
+      <div class="contenedor">
+        <nav class="miga" aria-label="Ruta">
+          <a href="index.html">Inicio</a> <span aria-hidden="true">/</span> <span>Enfermeros</span>
+        </nav>
+        <h1>Nuestro personal de enfermería</h1>
+        <p>Todos los perfiles que ves aquí pasaron por nuestro proceso de verificación.
+           La coordinación del servicio siempre va por cuenta de la agencia.</p>
+      </div>
+    </section>
+
+    <p class="aviso-demo oculto" id="avisoDemo">
+      Estás viendo datos de demostración. Conecta Supabase en <code>js/config.js</code> para usar información real.
+    </p>
+
+    <div class="contenedor catalogo-layout">
+
+      <!-- ===== Filtros: barra lateral en escritorio, panel inferior en móvil ===== -->
+      <div class="velo-filtros" id="veloFiltros"></div>
+
+      <aside class="panel-filtros" id="panelFiltros" aria-label="Filtros de búsqueda">
+        <div class="panel-filtros-cabecera">
+          <h2>Filtros</h2>
+          <button type="button" class="btn-icono" id="btnCerrarFiltros" aria-label="Cerrar filtros">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <form id="formFiltros" class="panel-filtros-cuerpo">
+          <div class="campo">
+            <label for="fNivel">Nivel</label>
+            <select id="fNivel"></select>
+          </div>
+
+          <div class="campo">
+            <label for="fMunicipio">Municipio</label>
+            <select id="fMunicipio"></select>
+          </div>
+
+          <fieldset class="grupo-filtro">
+            <legend>Disponibilidad</legend>
+            <label class="check">
+              <input type="checkbox" id="fDisponible">
+              <span>Disponible de inmediato</span>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="fNocturno">
+              <span>Acepta turno nocturno</span>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="fDomicilio">
+              <span>Atiende a domicilio</span>
+            </label>
+          </fieldset>
+
+          <div class="campo">
+            <label for="fExperiencia">Experiencia mínima: <strong id="vExperiencia">Cualquiera</strong></label>
+            <input type="range" id="fExperiencia" min="0" max="15" step="1" value="0">
+          </div>
+
+          <div class="campo">
+            <label for="fCalificacion">Calificación mínima: <strong id="vCalificacion">Cualquiera</strong></label>
+            <input type="range" id="fCalificacion" min="0" max="5" step="0.5" value="0">
+          </div>
+
+          <fieldset class="grupo-filtro">
+            <legend>Especialidades</legend>
+            <div class="lista-checks" id="fEspecialidades"></div>
+          </fieldset>
+        </form>
+
+        <div class="panel-filtros-pie">
+          <button type="button" class="btn btn-primario btn-bloque" id="btnCerrarFiltros2">
+            Ver resultados
+          </button>
+        </div>
+      </aside>
+
+      <!-- ===== Resultados ===== -->
+      <div class="catalogo-resultados">
+
+        <div class="barra-busqueda">
+          <div class="campo-busqueda">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="search" id="fBuscar" class="entrada"
+                   placeholder="Buscar por nombre, especialidad o certificación"
+                   aria-label="Buscar personal">
+          </div>
+
+          <div class="barra-busqueda-acciones">
+            <button type="button" class="btn btn-secundario" id="btnFiltros" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+              Filtros
+            </button>
+            <div class="campo campo-orden">
+              <label for="fOrden" class="solo-lectores">Ordenar por</label>
+              <select id="fOrden">
+                <option value="relevancia">Más relevantes</option>
+                <option value="calificacion">Mejor calificados</option>
+                <option value="experiencia">Más experiencia</option>
+                <option value="disponibles">Disponibles primero</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="filtros-activos" id="filtrosActivos"></div>
+        <p class="conteo txt-secundario texto-sm" id="conteo" aria-live="polite"></p>
+
+        <div class="grid grid-3" id="resultados"></div>
+        <div class="txt-centro" id="zonaCargarMas"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/datos-demo.js"></script>
+  <script src="js/publico.js"></script>
+  <script>
+    iniciarPagina('enfermeros.html');
+    iniciarCatalogo();
+
+    // El botón del pie del panel cierra igual que la X
+    document.getElementById('btnCerrarFiltros2').addEventListener('click', () => {
+      document.getElementById('btnCerrarFiltros').click();
+    });
+  </script>
+
+</body>
+</html>

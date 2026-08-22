@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil profesional — Enlace Enfermero</title>
+  <meta name="description" content="Perfil profesional verificado de personal de enfermería en la Zona Metropolitana de Guadalajara.">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/publico.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <a href="#contenido" class="salta-contenido">Saltar al contenido</a>
+  <header id="header"></header>
+
+  <main id="contenido" class="con-header-fijo">
+
+    <div id="cargandoPerfil"><div class="spinner"></div></div>
+
+    <div id="perfil" class="oculto">
+
+      <!-- ===== Encabezado ===== -->
+      <section class="perfil-cabecera">
+        <div class="contenedor">
+          <nav class="miga" aria-label="Ruta">
+            <a href="index.html">Inicio</a> <span aria-hidden="true">/</span>
+            <a href="enfermeros.html">Enfermeros</a> <span aria-hidden="true">/</span>
+            <span id="pFolio"></span>
+          </nav>
+
+          <div class="perfil-identidad">
+            <div class="perfil-foto" id="pFoto"></div>
+            <div>
+              <h1 id="pNombre"></h1>
+              <p class="perfil-nivel" id="pNivel"></p>
+              <div class="perfil-insignias" id="pInsignias"></div>
+            </div>
+          </div>
+
+          <div class="perfil-datos" id="pDatos"></div>
+        </div>
+      </section>
+
+      <div class="contenedor perfil-layout">
+
+        <!-- ===== Pestañas ===== -->
+        <div class="perfil-principal">
+          <div class="pestanas" role="tablist" aria-label="Secciones del perfil">
+            <button type="button" class="activo" role="tab" aria-selected="true"
+                    aria-controls="tabPerfil" id="btnTabPerfil">Perfil</button>
+            <button type="button" role="tab" aria-selected="false"
+                    aria-controls="tabExperiencia" id="btnTabExperiencia">Experiencia y certificaciones</button>
+            <button type="button" role="tab" aria-selected="false"
+                    aria-controls="tabEvaluaciones" id="btnTabEvaluaciones">Evaluaciones</button>
+          </div>
+
+          <section id="tabPerfil" role="tabpanel" aria-labelledby="btnTabPerfil" class="pestana-panel">
+            <h2>Sobre su trabajo</h2>
+            <p id="pBio" class="perfil-bio"></p>
+
+            <h3>Especialidades</h3>
+            <div class="chips-linea" id="pEspecialidades"></div>
+
+            <h3>Zonas de cobertura</h3>
+            <div class="chips-linea" id="pZonas"></div>
+
+            <h3>Modalidad de servicio</h3>
+            <ul class="lista-modalidad" id="pModalidad"></ul>
+          </section>
+
+          <section id="tabExperiencia" role="tabpanel" aria-labelledby="btnTabExperiencia"
+                   class="pestana-panel oculto">
+            <h2>Cédula profesional</h2>
+            <div class="flex centrado-v gap-3 envuelve" id="pCedula"></div>
+
+            <h3>Certificaciones</h3>
+            <ul class="lista-certificaciones" id="pCertificaciones"></ul>
+
+            <h3>Idiomas</h3>
+            <p id="pIdiomas" class="txt-secundario"></p>
+          </section>
+
+          <section id="tabEvaluaciones" role="tabpanel" aria-labelledby="btnTabEvaluaciones"
+                   class="pestana-panel oculto">
+            <h2>Evaluaciones de clientes</h2>
+            <p class="txt-secundario texto-sm">
+              Solo se publican evaluaciones de servicios efectivamente completados.
+            </p>
+            <div class="lista-evaluaciones" id="listaEvaluaciones"></div>
+          </section>
+        </div>
+
+        <!-- ===== Panel lateral ===== -->
+        <aside class="perfil-lateral">
+          <div class="tarjeta perfil-accion">
+            <h2>¿Te interesa este perfil?</h2>
+            <p class="texto-sm txt-secundario">
+              Confirmamos su disponibilidad para tus fechas y te enviamos la propuesta.
+              La contratación y la coordinación pasan siempre por la agencia.
+            </p>
+            <a href="solicitar.html" class="btn btn-primario btn-bloque btn-lg" id="btnSolicitar">
+              Solicitar a este profesional
+            </a>
+            <button type="button" class="btn btn-secundario btn-bloque" id="btnAgregarSeleccion"
+                    data-seleccionar="" data-nombre="" aria-pressed="false">
+              Agregar a mi selección
+            </button>
+            <p class="texto-xs txt-tenue txt-centro">
+              Puedes reunir varios perfiles y mandarlos en una sola solicitud.
+            </p>
+            <a href="enfermeros.html" class="btn btn-fantasma btn-bloque btn-sm">Ver otros perfiles</a>
+          </div>
+
+          <div class="tarjeta">
+            <h3>Disponibilidad</h3>
+            <p class="texto-sm txt-secundario">Próximos días con turnos libres.</p>
+            <div class="calendario-disponibilidad" id="disponibilidad"></div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/datos-demo.js"></script>
+  <script src="js/publico.js"></script>
+  <script>
+    iniciarPagina('enfermeros.html');
+    iniciarPerfil();
+  </script>
+
+</body>
+</html>

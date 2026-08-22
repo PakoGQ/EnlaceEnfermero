@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de la agencia — Enlace Enfermero</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/componentes.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/panel.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="panel">
+
+  <header id="panelCabecera"></header>
+  <aside id="panelNav"></aside>
+
+  <main class="panel-contenido">
+
+    <div class="panel-encabezado">
+      <div>
+        <h1 id="saludo">Panel</h1>
+        <p id="fechaHoy"></p>
+      </div>
+      <div class="panel-acciones">
+        <a href="solicitudes.html" class="btn btn-secundario">Ver solicitudes</a>
+        <a href="asignaciones.html" class="btn btn-primario">Asignar personal</a>
+      </div>
+    </div>
+
+    <!-- Indicadores del día -->
+    <section class="kpis" id="kpis" aria-label="Indicadores del día"></section>
+
+    <!-- Lo que requiere atención -->
+    <section class="bloque-panel" aria-labelledby="tituloAlertas">
+      <h2 id="tituloAlertas" class="titulo-bloque">Requiere tu atención</h2>
+      <div class="lista-alertas" id="alertas"></div>
+    </section>
+
+    <div class="panel-columnas">
+
+      <!-- Gráfica de turnos -->
+      <section class="tarjeta" aria-labelledby="tituloGrafica">
+        <div class="tarjeta-cabecera">
+          <div>
+            <h3 id="tituloGrafica">Turnos completados</h3>
+            <p class="texto-sm txt-secundario" id="graficaResumen">Últimas 8 semanas</p>
+          </div>
+        </div>
+        <div class="grafica-zona">
+          <canvas id="graficaTurnos" role="img"
+                  aria-label="Turnos completados por semana en las últimas 8 semanas"></canvas>
+        </div>
+      </section>
+
+      <!-- Accesos rápidos -->
+      <section class="tarjeta" aria-labelledby="tituloAtajos">
+        <div class="tarjeta-cabecera"><h3 id="tituloAtajos">Atajos</h3></div>
+        <div class="atajos">
+          <a href="solicitudes.html" class="atajo">
+            <span class="atajo-icono" data-icono="inbox"></span>
+            <div><strong>Solicitudes</strong><span>Revisar y asignar</span></div>
+          </a>
+          <a href="documentos.html" class="atajo">
+            <span class="atajo-icono" data-icono="documento"></span>
+            <div><strong>Verificar documentos</strong><span>Bandeja de revisión</span></div>
+          </a>
+          <a href="enfermeros.html" class="atajo">
+            <span class="atajo-icono" data-icono="usuarios"></span>
+            <div><strong>Personal</strong><span>Alta y publicación</span></div>
+          </a>
+          <a href="calendario.html" class="atajo">
+            <span class="atajo-icono" data-icono="calendario"></span>
+            <div><strong>Calendario</strong><span>Turnos del mes</span></div>
+          </a>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Últimas solicitudes -->
+    <section class="bloque-panel" aria-labelledby="tituloUltimas">
+      <div class="tarjeta-cabecera">
+        <h2 id="tituloUltimas" class="titulo-bloque">Últimas solicitudes</h2>
+        <a href="solicitudes.html" class="btn btn-fantasma btn-sm">Ver todas</a>
+      </div>
+      <div id="tablaSolicitudes"><div class="spinner"></div></div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/componentes.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/panel.js"></script>
+  <script src="../js/panel-admin.js"></script>
+  <script>
+    iniciarPanel(['admin', 'coordinador'], 'index.html').then(perfil => {
+      if (!perfil) return;
+
+      document.getElementById('saludo').textContent = `¡Hola, ${perfil.nombre}!`;
+      document.getElementById('fechaHoy').textContent =
+        new Intl.DateTimeFormat('es-MX', {
+          weekday: 'long', day: 'numeric', month: 'long'
+        }).format(new Date()).replace(/^\w/, c => c.toUpperCase());
+
+      document.querySelectorAll('[data-icono]').forEach(el => {
+        el.innerHTML = icono(el.dataset.icono, 20);
+      });
+
+      iniciarDashboard();
+    });
+  </script>
+
+</body>
+</html>

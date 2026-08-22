@@ -1,0 +1,996 @@
+/* ==========================================================================
+   Enlace Enfermero — Paginas publicas
+   Hero, secciones de la landing y bloques de contenido abierto.
+   Se amplia en la Fase 1 con catalogo, perfil y formularios.
+   ========================================================================== */
+
+/* --- Hero (CLAUDE.md 3.4) --- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--azul-800), var(--azul-600) 60%, var(--cyan-600));
+  color: var(--blanco);
+  padding-block: var(--e8) var(--e9);
+}
+.hero h1, .hero h2 { color: var(--blanco); }
+.hero p { color: rgba(255, 255, 255, .88); }
+
+/* Ondas organicas de fondo: nunca simbologia clinica agresiva */
+.hero-ondas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .5;
+}
+.hero > .contenedor { position: relative; z-index: 1; }
+
+.hero-contenido { max-width: 640px; }
+.hero-subtitulo { font-size: 1.0625rem; margin-top: var(--e4); line-height: 1.7; }
+.hero-acciones { display: flex; flex-wrap: wrap; gap: var(--e3); margin-top: var(--e6); }
+.hero-acciones .btn { flex: 1 1 auto; min-width: 200px; }
+
+/* Sello sobre el hero: promesa de cobertura */
+.hero-sello {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--e2);
+  padding: var(--e2) var(--e4);
+  margin-bottom: var(--e4);
+  border-radius: var(--radio-full);
+  background: rgba(255, 255, 255, .14);
+  border: 1px solid rgba(255, 255, 255, .22);
+  font-size: .875rem;
+  font-weight: 600;
+  text-align: left;
+}
+/* El punto se alinea con la primera linea, no con el centro del bloque */
+.hero-sello .punto-estatus { margin-top: 8px; }
+
+/* --- Barra de confianza: metricas en linea --- */
+.barra-confianza {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e5);
+  padding: var(--e6);
+  margin-top: calc(var(--e7) * -1);
+  position: relative;
+  z-index: 2;
+  background: var(--blanco);
+  border-radius: var(--radio-md);
+  box-shadow: var(--sombra-lg);
+}
+.metrica { text-align: center; }
+.metrica .valor {
+  font-family: var(--fuente-titulo);
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--azul-600);
+  font-variant-numeric: tabular-nums;
+}
+.metrica .etiqueta { font-size: .8125rem; color: var(--gris-600); margin-top: var(--e1); }
+
+/* --- Bloque de contenido legal y de texto largo --- */
+.contenido-legal { padding-block: var(--e7); }
+.contenido-legal h2 { margin-top: var(--e6); margin-bottom: var(--e3); }
+.contenido-legal h3 { margin-top: var(--e5); margin-bottom: var(--e2); }
+.contenido-legal p, .contenido-legal li { color: var(--gris-600); }
+.contenido-legal ul, .contenido-legal ol { padding-left: var(--e5); margin-block: var(--e3); }
+.contenido-legal li { margin-bottom: var(--e2); }
+
+@media (min-width: 768px) {
+  .hero { padding-block: var(--e9); }
+  .barra-confianza { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ==========================================================================
+   LANDING — secciones de index.html (CLAUDE.md 8.1)
+   ========================================================================== */
+
+/* --- Hero con mini-buscador --- */
+.hero-grid { display: grid; gap: var(--e7); align-items: center; }
+
+/* El buscador vive dentro del hero, pero su fondo es blanco: hay que
+   revertir el color de texto que el hero aplica a h2 y p. */
+.buscador-hero { text-align: left; }
+.buscador-hero h2 {
+  font-size: 1.125rem;
+  color: var(--azul-900);
+  margin-bottom: var(--e4);
+  padding-bottom: var(--e3);
+  border-bottom: 1px solid var(--gris-200);
+}
+.hero .buscador-hero p { color: var(--gris-400); }
+.buscador-hero .campo { margin-bottom: var(--e3); }
+.buscador-hero .btn { margin-top: var(--e2); }
+.buscador-hero p { margin-top: var(--e3); }
+
+/* --- Aviso de datos de demostracion --- */
+.aviso-demo {
+  max-width: var(--ancho-max);
+  margin: var(--e5) auto 0;
+  padding: var(--e3) var(--e4);
+  border-radius: var(--radio-sm);
+  background: var(--alerta-bg);
+  border: 1px solid rgba(247, 144, 9, .3);
+  color: #B54708;
+  font-size: .875rem;
+  text-align: center;
+}
+.aviso-demo code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .8125rem;
+  background: rgba(255, 255, 255, .6);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* --- Encabezado de seccion con boton a la derecha --- */
+.encabezado-con-accion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+  align-items: flex-start;
+}
+
+/* --- Conmutador cliente / enfermero --- */
+.conmutador {
+  display: inline-flex;
+  gap: var(--e1);
+  padding: var(--e1);
+  margin-bottom: var(--e6);
+  border-radius: var(--radio-full);
+  background: var(--gris-100);
+}
+.conmutador button {
+  padding: var(--e2) var(--e5);
+  border-radius: var(--radio-full);
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--gris-600);
+  transition: background var(--trans), color var(--trans), box-shadow var(--trans);
+}
+.conmutador button.activo {
+  background: var(--blanco);
+  color: var(--azul-600);
+  box-shadow: var(--sombra-sm);
+}
+
+/* --- Pasos de "Cómo funciona" --- */
+.paso-tarjeta { position: relative; padding-top: var(--e5); }
+.paso-numero {
+  display: grid;
+  place-items: center;
+  width: 44px; height: 44px;
+  margin-bottom: var(--e4);
+  border-radius: var(--radio-full);
+  background: var(--azul-600);
+  color: var(--blanco);
+  font-family: var(--fuente-titulo);
+  font-size: 1.125rem;
+  font-weight: 800;
+  box-shadow: var(--sombra-md);
+}
+.paso-tarjeta h3 { margin-bottom: var(--e2); }
+.paso-tarjeta p  { color: var(--gris-600); }
+
+/* --- Tarjetas de servicio --- */
+.tarjeta-servicio { display: flex; flex-direction: column; gap: var(--e3); height: 100%; }
+.tarjeta-servicio:hover { text-decoration: none; }
+.tarjeta-servicio h3 { font-size: 1.125rem; }
+.tarjeta-servicio p  { color: var(--gris-600); font-size: .9375rem; flex: 1; }
+.servicio-icono {
+  display: grid;
+  place-items: center;
+  width: 52px; height: 52px;
+  border-radius: var(--radio-md);
+  background: var(--azul-100);
+  color: var(--azul-600);
+}
+.enlace-flecha {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--azul-600);
+}
+.enlace-flecha::after { content: ' \2192'; transition: transform var(--trans); display: inline-block; }
+.tarjeta-servicio:hover .enlace-flecha::after { transform: translateX(4px); }
+
+/* --- Sección de verificación --- */
+.verificacion { background: var(--azul-900); color: var(--azul-200); }
+.verificacion h2, .verificacion h3 { color: var(--blanco); }
+.verificacion .antetitulo { color: var(--cyan-400); }
+.verificacion .txt-secundario { color: rgba(255, 255, 255, .75); }
+.verificacion p { margin-bottom: var(--e5); line-height: 1.7; }
+
+.verificacion-grid { display: grid; gap: var(--e7); align-items: start; }
+
+.verificacion-lista { list-style: none; display: flex; flex-direction: column; gap: var(--e5); }
+.verificacion-lista li { display: flex; gap: var(--e4); align-items: flex-start; }
+.verificacion-lista h3 { font-size: 1.0625rem; margin-bottom: var(--e1); }
+.verificacion-lista p  { font-size: .9375rem; margin-bottom: 0; color: rgba(255, 255, 255, .72); }
+.verificacion-numero {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px; height: 38px;
+  border-radius: var(--radio-full);
+  background: rgba(34, 211, 238, .16);
+  border: 1px solid rgba(34, 211, 238, .4);
+  color: var(--cyan-400);
+  font-family: var(--fuente-titulo);
+  font-weight: 700;
+  font-size: .9375rem;
+}
+
+/* --- Cuadrícula de especialidades --- */
+.chips-grid { display: flex; flex-wrap: wrap; gap: var(--e3); justify-content: center; }
+
+/* --- Testimonios --- */
+.testimonio { display: flex; flex-direction: column; gap: var(--e3); height: 100%; }
+.testimonio p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--gris-900);
+  flex: 1;
+}
+.testimonio footer { border-top: 1px solid var(--gris-200); padding-top: var(--e3); }
+
+/* --- CTA doble --- */
+.cta-doble { display: grid; grid-template-columns: 1fr; }
+.cta-mitad { padding: var(--e8) var(--e4); display: grid; place-items: center; }
+.cta-contenido { max-width: 460px; text-align: center; }
+.cta-contenido h2 { margin-bottom: var(--e3); }
+.cta-contenido p  { margin-bottom: var(--e5); }
+
+.cta-azul {
+  background: linear-gradient(135deg, var(--azul-800), var(--azul-600));
+  color: var(--blanco);
+}
+.cta-azul h2 { color: var(--blanco); }
+.cta-azul p  { color: rgba(255, 255, 255, .85); }
+.cta-blanca  { background: var(--azul-050); }
+.cta-blanca p { color: var(--gris-600); }
+
+/* --- Preguntas frecuentes --- */
+.faq { border-top: 1px solid var(--gris-200); }
+
+/* ==========================================================================
+   Puntos de corte de la landing
+   ========================================================================== */
+@media (min-width: 768px) {
+  .cta-doble { grid-template-columns: 1fr 1fr; }
+  .cta-mitad { padding: var(--e9) var(--e6); }
+  .encabezado-con-accion {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-grid { grid-template-columns: 1.15fr .85fr; gap: var(--e8); }
+  .hero-contenido { max-width: none; }
+  .verificacion-grid { grid-template-columns: 1fr 1.1fr; gap: var(--e8); }
+}
+
+/* Fila de cinco estrellas de los testimonios */
+.estrellas-fila { display: flex; gap: 2px; color: #F5B544; }
+
+/* ==========================================================================
+   ENCABEZADO DE PAGINA INTERIOR
+   ========================================================================== */
+.encabezado-pagina {
+  background: var(--azul-050);
+  border-bottom: 1px solid var(--gris-200);
+  padding-block: var(--e6);
+}
+.encabezado-pagina h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); margin-bottom: var(--e3); }
+.encabezado-pagina p  { color: var(--gris-600); max-width: 640px; }
+
+.miga { font-size: .8125rem; color: var(--gris-400); margin-bottom: var(--e3); }
+.miga a { color: var(--gris-600); }
+.miga span { margin-inline: var(--e1); }
+
+/* ==========================================================================
+   CATALOGO — enfermeros.html (CLAUDE.md 8.2)
+   ========================================================================== */
+.catalogo-layout { display: grid; gap: var(--e6); padding-block: var(--e6); }
+
+/* Las tarjetas se reparten el ancho que quede junto a la barra de filtros,
+   sin bajar nunca de 290px: por debajo de eso el nombre se parte en tres
+   lineas y la ficha se vuelve ilegible. */
+#resultados { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+
+/* --- Barra de busqueda y orden --- */
+.barra-busqueda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  margin-bottom: var(--e4);
+}
+.campo-busqueda { position: relative; }
+.campo-busqueda svg {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: var(--e4);
+  transform: translateY(-50%);
+  color: var(--gris-400);
+  pointer-events: none;
+}
+.campo-busqueda input { padding-inline-start: var(--e7); }
+/* La X nativa del type=search desentona con el resto de los controles */
+.campo-busqueda input::-webkit-search-cancel-button { appearance: none; }
+
+.barra-busqueda-acciones { display: flex; gap: var(--e3); }
+.barra-busqueda-acciones .btn { flex-shrink: 0; }
+.campo-orden { flex: 1; margin-bottom: 0; }
+
+/* --- Fichas de filtros activos --- */
+.filtros-activos { display: flex; flex-wrap: wrap; gap: var(--e2); margin-bottom: var(--e3); }
+.ficha-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  padding: var(--e1) var(--e3);
+  border-radius: var(--radio-full);
+  background: var(--azul-100);
+  color: var(--azul-700);
+  font-size: .8125rem;
+  font-weight: 600;
+  transition: background var(--trans);
+}
+.ficha-filtro:hover { background: var(--azul-200); }
+.ficha-filtro span[aria-hidden] { font-size: 1.125rem; line-height: 1; opacity: .7; }
+
+.conteo { margin-bottom: var(--e4); }
+
+/* --- Panel de filtros: hoja inferior en movil --- */
+.panel-filtros {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  background: var(--blanco);
+  border-radius: var(--radio-lg) var(--radio-lg) 0 0;
+  box-shadow: var(--sombra-lg);
+  transform: translateY(100%);
+  visibility: hidden;
+  transition: transform var(--trans), visibility var(--trans);
+}
+.panel-filtros.abierto { transform: translateY(0); visibility: visible; }
+
+.panel-filtros-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--e4) var(--e5);
+  border-bottom: 1px solid var(--gris-200);
+}
+.panel-filtros-cabecera h2 { font-size: 1.125rem; }
+.panel-filtros-cuerpo { flex: 1; overflow-y: auto; padding: var(--e5); }
+.panel-filtros-pie { padding: var(--e4) var(--e5); border-top: 1px solid var(--gris-200); }
+
+.velo-filtros {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) - 1);
+  background: rgba(4, 38, 63, .5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--trans), visibility var(--trans);
+}
+.velo-filtros.abierto { opacity: 1; visibility: visible; }
+
+.grupo-filtro { border: 0; padding: 0; margin-bottom: var(--e5); }
+.grupo-filtro legend {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--gris-900);
+  margin-bottom: var(--e3);
+  padding: 0;
+}
+.grupo-filtro .check { margin-bottom: var(--e3); }
+
+.lista-checks { max-height: 260px; overflow-y: auto; padding-right: var(--e2); }
+.lista-checks .check { margin-bottom: var(--e3); font-size: .875rem; }
+
+/* Deslizadores */
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: var(--radio-full);
+  background: var(--gris-200);
+  accent-color: var(--azul-600);
+  cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  /* En escritorio los filtros son una columna fija, no un panel.
+     El catalogo usa un contenedor mas ancho que el resto del sitio para que
+     quepan tres tarjetas legibles junto a los filtros. */
+  .catalogo-layout {
+    grid-template-columns: 280px 1fr;
+    align-items: start;
+    gap: var(--e7);
+    max-width: 1400px;
+  }
+
+  .panel-filtros {
+    position: sticky;
+    inset: auto;
+    top: calc(var(--alto-header) + var(--e5));
+    max-height: calc(100vh - var(--alto-header) - var(--e7));
+    border: 1px solid var(--gris-200);
+    border-radius: var(--radio-md);
+    box-shadow: var(--sombra-sm);
+    transform: none;
+    visibility: visible;
+  }
+  .panel-filtros-pie,
+  .panel-filtros-cabecera .btn-icono,
+  .velo-filtros,
+  #btnFiltros { display: none; }
+
+  .barra-busqueda { flex-direction: row; align-items: center; }
+  .campo-busqueda { flex: 1; }
+  .campo-orden { flex: 0 0 200px; }
+}
+
+/* ==========================================================================
+   PERFIL — perfil.html (CLAUDE.md 8.3)
+   ========================================================================== */
+.perfil-cabecera {
+  background: var(--azul-050);
+  border-bottom: 1px solid var(--gris-200);
+  padding-block: var(--e5) var(--e6);
+}
+
+.perfil-identidad { display: flex; gap: var(--e4); align-items: center; margin-bottom: var(--e5); }
+
+.perfil-foto { flex-shrink: 0; width: 96px; height: 96px; }
+.perfil-foto img, .perfil-foto .inicial {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--blanco);
+  background: var(--azul-100);
+  box-shadow: var(--sombra-md);
+}
+.perfil-foto .inicial {
+  display: grid;
+  place-items: center;
+  font-family: var(--fuente-titulo);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--azul-600);
+}
+
+.perfil-cabecera h1 { font-size: clamp(1.5rem, 4vw, 2.25rem); margin-bottom: var(--e1); }
+.perfil-nivel { color: var(--gris-600); font-weight: 500; }
+.perfil-insignias { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e2); margin-top: var(--e3); }
+
+.perfil-datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--e3);
+  padding: var(--e4);
+  background: var(--blanco);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-md);
+}
+.dato { text-align: center; }
+.dato-valor {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--azul-600);
+  line-height: 1.2;
+}
+.dato-etiqueta { font-size: .75rem; color: var(--gris-600); }
+
+.perfil-layout { display: grid; gap: var(--e6); padding-block: var(--e6); }
+
+/* --- Pestañas --- */
+.pestanas {
+  display: flex;
+  gap: var(--e1);
+  overflow-x: auto;
+  margin-bottom: var(--e5);
+  border-bottom: 1px solid var(--gris-200);
+  -webkit-overflow-scrolling: touch;
+}
+.pestanas button {
+  padding: var(--e3) var(--e4);
+  white-space: nowrap;
+  font-size: .9375rem;
+  font-weight: 600;
+  color: var(--gris-600);
+  border-bottom: 2px solid transparent;
+  transition: color var(--trans), border-color var(--trans);
+}
+.pestanas button:hover  { color: var(--azul-600); }
+.pestanas button.activo { color: var(--azul-600); border-bottom-color: var(--azul-600); }
+
+.pestana-panel h2 { font-size: 1.25rem; margin-bottom: var(--e3); }
+.pestana-panel h3 { font-size: 1rem; margin-top: var(--e5); margin-bottom: var(--e3); }
+.perfil-bio { color: var(--gris-600); line-height: 1.75; }
+
+.chips-linea { display: flex; flex-wrap: wrap; gap: var(--e2); }
+
+.lista-modalidad, .lista-certificaciones { list-style: none; display: flex; flex-direction: column; gap: var(--e2); }
+.lista-modalidad li, .lista-certificaciones li {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  font-size: .9375rem;
+  color: var(--gris-600);
+}
+.lista-modalidad li.si  { color: var(--gris-900); }
+.lista-modalidad li.si svg  { color: var(--exito); }
+.lista-modalidad li.no svg  { color: var(--gris-400); }
+.lista-certificaciones li svg { color: var(--exito); flex-shrink: 0; }
+
+.lista-evaluaciones { display: flex; flex-direction: column; gap: var(--e4); margin-top: var(--e4); }
+.evaluacion { display: flex; flex-direction: column; gap: var(--e3); }
+.evaluacion p { line-height: 1.7; }
+.evaluacion footer { border-top: 1px solid var(--gris-200); padding-top: var(--e3); }
+
+/* --- Panel lateral --- */
+.perfil-lateral { display: flex; flex-direction: column; gap: var(--e4); }
+.perfil-accion { display: flex; flex-direction: column; gap: var(--e3); }
+.perfil-accion h2 { font-size: 1.125rem; }
+
+.calendario-disponibilidad { display: flex; flex-direction: column; gap: var(--e2); margin-top: var(--e4); }
+.dia-disponible {
+  display: flex;
+  align-items: center;
+  gap: var(--e4);
+  padding: var(--e2) var(--e3);
+  border-radius: var(--radio-sm);
+  background: var(--gris-050);
+}
+.dia-fecha { text-align: center; flex-shrink: 0; width: 40px; }
+.dia-semana {
+  display: block;
+  font-size: .6875rem;
+  text-transform: uppercase;
+  color: var(--gris-400);
+  font-weight: 600;
+}
+.dia-numero {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--azul-900);
+  line-height: 1.1;
+}
+.dia-turnos { display: flex; flex-wrap: wrap; gap: var(--e1); }
+
+@media (min-width: 768px) {
+  .perfil-identidad { gap: var(--e5); }
+  .perfil-foto { width: 128px; height: 128px; }
+  .perfil-datos { max-width: 460px; }
+}
+
+@media (min-width: 1024px) {
+  .perfil-layout { grid-template-columns: 1fr 340px; align-items: start; gap: var(--e7); }
+  .perfil-lateral { position: sticky; top: calc(var(--alto-header) + var(--e5)); }
+}
+
+/* ==========================================================================
+   FORMULARIOS MULTIPASO — solicitar.html y unete.html
+   ========================================================================== */
+fieldset[data-paso] { border: 0; padding: 0; margin: 0; }
+fieldset[data-paso] h2 {
+  font-size: 1.25rem;
+  margin-bottom: var(--e5);
+  outline: none;   /* recibe foco solo para anunciar el paso */
+}
+
+.acciones-formulario {
+  display: flex;
+  gap: var(--e3);
+  margin-top: var(--e6);
+  padding-top: var(--e5);
+  border-top: 1px solid var(--gris-200);
+}
+.acciones-formulario .btn { flex: 1; }
+
+/* Casillas en pastilla, para los días de la semana */
+.pastillas { display: flex; flex-wrap: wrap; gap: var(--e2); }
+.check-pastilla { cursor: pointer; }
+.check-pastilla input { position: absolute; opacity: 0; width: 0; height: 0; }
+.check-pastilla span {
+  display: inline-block;
+  padding: var(--e2) var(--e4);
+  border-radius: var(--radio-full);
+  border: 1.5px solid var(--gris-200);
+  background: var(--blanco);
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--gris-600);
+  transition: all var(--trans);
+}
+.check-pastilla input:checked + span {
+  background: var(--azul-600);
+  border-color: var(--azul-600);
+  color: var(--blanco);
+}
+.check-pastilla input:focus-visible + span {
+  outline: 3px solid var(--azul-600);
+  outline-offset: 2px;
+}
+
+.lista-checks-corta {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: var(--e3);
+  border: 1px solid var(--gris-200);
+  border-radius: var(--radio-sm);
+  background: var(--gris-050);
+}
+
+/* Profesional preseleccionado desde su perfil */
+.preseleccion {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e5);
+  border-radius: var(--radio-md);
+  background: var(--azul-050);
+  border: 1px solid var(--azul-200);
+}
+/* El :not() es necesario: sin el, este flex:1 tambien alcanza al contenedor
+   de la foto y le anula su ancho fijo, dejando el avatar estirado. */
+.preseleccion > div:not(.preseleccion-foto) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.preseleccion strong { font-family: var(--fuente-titulo); color: var(--azul-900); }
+.preseleccion-foto {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--azul-100);
+  color: var(--azul-600);
+  font-weight: 700;
+  overflow: hidden;
+}
+.preseleccion-foto img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Pantalla de confirmación con folio */
+.confirmacion-tarjeta { text-align: center; padding: var(--e7) var(--e5); }
+.confirmacion-tarjeta h1 { font-size: clamp(1.5rem, 4vw, 2rem); margin-bottom: var(--e3); }
+.confirmacion-tarjeta p  { color: var(--gris-600); max-width: 480px; margin-inline: auto; }
+.confirmacion-icono {
+  display: grid;
+  place-items: center;
+  width: 72px; height: 72px;
+  margin: 0 auto var(--e5);
+  border-radius: 50%;
+  background: var(--exito-bg);
+  color: var(--exito);
+}
+.folio-caja {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--e1);
+  padding: var(--e4) var(--e6);
+  margin-top: var(--e5);
+  border-radius: var(--radio-md);
+  background: var(--azul-050);
+  border: 1px dashed var(--azul-400);
+}
+.folio-etiqueta { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--gris-600); }
+.folio-numero {
+  font-family: var(--fuente-titulo);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--azul-600);
+  letter-spacing: .04em;
+}
+.confirmacion-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e3);
+  justify-content: center;
+  margin-top: var(--e6);
+}
+
+/* --- Beneficios del registro de enfermeros --- */
+.beneficios {
+  display: grid;
+  gap: var(--e3);
+  margin-bottom: var(--e6);
+}
+.beneficios > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+  padding: var(--e4);
+  border-radius: var(--radio-md);
+  background: var(--azul-050);
+  border: 1px solid var(--azul-200);
+}
+.beneficios strong { font-family: var(--fuente-titulo); color: var(--azul-900); }
+.beneficios span   { font-size: .875rem; color: var(--gris-600); }
+
+/* --- Lista de documentos requeridos --- */
+.lista-documentos {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  margin-block: var(--e5);
+}
+.lista-documentos li {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  border-radius: var(--radio-sm);
+  background: var(--gris-050);
+  border: 1px solid var(--gris-200);
+  font-size: .9375rem;
+}
+.lista-documentos svg { color: var(--azul-600); flex-shrink: 0; }
+
+.nota-privacidad {
+  padding: var(--e4);
+  margin-bottom: var(--e5);
+  border-radius: var(--radio-sm);
+  background: var(--exito-bg);
+  border: 1px solid rgba(18, 183, 106, .3);
+  font-size: .875rem;
+  line-height: 1.7;
+  color: #05784A;
+}
+.nota-privacidad strong { display: block; margin-bottom: var(--e1); }
+
+@media (min-width: 768px) {
+  .beneficios { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ==========================================================================
+   PAGINAS INTERIORES: servicios, contacto, legales y 404
+   ========================================================================== */
+.servicio-detalle { max-width: var(--ancho-max-texto); }
+.servicio-texto h2 { margin-bottom: var(--e4); }
+.servicio-texto h3 { margin-top: var(--e6); margin-bottom: var(--e3); font-size: 1.0625rem; }
+.servicio-texto p  { color: var(--gris-600); line-height: 1.75; }
+.servicio-texto .btn { margin-top: var(--e6); }
+
+.lista-marcada { list-style: none; display: flex; flex-direction: column; gap: var(--e3); }
+.lista-marcada li {
+  position: relative;
+  padding-left: var(--e6);
+  color: var(--gris-600);
+  line-height: 1.7;
+}
+.lista-marcada li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: .55em;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cyan-400);
+  border: 2px solid var(--azul-600);
+}
+
+.nota-servicio {
+  padding: var(--e4);
+  margin-top: var(--e5);
+  border-radius: var(--radio-sm);
+  background: var(--azul-050);
+  border-left: 3px solid var(--azul-600);
+  font-size: .9375rem;
+}
+
+/* --- Contacto --- */
+.tarjeta-contacto { display: flex; flex-direction: column; gap: var(--e3); height: 100%; }
+.tarjeta-contacto:hover { text-decoration: none; }
+.tarjeta-contacto h2 { font-size: 1.125rem; }
+.tarjeta-contacto p  { color: var(--gris-600); font-size: .9375rem; flex: 1; }
+.contacto-icono {
+  display: grid;
+  place-items: center;
+  width: 52px; height: 52px;
+  border-radius: var(--radio-md);
+  background: var(--azul-100);
+  color: var(--azul-600);
+}
+.contacto-icono.verde { background: #E7F8EE; color: #128C4A; }
+
+.bloque-info {
+  display: grid;
+  gap: var(--e5);
+  margin-top: var(--e7);
+  padding: var(--e6);
+  border-radius: var(--radio-md);
+  background: var(--gris-050);
+  border: 1px solid var(--gris-200);
+}
+.bloque-info h3 { font-size: 1rem; margin-bottom: var(--e2); }
+.bloque-info p  { color: var(--gris-600); font-size: .9375rem; }
+
+/* --- Marcadores de contenido legal pendiente --- */
+.aviso-pendiente {
+  padding: var(--e4) var(--e5);
+  margin-bottom: var(--e6);
+  border-radius: var(--radio-md);
+  background: var(--alerta-bg);
+  border: 1px solid var(--alerta);
+  color: #B54708;
+  font-size: .9375rem;
+  line-height: 1.7;
+}
+.aviso-pendiente strong { display: block; margin-bottom: var(--e1); }
+
+.por-definir {
+  background: #FEF08A;
+  color: #713F12;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: .9em;
+}
+
+/* --- 404 --- */
+.error-numero {
+  font-family: var(--fuente-titulo);
+  font-size: clamp(5rem, 18vw, 9rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--azul-100);
+  letter-spacing: -.04em;
+}
+
+@media (min-width: 768px) {
+  .bloque-info { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ==========================================================================
+   SELECCION DE PROFESIONALES (CLAUDE.md 15.3)
+   ========================================================================== */
+.barra-seleccion {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-header);
+  background: var(--blanco);
+  border-top: 1px solid var(--gris-200);
+  box-shadow: 0 -8px 24px rgba(4, 38, 63, .1);
+  padding-block: var(--e3);
+  animation: sube-barra 250ms var(--trans);
+}
+@keyframes sube-barra { from { transform: translateY(100%); } }
+
+.barra-seleccion-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+}
+.barra-seleccion-info { min-width: 0; }
+.barra-seleccion-info strong {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: .9375rem;
+  color: var(--azul-900);
+  margin-bottom: var(--e2);
+}
+.barra-seleccion-fichas { display: flex; flex-wrap: wrap; gap: var(--e2); }
+.barra-seleccion-acciones { display: flex; gap: var(--e2); }
+.barra-seleccion-acciones .btn { flex: 1; }
+
+/* El boton flotante de WhatsApp y el pie de pagina se apartan de la barra */
+body.con-barra-seleccion .btn-whatsapp { inset-block-end: 120px; }
+body.con-barra-seleccion .footer { padding-bottom: var(--e9); }
+
+/* --- Preseleccionados dentro del formulario de solicitud --- */
+.preseleccion-caja {
+  padding: var(--e4);
+  margin-bottom: var(--e5);
+  border-radius: var(--radio-md);
+  background: var(--azul-050);
+  border: 1px solid var(--azul-200);
+}
+.preseleccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  font-family: var(--fuente-titulo);
+  font-weight: 700;
+  color: var(--azul-900);
+  margin-bottom: var(--e4);
+}
+.preseleccion-titulo svg { color: var(--azul-600); flex-shrink: 0; }
+.preseleccion-lista { display: flex; flex-direction: column; gap: var(--e2); margin-bottom: var(--e3); }
+.preseleccion-lista .preseleccion {
+  margin-bottom: 0;
+  background: var(--blanco);
+  border-color: var(--gris-200);
+}
+
+@media (min-width: 768px) {
+  .barra-seleccion-cuerpo {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e5);
+  }
+  .barra-seleccion-acciones .btn { flex: 0 0 auto; }
+}
+
+/* Nota sobre la modalidad de trabajo en el registro de enfermeros */
+.nota-modalidad {
+  padding: var(--e4);
+  margin-bottom: var(--e6);
+  border-radius: var(--radio-sm);
+  background: var(--gris-050);
+  border-left: 3px solid var(--azul-600);
+  font-size: .9375rem;
+  line-height: 1.7;
+  color: var(--gris-600);
+}
+.nota-modalidad strong { display: block; color: var(--azul-900); margin-bottom: var(--e1); }
+
+/* --- Opciones de radio con descripción, para el nivel de atención --- */
+.opciones-radio { display: flex; flex-direction: column; gap: var(--e2); }
+
+.opcion-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e3);
+  padding: var(--e4);
+  border: 1.5px solid var(--gris-200);
+  border-radius: var(--radio-sm);
+  background: var(--blanco);
+  cursor: pointer;
+  transition: border-color var(--trans), background var(--trans);
+}
+.opcion-radio:hover { border-color: var(--azul-400); background: var(--azul-050); }
+.opcion-radio input {
+  width: 20px; height: 20px;
+  min-height: 0;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--azul-600);
+  cursor: pointer;
+}
+.opcion-radio:has(input:checked) {
+  border-color: var(--azul-600);
+  background: var(--azul-050);
+  box-shadow: 0 0 0 1px var(--azul-600);
+}
+.opcion-radio:has(input:focus-visible) { outline: 3px solid var(--azul-600); outline-offset: 2px; }
+
+.opcion-cuerpo { display: flex; flex-direction: column; gap: 2px; }
+.opcion-cuerpo strong { font-size: .9375rem; color: var(--gris-900); }
+.opcion-cuerpo small  { font-size: .8125rem; color: var(--gris-600); line-height: 1.5; }
+
+/* Aviso de que la tarifa se cotiza, no está tabulada */
+.nota-cotizacion {
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e5);
+  border-radius: var(--radio-sm);
+  background: var(--azul-050);
+  border-left: 3px solid var(--azul-600);
+  font-size: .875rem;
+  line-height: 1.6;
+  color: var(--gris-600);
+}

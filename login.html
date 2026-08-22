@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión — Enlace Enfermero</title>
+  <meta name="description" content="Accede a tu panel de Enlace Enfermero.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/panel.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <main class="acceso">
+
+    <!-- ===== Marca ===== -->
+    <section class="acceso-marca">
+      <svg class="acceso-ondas" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M0,560 C140,490 260,620 420,560 C520,522 560,560 600,540 L600,800 L0,800 Z" fill="rgba(255,255,255,.07)"/>
+        <path d="M0,650 C160,590 300,700 460,650 C540,624 570,650 600,636 L600,800 L0,800 Z" fill="rgba(255,255,255,.05)"/>
+        <circle cx="480" cy="140" r="150" fill="rgba(255,255,255,.05)"/>
+      </svg>
+
+      <h2>Personal de enfermería verificado, cuando lo necesitas</h2>
+      <p>Entra a tu panel para dar seguimiento a tus servicios.</p>
+
+      <ul class="acceso-lista">
+        <li>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>
+          </svg>
+          <span>Cada perfil pasa por verificación de identidad, cédula y referencias</span>
+        </li>
+        <li>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>Cobertura en menos de 24 horas en la Zona Metropolitana</span>
+        </li>
+        <li>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          </svg>
+          <span>La agencia coordina el servicio de principio a fin</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== Formulario ===== -->
+    <section class="acceso-panel">
+      <div class="acceso-caja">
+        <a href="index.html" class="acceso-logo">
+          <img src="assets/logo.svg" alt="" width="40" height="40">
+          <span class="logo-texto">Enlace<span>Enfermero</span></span>
+        </a>
+
+        <h1>Iniciar sesión</h1>
+        <p>Entra con el correo que registraste.</p>
+
+        <form id="formLogin" novalidate>
+          <div class="campo">
+            <label for="lEmail">Correo electrónico</label>
+            <input type="email" id="lEmail" name="email" required
+                   autocomplete="email" autofocus placeholder="tu@correo.com">
+          </div>
+
+          <div class="campo">
+            <label for="lClave">Contraseña</label>
+            <div class="campo-clave">
+              <input type="password" id="lClave" name="clave" required
+                     autocomplete="current-password" placeholder="Tu contraseña">
+              <button type="button" class="btn-ver-clave" data-ver="lClave"
+                      aria-label="Mostrar contraseña"></button>
+            </div>
+          </div>
+
+          <div class="acceso-enlaces">
+            <label class="check">
+              <input type="checkbox" id="lRecordar" checked>
+              <span>Mantener sesión</span>
+            </label>
+            <a href="recuperar.html">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primario btn-bloque btn-lg" id="btnEntrar">
+            Entrar
+          </button>
+        </form>
+
+        <div class="acceso-pie">
+          ¿No tienes cuenta? <a href="registro.html">Regístrate como cliente</a><br>
+          ¿Eres enfermero/a? <a href="unete.html">Únete al equipo</a>
+        </div>
+
+        <div class="cuentas-prueba oculto" id="cuentasPrueba">
+          <strong>Entorno de desarrollo — cuentas de prueba</strong>
+          <table>
+            <tr><td>Agencia</td><td><button type="button" data-cuenta="admin@enlace.test">admin@enlace.test</button></td></tr>
+            <tr><td>Coordinación</td><td><button type="button" data-cuenta="coordinador@enlace.test">coordinador@enlace.test</button></td></tr>
+            <tr><td>Enfermero</td><td><button type="button" data-cuenta="enfermero@enlace.test">enfermero@enlace.test</button></td></tr>
+            <tr><td>Cliente</td><td><button type="button" data-cuenta="cliente@enlace.test">cliente@enlace.test</button></td></tr>
+          </table>
+          <p style="margin-top:var(--e2)">Contraseña: <code>prueba1234</code></p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Si ya hay sesión, no tiene caso mostrar el formulario
+    sesionEnPaginaPublica().then(s => {
+      if (s) window.location.replace(s.destino);
+    });
+
+    // En desarrollo se muestran las cuentas de prueba
+    if (ES_LOCAL) {
+      const caja = document.getElementById('cuentasPrueba');
+      caja.classList.remove('oculto');
+      caja.querySelectorAll('[data-cuenta]').forEach(b =>
+        b.addEventListener('click', () => {
+          document.getElementById('lEmail').value = b.dataset.cuenta;
+          document.getElementById('lClave').value = 'prueba1234';
+          document.getElementById('lClave').focus();
+        }));
+    }
+
+    activarVerClave();
+
+    const form = document.getElementById('formLogin');
+    const boton = document.getElementById('btnEntrar');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limpiarErrores(form);
+
+      const email = document.getElementById('lEmail');
+      const clave = document.getElementById('lClave');
+      let valido = true;
+
+      if (!validar.email(email.value)) {
+        marcarError(email, 'Escribe un correo válido.');
+        valido = false;
+      }
+      if (!validar.requerido(clave.value)) {
+        marcarError(clave, 'Escribe tu contraseña.');
+        valido = false;
+      }
+      if (!valido) return;
+
+      boton.classList.add('cargando');
+      boton.disabled = true;
+
+      const r = await iniciarSesion(email.value, clave.value);
+
+      if (!r.ok) {
+        boton.classList.remove('cargando');
+        boton.disabled = false;
+        toast(r.error, 'error');
+        clave.value = '';
+        clave.focus();
+        return;
+      }
+
+      // Si venía de una página protegida, se le devuelve ahí
+      const volver = paramURL('volver');
+      window.location.replace(volver ? decodeURIComponent(volver) : r.destino);
+    });
+  </script>
+
+</body>
+</html>

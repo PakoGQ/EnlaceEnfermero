@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Enlace Enfermero">
+  <!-- Version para fondo oscuro: footer y hero -->
+  <path d="M24 3.5 42 10.6v13.9c0 10.4-8.9 17.3-18 20-9.1-2.7-18-9.6-18-20V10.6z"
+        fill="#FFFFFF" fill-opacity=".14" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M12.5 24.5h5.2l3.1-7.4 5 15 3-7.6h5.7" fill="none" stroke="#22D3EE"
+        stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

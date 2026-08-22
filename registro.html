@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear cuenta — Enlace Enfermero</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/panel.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <main class="acceso">
+    <section class="acceso-marca">
+      <svg class="acceso-ondas" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M0,560 C140,490 260,620 420,560 C520,522 560,560 600,540 L600,800 L0,800 Z" fill="rgba(255,255,255,.07)"/>
+        <path d="M0,650 C160,590 300,700 460,650 C540,624 570,650 600,636 L600,800 L0,800 Z" fill="rgba(255,255,255,.05)"/>
+        <circle cx="480" cy="140" r="150" fill="rgba(255,255,255,.05)"/>
+      </svg>
+      <h2>Tu personal de enfermería, en un solo lugar</h2>
+      <p>Con tu cuenta puedes solicitar personal, dar seguimiento a cada servicio
+         y consultar tu historial de facturación.</p>
+      <ul class="acceso-lista">
+        <li>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Solicita en minutos, con tus datos ya precargados</span>
+        </li>
+        <li>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Sigue el estatus de cada solicitud en tiempo real</span>
+        </li>
+        <li>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Vuelve a solicitar al personal que ya conoces</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="acceso-panel">
+      <div class="acceso-caja">
+        <a href="index.html" class="acceso-logo">
+          <img src="assets/logo.svg" alt="" width="40" height="40">
+          <span class="logo-texto">Enlace<span>Enfermero</span></span>
+        </a>
+
+        <div id="confirmacion" class="oculto"></div>
+
+        <div id="zonaFormulario">
+          <h1>Crear cuenta</h1>
+          <p>Para hospitales, clínicas, asilos y familias que necesitan personal.</p>
+
+          <form id="formRegistro" novalidate>
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="rNombre">Nombre(s) <span class="requerido">*</span></label>
+                <input type="text" id="rNombre" name="nombre" required autocomplete="given-name">
+              </div>
+              <div class="campo">
+                <label for="rApellidos">Apellidos <span class="requerido">*</span></label>
+                <input type="text" id="rApellidos" name="apellidos" required autocomplete="family-name">
+              </div>
+            </div>
+
+            <div class="campo">
+              <label for="rEmail">Correo electrónico <span class="requerido">*</span></label>
+              <input type="email" id="rEmail" name="email" required autocomplete="email">
+            </div>
+
+            <div class="campo">
+              <label for="rTelefono">Teléfono o WhatsApp <span class="requerido">*</span></label>
+              <input type="tel" id="rTelefono" name="telefono" required
+                     autocomplete="tel" placeholder="33 1234 5678">
+            </div>
+
+            <div class="campo">
+              <label for="rClave">Contraseña <span class="requerido">*</span></label>
+              <div class="campo-clave">
+                <input type="password" id="rClave" name="clave" required
+                       autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+                <button type="button" class="btn-ver-clave" data-ver="rClave"
+                        aria-label="Mostrar contraseña"></button>
+              </div>
+              <div class="fuerza-clave" id="medidorClave"></div>
+            </div>
+
+            <div class="campo">
+              <label class="check">
+                <input type="checkbox" name="privacidad" required>
+                <span>He leído y acepto el
+                  <a href="aviso-privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>
+                  y los <a href="terminos.html" target="_blank" rel="noopener">términos y condiciones</a>.
+                  <span class="requerido">*</span></span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primario btn-bloque btn-lg" id="btnCrear">
+              Crear cuenta
+            </button>
+          </form>
+
+          <div class="acceso-pie">
+            ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a><br>
+            ¿Eres enfermero/a? <a href="unete.html">Únete al equipo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/publico.js"></script>
+  <script>
+    sesionEnPaginaPublica().then(s => { if (s) window.location.replace(s.destino); });
+
+    activarVerClave();
+    activarMedidorClave('rClave', 'medidorClave');
+
+    const form = document.getElementById('formRegistro');
+    const boton = document.getElementById('btnCrear');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      limpiarErrores(form);
+
+      const campos = {
+        nombre:    document.getElementById('rNombre'),
+        apellidos: document.getElementById('rApellidos'),
+        email:     document.getElementById('rEmail'),
+        telefono:  document.getElementById('rTelefono'),
+        clave:     document.getElementById('rClave')
+      };
+      let valido = true;
+
+      if (!validar.requerido(campos.nombre.value))    { marcarError(campos.nombre, 'Escribe tu nombre.'); valido = false; }
+      if (!validar.requerido(campos.apellidos.value)) { marcarError(campos.apellidos, 'Escribe tus apellidos.'); valido = false; }
+      if (!validar.email(campos.email.value))         { marcarError(campos.email, 'Revisa el correo, parece incompleto.'); valido = false; }
+      if (!validar.telefono(campos.telefono.value))   { marcarError(campos.telefono, 'Escribe 10 dígitos, con lada.'); valido = false; }
+      if (!validar.minimo(campos.clave.value, 8))     { marcarError(campos.clave, 'La contraseña necesita al menos 8 caracteres.'); valido = false; }
+
+      const privacidad = form.querySelector('[name="privacidad"]');
+      if (!privacidad.checked) { marcarError(privacidad, 'Necesitamos tu confirmación para continuar.'); valido = false; }
+
+      if (!valido) {
+        toast('Revisa los datos marcados en rojo.', 'error');
+        return;
+      }
+
+      boton.classList.add('cargando');
+      boton.disabled = true;
+
+      const r = await registrarCliente({
+        nombre:    campos.nombre.value.trim(),
+        apellidos: campos.apellidos.value.trim(),
+        email:     campos.email.value,
+        telefono:  campos.telefono.value,
+        contrasena: campos.clave.value
+      });
+
+      boton.classList.remove('cargando');
+      boton.disabled = false;
+
+      if (!r.ok) { toast(r.error, 'error'); return; }
+
+      if (r.requiereConfirmacion) {
+        mostrarConfirmacion({
+          titulo: 'Revisa tu correo',
+          texto: 'Te enviamos un enlace a ' + campos.email.value.trim() +
+                 ' para confirmar tu cuenta. Ábrelo y podrás entrar.',
+          acciones: [{ href: 'login.html', texto: 'Ir a iniciar sesión', clase: 'btn-primario' }]
+        });
+      } else {
+        window.location.replace('cliente/index.html');
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Entorno local de Supabase (Docker). No va al repositorio ni a GitHub Pages.
+supabase/.temp/
+supabase/.branches/
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Respaldos y archivos de trabajo
+*.dump
+*.bak
+
+# Entorno local de Supabase
+supabase/.temp/
+supabase/.branches/
+
+# Respaldos y archivos de trabajo
+/Respaldos/
+*.log

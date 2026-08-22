@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trabaja con nosotros — Enlace Enfermero</title>
+  <meta name="description" content="Regístrate sin costo como enfermero, verifica tu perfil y recibe ofertas de turno constantes en la Zona Metropolitana de Guadalajara.">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/publico.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <a href="#contenido" class="salta-contenido">Saltar al contenido</a>
+  <header id="header"></header>
+
+  <main id="contenido" class="con-header-fijo">
+    <div class="contenedor contenedor-angosto seccion">
+
+      <div id="confirmacion" class="oculto"></div>
+
+      <div id="zonaFormulario">
+        <div class="encabezado-seccion centro">
+          <span class="antetitulo">Únete al equipo</span>
+          <h1>Trabaja con nosotros</h1>
+          <p>Registro sin costo. Verificamos tu perfil en 24 a 48 horas y empiezas
+             a recibir ofertas de turno en la ZMG.</p>
+        </div>
+
+        <div class="beneficios">
+          <div><strong>Sin cuota</strong><span>El registro y la verificación no te cuestan nada.</span></div>
+          <div><strong>Tú decides</strong><span>Marcas tu disponibilidad y aceptas solo lo que te acomode.</span></div>
+          <div><strong>Pago quincenal</strong><span>Conoces la tarifa antes de aceptar cada turno.</span></div>
+        </div>
+
+        <p class="nota-modalidad">
+          <strong>Trabajarás como profesional independiente.</strong>
+          No es una contratación laboral: cada turno es una prestación de servicios.
+          Nosotros conseguimos y cerramos el servicio con el cliente, y te pagamos
+          la tarifa acordada por cada turno cubierto.
+        </p>
+
+        <div class="pasos" id="barraPasos"></div>
+
+        <form id="formRegistro" novalidate>
+
+          <!-- ===== Paso 1: datos personales ===== -->
+          <fieldset data-paso="1">
+            <h2 tabindex="-1">Tus datos</h2>
+
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="uNombre">Nombre(s) <span class="requerido">*</span></label>
+                <input type="text" id="uNombre" name="nombre" required autocomplete="given-name">
+              </div>
+              <div class="campo">
+                <label for="uApellidos">Apellidos <span class="requerido">*</span></label>
+                <input type="text" id="uApellidos" name="apellidos" required autocomplete="family-name">
+              </div>
+            </div>
+
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="uTelefono">WhatsApp <span class="requerido">*</span></label>
+                <input type="tel" id="uTelefono" name="telefono" required
+                       autocomplete="tel" placeholder="33 1234 5678">
+              </div>
+              <div class="campo">
+                <label for="uEmail">Correo electrónico <span class="requerido">*</span></label>
+                <input type="email" id="uEmail" name="email" required autocomplete="email">
+              </div>
+            </div>
+
+            <div class="campos-fila">
+              <div class="campo">
+                <label for="uNacimiento">Fecha de nacimiento</label>
+                <input type="date" id="uNacimiento" name="nacimiento" data-validar="nacimiento">
+              </div>
+              <div class="campo">
+                <label for="uGenero">Género</label>
+                <select id="uGenero" name="genero">
+                  <option value="">Prefiero no decirlo</option>
+                  <option value="mujer">Mujer</option>
+                  <option value="hombre">Hombre</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- ===== Paso 2: formación ===== -->
+          <fieldset data-paso="2" class="oculto">
+            <h2 tabindex="-1">Tu formación</h2>
+
+            <div class="campo">
+              <label for="uNivel">Nivel de enfermería <span class="requerido">*</span></label>
+              <select id="uNivel" name="nivel" required></select>
+            </div>
+
+            <div class="campo">
+              <label for="uInstitucion">Institución donde estudiaste</label>
+              <input type="text" id="uInstitucion" name="institucion"
+                     placeholder="Ejemplo: Universidad de Guadalajara">
+            </div>
+
+            <div class="campo" id="campoCedula">
+              <label for="uCedula">Cédula profesional <span class="requerido">*</span></label>
+              <input type="text" id="uCedula" name="cedula" data-validar="cedula"
+                     inputmode="numeric" placeholder="12345678">
+              <span class="ayuda">La validamos ante el Registro Nacional de Profesionistas.</span>
+            </div>
+          </fieldset>
+
+          <!-- ===== Paso 3: experiencia ===== -->
+          <fieldset data-paso="3" class="oculto">
+            <h2 tabindex="-1">Tu experiencia</h2>
+
+            <div class="campo">
+              <label for="uExperiencia">Años de experiencia <span class="requerido">*</span></label>
+              <input type="number" id="uExperiencia" name="experiencia" min="0" max="60" required placeholder="5">
+            </div>
+
+            <div class="campo">
+              <span class="etiqueta">Especialidades <span class="requerido">*</span></span>
+              <div class="lista-checks lista-checks-corta" id="uEspecialidades" data-minimo-uno></div>
+            </div>
+
+            <div class="campo">
+              <span class="etiqueta">Certificaciones</span>
+              <div class="lista-checks lista-checks-corta" id="uCertificaciones"></div>
+            </div>
+
+            <div class="campo">
+              <label for="uIdiomas">Idiomas que hablas</label>
+              <input type="text" id="uIdiomas" name="idiomas" placeholder="Español, Inglés">
+              <span class="ayuda">Sepáralos con comas.</span>
+            </div>
+
+            <div class="campo">
+              <label for="uBio">Cuéntanos de ti</label>
+              <textarea id="uBio" name="bio" maxlength="600"
+                placeholder="En qué te especializas, con qué tipo de paciente tienes más experiencia y qué te distingue."></textarea>
+              <span class="ayuda">Máximo 600 caracteres. Esto es lo que verán los clientes.</span>
+            </div>
+          </fieldset>
+
+          <!-- ===== Paso 4: disponibilidad ===== -->
+          <fieldset data-paso="4" class="oculto">
+            <h2 tabindex="-1">Tu disponibilidad</h2>
+
+            <div class="campo">
+              <span class="etiqueta">Zonas donde puedes trabajar <span class="requerido">*</span></span>
+              <div class="lista-checks lista-checks-corta" id="uZonas" data-minimo-uno></div>
+            </div>
+
+            <div class="campo">
+              <span class="etiqueta">Turnos que aceptas</span>
+              <div class="pastillas" id="uTurnos"></div>
+            </div>
+
+            <div class="campo">
+              <label class="check">
+                <input type="checkbox" name="inmediato">
+                <span>Estoy disponible de inmediato</span>
+              </label>
+              <label class="check">
+                <input type="checkbox" name="foraneo">
+                <span>Acepto servicios fuera de la zona metropolitana</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- ===== Paso 5: documentos ===== -->
+          <fieldset data-paso="5" class="oculto">
+            <h2 tabindex="-1">Documentos que vamos a pedirte</h2>
+
+            <p class="txt-secundario">
+              No necesitas subirlos ahora. En cuanto recibamos tu registro te
+              contactamos por WhatsApp para que nos los envíes y arrancamos la
+              verificación.
+            </p>
+
+            <ul class="lista-documentos" id="uListaDocumentos"></ul>
+
+            <div class="nota-privacidad">
+              <strong>Tus documentos están protegidos.</strong>
+              Se guardan en un almacenamiento privado al que solo tiene acceso el
+              equipo de verificación, y cada consulta queda registrada. Nunca se
+              comparten con los clientes.
+            </div>
+
+            <div class="campo">
+              <label class="check">
+                <input type="checkbox" name="privacidad" required>
+                <span>He leído y acepto el
+                  <a href="aviso-privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>
+                  y autorizo el tratamiento de mis datos personales y documentos
+                  para fines de verificación y colocación laboral. <span class="requerido">*</span></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="acciones-formulario">
+            <button type="button" class="btn btn-secundario oculto" id="btnAtras">Atrás</button>
+            <button type="button" class="btn btn-primario" id="btnSiguiente">Continuar</button>
+            <button type="submit" class="btn btn-primario oculto" id="btnEnviar">Enviar registro</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/datos-demo.js"></script>
+  <script src="js/publico.js"></script>
+  <script>
+    iniciarPagina('');
+    iniciarRegistro();
+  </script>
+
+</body>
+</html>

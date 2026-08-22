@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Enlace Enfermero">
+  <defs>
+    <linearGradient id="ee-azul" x1="8" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0D6EFD"/>
+      <stop offset="1" stop-color="#0891B2"/>
+    </linearGradient>
+  </defs>
+  <!-- Escudo: confianza y verificacion, eje del modelo de negocio -->
+  <path d="M24 3.5 42 10.6v13.9c0 10.4-8.9 17.3-18 20-9.1-2.7-18-9.6-18-20V10.6z" fill="url(#ee-azul)"/>
+  <!-- Linea de pulso: salud, sin simbologia clinica agresiva -->
+  <path d="M12.5 24.5h5.2l3.1-7.4 5 15 3-7.6h5.7" fill="none" stroke="#FFFFFF"
+        stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

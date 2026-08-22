@@ -1,0 +1,77 @@
+/* ==========================================================================
+   Enlace Enfermero — Tokens de diseno
+   Fuente unica de verdad para color, tipografia, espaciado y sombras.
+   Definidos en CLAUDE.md seccion 3.2. No modificar sin autorizacion.
+   ========================================================================== */
+
+:root {
+  /* --- Azules: identidad principal --- */
+  --azul-900: #04263F;   /* texto sobre claro, footer */
+  --azul-800: #073B63;   /* headers oscuros */
+  --azul-700: #0B5394;   /* hover de botones */
+  --azul-600: #0D6EFD;   /* AZUL PRIMARIO: botones, links, acentos */
+  --azul-500: #3B8DF5;   /* estados activos */
+  --azul-400: #6BABF8;   /* bordes activos */
+  --azul-200: #BFDBFE;   /* fondos de badge */
+  --azul-100: #E3F0FF;   /* fondos de seccion */
+  --azul-050: #F4F9FF;   /* fondo alterno de pagina */
+
+  /* --- Cyan / turquesa: acento secundario "salud" --- */
+  --cyan-600: #0891B2;
+  --cyan-400: #22D3EE;
+  --cyan-100: #CFFAFE;
+
+  /* --- Neutros --- */
+  --blanco:   #FFFFFF;
+  --gris-050: #F8FAFC;
+  --gris-100: #F1F5F9;
+  --gris-200: #E2E8F0;   /* bordes */
+  --gris-400: #94A3B8;   /* texto deshabilitado */
+  --gris-600: #475569;   /* texto secundario */
+  --gris-900: #0F172A;   /* texto principal */
+
+  /* --- Semanticos --- */
+  --exito:    #12B76A;   /* verificado, disponible, completado */
+  --exito-bg: #E7F8F0;
+  --alerta:   #F79009;   /* pendiente, por vencer */
+  --alerta-bg:#FEF3E2;
+  --error:    #D92D20;   /* rechazado, cancelado, documento vencido */
+  --error-bg: #FEE4E2;
+  --info:     var(--azul-600);
+
+  /* --- Sombras --- */
+  --sombra-sm: 0 1px 2px rgba(4, 38, 63, .06);
+  --sombra-md: 0 4px 16px rgba(4, 38, 63, .08);
+  --sombra-lg: 0 12px 32px rgba(4, 38, 63, .12);
+
+  /* --- Radios --- */
+  --radio-sm: 8px;
+  --radio-md: 14px;
+  --radio-lg: 22px;
+  --radio-full: 999px;
+
+  /* --- Espaciado (escala de 4) --- */
+  --e1: 4px;  --e2: 8px;  --e3: 12px; --e4: 16px;
+  --e5: 24px; --e6: 32px; --e7: 48px; --e8: 64px; --e9: 96px;
+
+  /* --- Tipografia --- */
+  --fuente-titulo: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --fuente-texto:  'Inter', system-ui, -apple-system, sans-serif;
+
+  /* --- Transiciones --- */
+  --trans: 200ms cubic-bezier(.4, 0, .2, 1);
+
+  /* --- Derivados de layout (no estan en el spec, son de implementacion) --- */
+  --ancho-max: 1200px;       /* contenedor principal */
+  --ancho-max-texto: 720px;  /* bloques de lectura larga */
+  --alto-header: 68px;       /* header fijo; usado por scroll-padding */
+  /* Escala de capas. El menu movil vive DENTRO del header, asi que hereda su
+     contexto de apilamiento: el velo debe quedar por debajo de --z-header
+     para no atenuar el panel, y el boton flotante por debajo del velo. */
+  --z-flotante: 90;
+  --z-velo: 95;
+  --z-header: 100;
+  --z-menu: 150;
+  --z-modal: 200;
+  --z-toast: 300;
+}

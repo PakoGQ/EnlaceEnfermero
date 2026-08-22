@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración — Enlace Enfermero</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/componentes.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/panel.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="panel">
+
+  <header id="panelCabecera"></header>
+  <aside id="panelNav"></aside>
+
+  <main class="panel-contenido">
+
+    <div class="panel-encabezado">
+      <div>
+        <h1>Configuración</h1>
+        <p>Reparto, datos de contacto, tarifas de referencia y programa de referidos.</p>
+      </div>
+      <div class="panel-acciones"></div>
+    </div>
+
+    <div id="contenido"><div class="spinner"></div></div>
+
+  </main>
+
+  <div class="velo-detalle" id="veloDetalle"></div>
+  <aside class="panel-detalle" id="panelDetalle" aria-label="Detalle"></aside>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/componentes.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/panel.js"></script>
+  <script src="../js/admin-comun.js"></script>
+  <script src="../js/admin-configuracion.js"></script>
+  <script>
+    iniciarPanel(['admin'], 'configuracion.html').then(perfil => {
+      if (perfil) iniciarConfiguracion(perfil);
+    });
+  </script>
+
+</body>
+</html>

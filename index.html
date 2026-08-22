@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enlace Enfermero — Personal de enfermería verificado en Guadalajara</title>
+  <meta name="description" content="Agencia de colocación de personal de enfermería verificado en la Zona Metropolitana de Guadalajara. Turnos hospitalarios, cuidado domiciliario y colocación permanente. Cobertura en menos de 24 horas.">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="canonical" href="https://enlaceenfermero.mx/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Enlace Enfermero — Personal de enfermería verificado">
+  <meta property="og:description" content="Enfermeros titulados y verificados para hospitales, clínicas, asilos y familias en la Zona Metropolitana de Guadalajara.">
+  <meta property="og:locale" content="es_MX">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/publico.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <a href="#contenido" class="salta-contenido">Saltar al contenido</a>
+  <header id="header"></header>
+
+  <main id="contenido" class="con-header-fijo">
+
+    <!-- ================= 1. HERO ================= -->
+    <section class="hero">
+      <svg class="hero-ondas" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M0,470 C240,390 420,550 720,480 C1020,410 1200,520 1440,450 L1440,700 L0,700 Z" fill="rgba(255,255,255,.07)"/>
+        <path d="M0,540 C260,470 460,600 760,540 C1060,480 1240,580 1440,530 L1440,700 L0,700 Z" fill="rgba(255,255,255,.05)"/>
+        <circle cx="1210" cy="130" r="200" fill="rgba(255,255,255,.05)"/>
+        <circle cx="200" cy="70" r="130" fill="rgba(255,255,255,.04)"/>
+      </svg>
+
+      <div class="contenedor hero-grid">
+        <div class="hero-contenido">
+          <span class="hero-sello">
+            <span class="punto-estatus disponible"></span>
+            Cobertura en menos de 24 horas en la ZMG
+          </span>
+          <h1>Personal de enfermería verificado, cuando lo necesitas</h1>
+          <p class="hero-subtitulo">
+            Conectamos hospitales, clínicas, asilos y familias con enfermeros titulados.
+            Nosotros validamos cédula, documentos y experiencia antes de que alguien
+            llegue a tu servicio.
+          </p>
+          <div class="hero-acciones">
+            <a href="solicitar.html" class="btn btn-claro btn-lg">Solicitar personal</a>
+            <a href="unete.html" class="btn btn-contorno-claro btn-lg">Soy enfermero/a</a>
+          </div>
+        </div>
+
+        <!-- Mini-buscador que lleva al catálogo con los filtros aplicados -->
+        <form class="tarjeta buscador-hero" id="buscadorHero">
+          <h2>Encuentra al profesional indicado</h2>
+          <div class="campo">
+            <label for="bhNivel">Nivel de enfermería</label>
+            <select id="bhNivel" name="nivel"></select>
+          </div>
+          <div class="campo">
+            <label for="bhMunicipio">Municipio</label>
+            <select id="bhMunicipio" name="municipio"></select>
+          </div>
+          <div class="campo">
+            <label for="bhFecha">¿Desde cuándo?</label>
+            <input type="date" id="bhFecha" name="fecha">
+          </div>
+          <button type="submit" class="btn btn-primario btn-bloque">Ver disponibles</button>
+          <p class="texto-xs txt-tenue txt-centro">Sin costo por consultar. Te respondemos el mismo día.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ================= 2. BARRA DE CONFIANZA ================= -->
+    <div class="contenedor">
+      <div class="barra-confianza" id="metricas">
+        <div class="metrica">
+          <div class="valor" data-metrica="verificados">—</div>
+          <div class="etiqueta">Enfermeros verificados</div>
+        </div>
+        <div class="metrica">
+          <div class="valor" data-metrica="servicios">—</div>
+          <div class="etiqueta">Turnos cubiertos</div>
+        </div>
+        <div class="metrica">
+          <div class="valor" data-metrica="promedio">—</div>
+          <div class="etiqueta">Calificación promedio</div>
+        </div>
+        <div class="metrica">
+          <div class="valor" data-metrica="respuesta">—</div>
+          <div class="etiqueta">Tiempo de respuesta</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="aviso-demo oculto" id="avisoDemo">
+      Estás viendo datos de demostración. Conecta Supabase en <code>js/config.js</code> para usar información real.
+    </p>
+
+    <!-- ================= 3. CÓMO FUNCIONA ================= -->
+    <section class="seccion">
+      <div class="contenedor">
+        <div class="encabezado-seccion centro aparece">
+          <span class="antetitulo">Cómo funciona</span>
+          <h2>Tres pasos, sin vueltas</h2>
+        </div>
+
+        <div class="conmutador aparece" role="tablist" aria-label="Elige tu perfil">
+          <button type="button" class="activo" data-pasos="cliente" role="tab" aria-selected="true">Necesito personal</button>
+          <button type="button" data-pasos="enfermero" role="tab" aria-selected="false">Soy enfermero/a</button>
+        </div>
+
+        <div class="grid grid-3 pasos-lista" data-panel-pasos="cliente">
+          <article class="paso-tarjeta aparece">
+            <span class="paso-numero">1</span>
+            <h3>Cuéntanos qué necesitas</h3>
+            <p>Nivel, especialidad, turnos y fechas. Toma menos de tres minutos y recibes un folio de inmediato.</p>
+          </article>
+          <article class="paso-tarjeta aparece">
+            <span class="paso-numero">2</span>
+            <h3>Te proponemos candidatos</h3>
+            <p>Seleccionamos entre nuestro personal verificado según tu solicitud y te enviamos los perfiles compatibles.</p>
+          </article>
+          <article class="paso-tarjeta aparece">
+            <span class="paso-numero">3</span>
+            <h3>Confirmamos y cubrimos</h3>
+            <p>Coordinamos el turno, damos seguimiento a la asistencia y respondemos por el servicio.</p>
+          </article>
+        </div>
+
+        <div class="grid grid-3 pasos-lista oculto" data-panel-pasos="enfermero">
+          <article class="paso-tarjeta aparece">
+            <span class="paso-numero">1</span>
+            <h3>Regístrate y sube documentos</h3>
+            <p>INE, CURP, comprobante de domicilio y, según tu nivel, cédula y título. Sin costo de inscripción.</p>
+          </article>
+          <article class="paso-tarjeta aparece">
+            <span class="paso-numero">2</span>
+            <h3>Verificamos tu perfil</h3>
+            <p>Revisamos tus documentos en 24 a 48 horas y publicamos tu perfil con el sello de verificado.</p>
+          </article>
+          <article class="paso-tarjeta aparece">
+            <span class="paso-numero">3</span>
+            <h3>Recibe turnos y cobra a tiempo</h3>
+            <p>Marcas tu disponibilidad, aceptas las propuestas que te acomoden y cobras por quincena.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 4. SERVICIOS ================= -->
+    <section class="seccion fondo-claro">
+      <div class="contenedor">
+        <div class="encabezado-seccion centro aparece">
+          <span class="antetitulo">Servicios</span>
+          <h2>Cubrimos cuatro necesidades</h2>
+          <p>Desde un turno suelto hasta la contratación definitiva de tu plantilla.</p>
+        </div>
+
+        <div class="grid grid-4">
+          <a href="servicios.html#domiciliario" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
+            <span class="servicio-icono" data-icono="casa"></span>
+            <h3>Cuidado domiciliario</h3>
+            <p>Turnos de 8, 12 o 24 horas en casa del paciente. Adulto mayor, postoperatorio y cuidados paliativos.</p>
+            <span class="enlace-flecha">Ver detalle</span>
+          </a>
+          <a href="servicios.html#hospitalario" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
+            <span class="servicio-icono" data-icono="hospital"></span>
+            <h3>Turnos hospitalarios</h3>
+            <p>Cobertura de incapacidades, vacaciones y picos de ocupación en hospitales, clínicas y asilos.</p>
+            <span class="enlace-flecha">Ver detalle</span>
+          </a>
+          <a href="servicios.html#permanente" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
+            <span class="servicio-icono" data-icono="maletin"></span>
+            <h3>Colocación permanente</h3>
+            <p>Reclutamiento para tu plantilla fija. Te presentamos candidatos filtrados y verificados.</p>
+            <span class="enlace-flecha">Ver detalle</span>
+          </a>
+          <a href="servicios.html#eventos" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
+            <span class="servicio-icono" data-icono="usuarios"></span>
+            <h3>Cobertura de eventos</h3>
+            <p>Personal de enfermería para eventos, filmaciones, jornadas deportivas y traslados de pacientes.</p>
+            <span class="enlace-flecha">Ver detalle</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. PERSONAL DESTACADO ================= -->
+    <section class="seccion">
+      <div class="contenedor">
+        <div class="encabezado-seccion aparece encabezado-con-accion">
+          <div>
+            <span class="antetitulo">Personal destacado</span>
+            <h2>Algunos de nuestros profesionales</h2>
+          </div>
+          <a href="enfermeros.html" class="btn btn-secundario">Ver todo el personal</a>
+        </div>
+        <div class="grid grid-3" id="destacados"></div>
+      </div>
+    </section>
+
+    <!-- ================= 6. VERIFICACIÓN ================= -->
+    <section class="seccion verificacion">
+      <div class="contenedor">
+        <div class="verificacion-grid">
+          <div class="aparece">
+            <span class="antetitulo">Nuestro diferenciador</span>
+            <h2>Nadie llega a tu servicio sin pasar por aquí</h2>
+            <p class="txt-secundario">
+              Verificar a una persona que va a cuidar a un paciente no es un trámite:
+              es la razón por la que existimos. Este es el proceso completo, y no
+              publicamos a nadie que no lo haya terminado.
+            </p>
+            <a href="unete.html" class="btn btn-primario">Quiero verificarme</a>
+          </div>
+
+          <ol class="verificacion-lista aparece">
+            <li>
+              <span class="verificacion-numero">1</span>
+              <div>
+                <h3>Identidad</h3>
+                <p>INE vigente, CURP y comprobante de domicilio cotejados uno por uno.</p>
+              </div>
+            </li>
+            <li>
+              <span class="verificacion-numero">2</span>
+              <div>
+                <h3>Cédula profesional</h3>
+                <p>Validamos la cédula contra el Registro Nacional de Profesionistas de la SEP.</p>
+              </div>
+            </li>
+            <li>
+              <span class="verificacion-numero">3</span>
+              <div>
+                <h3>Formación y certificaciones</h3>
+                <p>Título o constancia de estudios, además de BLS, ACLS y demás certificaciones que declare.</p>
+              </div>
+            </li>
+            <li>
+              <span class="verificacion-numero">4</span>
+              <div>
+                <h3>Referencias laborales</h3>
+                <p>Contactamos a sus empleos anteriores y confirmamos la experiencia declarada.</p>
+              </div>
+            </li>
+            <li>
+              <span class="verificacion-numero">5</span>
+              <div>
+                <h3>Vigencia permanente</h3>
+                <p>Los documentos con fecha de caducidad se renuevan. Si uno vence, el perfil se despublica solo.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 7. ESPECIALIDADES ================= -->
+    <section class="seccion fondo-claro">
+      <div class="contenedor">
+        <div class="encabezado-seccion centro aparece">
+          <span class="antetitulo">Especialidades</span>
+          <h2>¿Qué perfil estás buscando?</h2>
+          <p>Toca una especialidad para ver a quién tenemos disponible.</p>
+        </div>
+        <div class="chips-grid aparece" id="chipsEspecialidades"></div>
+      </div>
+    </section>
+
+    <!-- ================= 8. TESTIMONIOS ================= -->
+    <section class="seccion">
+      <div class="contenedor">
+        <div class="encabezado-seccion centro aparece">
+          <span class="antetitulo">Testimonios</span>
+          <h2>Lo que dicen quienes ya nos contrataron</h2>
+        </div>
+        <div class="grid grid-3" id="testimonios"></div>
+      </div>
+    </section>
+
+    <!-- ================= 9. CTA DOBLE ================= -->
+    <section class="cta-doble">
+      <div class="cta-mitad cta-azul">
+        <div class="cta-contenido">
+          <h2>¿Necesitas personal?</h2>
+          <p>Dinos qué requieres y te proponemos candidatos verificados. Respondemos el mismo día.</p>
+          <a href="solicitar.html" class="btn btn-claro btn-lg">Solicitar personal</a>
+        </div>
+      </div>
+      <div class="cta-mitad cta-blanca">
+        <div class="cta-contenido">
+          <h2>¿Eres enfermero/a?</h2>
+          <p>Regístrate sin costo, verifica tu perfil y recibe ofertas de turno constantes en la ZMG.</p>
+          <a href="unete.html" class="btn btn-primario btn-lg">Registrarme</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 10. PREGUNTAS FRECUENTES ================= -->
+    <section class="seccion">
+      <div class="contenedor contenedor-angosto">
+        <div class="encabezado-seccion centro aparece">
+          <span class="antetitulo">Preguntas frecuentes</span>
+          <h2>Lo que más nos preguntan</h2>
+        </div>
+        <div class="faq" id="faq"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+  <!-- Respaldo mientras no hay credenciales de Supabase. Quitar en producción. -->
+  <script src="js/datos-demo.js"></script>
+  <script src="js/publico.js"></script>
+  <script>
+    iniciarPagina('index.html');
+    iniciarLanding();
+
+    // Los iconos de las tarjetas de servicio se pintan desde el catálogo de SVG
+    document.querySelectorAll('[data-icono]').forEach(el => {
+      el.innerHTML = icono(el.dataset.icono, 26);
+    });
+
+    // --- Preguntas frecuentes (CLAUDE.md 8.1, punto 11) ---
+    const PREGUNTAS = [
+      ['¿Cuánto tardan en cubrir un turno?',
+       'En la Zona Metropolitana de Guadalajara cubrimos la mayoría de las solicitudes en menos de 24 horas. Si es urgente, márcalo en el formulario y lo atendemos con prioridad.'],
+      ['¿Qué significa que el personal esté verificado?',
+       'Que cotejamos su identidad, validamos su cédula profesional ante la SEP, revisamos su título o constancia de estudios, confirmamos sus certificaciones y contactamos sus referencias laborales. Si un documento vence, el perfil se despublica hasta que lo renueve.'],
+      ['¿Puedo pedir a una persona en específico?',
+       'Sí. Desde el perfil de cada profesional puedes solicitarlo directamente. Confirmamos su disponibilidad para tus fechas y, si no puede, te proponemos a alguien con el mismo perfil.'],
+      ['¿Qué pasa si el enfermero no llega?',
+       'Respondemos nosotros. Registramos la incidencia, buscamos reemplazo de inmediato y no se te cobra el turno no cubierto.'],
+      ['¿Trabajan con hospitales o también con familias?',
+       'Con ambos. Atendemos hospitales, clínicas, asilos, casas de retiro y aseguradoras, y también a familias que necesitan cuidado en casa.'],
+      ['¿Cuánto cuesta el servicio?',
+       'No manejamos una lista de precios fija, porque dos servicios rara vez son iguales. La tarifa depende de la condición del paciente, del nivel de atención que requiere (no es lo mismo acompañar y observar que manejar ventilación), de los procedimientos necesarios, de si es en domicilio o en una institución, del turno, la duración y cuántas personas necesitas. Cuéntanos tu caso y te cotizamos sin costo: el precio queda cerrado por escrito antes de que confirmes nada.'],
+      ['Soy enfermero/a, ¿me cobran por registrarme?',
+       'No. El registro y la verificación son gratuitos y no tienen ningún costo para ti. Trabajas como profesional independiente: nosotros cotizamos y cobramos al cliente, y te pagamos la tarifa que acordamos contigo por cada turno. Sabes cuánto vas a recibir antes de aceptar la propuesta.'],
+      ['¿Ofrecen atención médica o diagnóstico?',
+       'No. Enlace Enfermero es una agencia de colocación de personal. El personal que colocamos actúa siempre bajo indicación médica y dentro del alcance de su nivel de práctica profesional. Ante una urgencia, llama al 911.']
+    ];
+
+    document.getElementById('faq').innerHTML = PREGUNTAS.map(([pregunta, respuesta], i) => `
+      <div class="acordeon aparece">
+        <button type="button" class="acordeon-boton" aria-expanded="false" aria-controls="faq-${i}">
+          <span>${esc(pregunta)}</span>
+          ${icono('flechaAbajo', 20)}
+        </button>
+        <div class="acordeon-panel" id="faq-${i}">
+          <div><p>${esc(respuesta)}</p></div>
+        </div>
+      </div>`).join('');
+
+    activarAcordeones();
+    activarAparicion();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar contraseña — Enlace Enfermero</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/panel.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <main class="acceso">
+    <section class="acceso-marca">
+      <svg class="acceso-ondas" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M0,560 C140,490 260,620 420,560 C520,522 560,560 600,540 L600,800 L0,800 Z" fill="rgba(255,255,255,.07)"/>
+        <path d="M0,650 C160,590 300,700 460,650 C540,624 570,650 600,636 L600,800 L0,800 Z" fill="rgba(255,255,255,.05)"/>
+        <circle cx="480" cy="140" r="150" fill="rgba(255,255,255,.05)"/>
+      </svg>
+      <h2>Recuperar el acceso</h2>
+      <p>Te mandamos un enlace por correo para que puedas elegir una contraseña nueva.
+         El enlace sirve una sola vez y caduca en una hora.</p>
+    </section>
+
+    <section class="acceso-panel">
+      <div class="acceso-caja">
+        <a href="index.html" class="acceso-logo">
+          <img src="assets/logo.svg" alt="" width="40" height="40">
+          <span class="logo-texto">Enlace<span>Enfermero</span></span>
+        </a>
+
+        <div id="confirmacion" class="oculto"></div>
+
+        <!-- ===== Paso 1: pedir el enlace ===== -->
+        <div id="zonaFormulario">
+          <h1>¿Olvidaste tu contraseña?</h1>
+          <p>Escribe tu correo y te mandamos un enlace para restablecerla.</p>
+
+          <form id="formPedir" novalidate>
+            <div class="campo">
+              <label for="pEmail">Correo electrónico</label>
+              <input type="email" id="pEmail" name="email" required autocomplete="email" autofocus>
+            </div>
+            <button type="submit" class="btn btn-primario btn-bloque btn-lg" id="btnPedir">
+              Enviar enlace
+            </button>
+          </form>
+
+          <div class="acceso-pie">
+            <a href="login.html">Volver a iniciar sesión</a>
+          </div>
+        </div>
+
+        <!-- ===== Paso 2: nueva contraseña (se llega desde el correo) ===== -->
+        <div id="zonaNueva" class="oculto">
+          <h1>Elige una contraseña nueva</h1>
+          <p>Debe tener al menos 8 caracteres.</p>
+
+          <form id="formNueva" novalidate>
+            <div class="campo">
+              <label for="nClave">Contraseña nueva</label>
+              <div class="campo-clave">
+                <input type="password" id="nClave" name="clave" required autocomplete="new-password">
+                <button type="button" class="btn-ver-clave" data-ver="nClave"
+                        aria-label="Mostrar contraseña"></button>
+              </div>
+              <div class="fuerza-clave" id="medidorNueva"></div>
+            </div>
+
+            <div class="campo">
+              <label for="nClave2">Confírmala</label>
+              <div class="campo-clave">
+                <input type="password" id="nClave2" name="clave2" required autocomplete="new-password">
+                <button type="button" class="btn-ver-clave" data-ver="nClave2"
+                        aria-label="Mostrar contraseña"></button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primario btn-bloque btn-lg" id="btnGuardar">
+              Guardar y entrar
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/publico.js"></script>
+  <script>
+    activarVerClave();
+    activarMedidorClave('nClave', 'medidorNueva');
+
+    // Supabase avisa por evento cuando el enlace del correo abre esta página
+    // en modo recuperación; entonces se muestra el formulario de contraseña.
+    if (supabaseListo()) {
+      db.auth.onAuthStateChange((evento) => {
+        if (evento === 'PASSWORD_RECOVERY') mostrarPasoNueva();
+      });
+    }
+    // El token también puede venir en el fragmento de la URL
+    if (window.location.hash.includes('type=recovery')) mostrarPasoNueva();
+
+    function mostrarPasoNueva() {
+      document.getElementById('zonaFormulario').classList.add('oculto');
+      document.getElementById('zonaNueva').classList.remove('oculto');
+      document.getElementById('nClave').focus();
+    }
+
+    // --- Paso 1 ---
+    document.getElementById('formPedir').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const campo = document.getElementById('pEmail');
+      const boton = document.getElementById('btnPedir');
+      limpiarError(campo);
+
+      if (!validar.email(campo.value)) {
+        marcarError(campo, 'Escribe un correo válido.');
+        return;
+      }
+
+      boton.classList.add('cargando');
+      boton.disabled = true;
+      const r = await enviarRecuperacion(campo.value);
+      boton.classList.remove('cargando');
+      boton.disabled = false;
+
+      if (!r.ok) { toast(r.error, 'error'); return; }
+
+      // Se responde igual exista o no la cuenta: lo contrario permitiría
+      // averiguar quién está registrado en la plataforma.
+      mostrarConfirmacion({
+        titulo: 'Revisa tu correo',
+        texto: 'Si hay una cuenta con ese correo, te acabamos de enviar un enlace ' +
+               'para restablecer tu contraseña. Caduca en una hora.',
+        acciones: [{ href: 'login.html', texto: 'Volver a iniciar sesión', clase: 'btn-secundario' }]
+      });
+    });
+
+    // --- Paso 2 ---
+    document.getElementById('formNueva').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const c1 = document.getElementById('nClave');
+      const c2 = document.getElementById('nClave2');
+      const boton = document.getElementById('btnGuardar');
+      limpiarError(c1); limpiarError(c2);
+
+      if (!validar.minimo(c1.value, 8)) {
+        marcarError(c1, 'La contraseña necesita al menos 8 caracteres.');
+        return;
+      }
+      if (c1.value !== c2.value) {
+        marcarError(c2, 'Las dos contraseñas no coinciden.');
+        return;
+      }
+
+      boton.classList.add('cargando');
+      boton.disabled = true;
+      const r = await actualizarContrasena(c1.value);
+      boton.classList.remove('cargando');
+      boton.disabled = false;
+
+      if (!r.ok) { toast(r.error, 'error'); return; }
+
+      toast('Tu contraseña quedó actualizada.', 'exito');
+      const perfil = await sesionActual(true);
+      setTimeout(() => {
+        window.location.replace(perfil ? rutaSegunRol(perfil.rol) : 'login.html');
+      }, 1200);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificación de documentos — Enlace Enfermero</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D6EFD">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/componentes.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/panel.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="panel">
+
+  <header id="panelCabecera"></header>
+  <aside id="panelNav"></aside>
+
+  <main class="panel-contenido">
+
+    <div class="panel-encabezado">
+      <div>
+        <h1>Verificación de documentos</h1>
+        <p>Nadie aparece en el catálogo sin pasar por aquí. Revisa cada documento
+           y publica el perfil cuando el expediente esté completo.</p>
+      </div>
+    </div>
+
+    <div class="filtros-barra" id="filtros"></div>
+
+    <div id="listaDocumentos"><div class="spinner"></div></div>
+
+  </main>
+
+  <!-- Expediente completo del profesional -->
+  <div class="velo-detalle" id="veloExpediente"></div>
+  <aside class="panel-detalle" id="panelExpediente" aria-label="Expediente"></aside>
+
+  <!-- Visor del archivo -->
+  <div class="modal-velo modal-visor" id="modalVisor">
+    <div class="modal visor">
+      <header class="modal-cabecera">
+        <div>
+          <h3 id="visorTitulo"></h3>
+          <span class="texto-sm txt-secundario" id="visorSubtitulo"></span>
+        </div>
+        <button type="button" class="btn-icono" id="visorCerrar" aria-label="Cerrar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </header>
+      <div class="modal-cuerpo visor-cuerpo" id="visorCuerpo"></div>
+      <footer class="modal-pie visor-pie" id="visorPie"></footer>
+    </div>
+  </div>
+
+  <!-- Invitación a publicar cuando el expediente queda completo -->
+  <div class="modal-velo" id="modalVerificar">
+    <div class="modal">
+      <div class="modal-cuerpo txt-centro" id="verificarCuerpo"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/componentes.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/panel.js"></script>
+  <script src="../js/panel-admin.js"></script>
+  <script src="../js/admin-documentos.js"></script>
+  <script>
+    iniciarPanel(['admin', 'coordinador'], 'documentos.html').then(perfil => {
+      if (perfil) iniciarDocumentos();
+    });
+  </script>
+
+</body>
+</html>

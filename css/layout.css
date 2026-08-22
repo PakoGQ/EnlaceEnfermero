@@ -1,0 +1,253 @@
+/* ==========================================================================
+   Enlace Enfermero — Layout
+   Contenedores, grids, header fijo y footer. Mobile-first.
+   ========================================================================== */
+
+/* --- Contenedores --- */
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-max);
+  margin-inline: auto;
+  padding-inline: var(--e4);
+}
+.contenedor-angosto { max-width: 840px; }
+.contenedor-texto   { max-width: var(--ancho-max-texto); }
+
+/* --- Grid responsivo generico: 1 col movil, se define por modificador --- */
+.grid { display: grid; gap: var(--e5); }
+.grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+
+/* --- Encabezado de seccion --- */
+.encabezado-seccion { margin-bottom: var(--e6); }
+.encabezado-seccion.centro { text-align: center; margin-inline: auto; max-width: 640px; }
+.encabezado-seccion .antetitulo {
+  display: inline-block;
+  font-family: var(--fuente-titulo);
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--azul-600);
+  margin-bottom: var(--e2);
+}
+.encabezado-seccion p { color: var(--gris-600); margin-top: var(--e3); }
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+.header {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--z-header);
+  height: var(--alto-header);
+  border-bottom: 1px solid var(--gris-200);
+  transition: box-shadow var(--trans);
+}
+
+/* El desenfoque va en un pseudo-elemento y NO en el header.
+   `backdrop-filter` crea un bloque contenedor para los descendientes
+   `position: fixed`, y eso dejaba al menu movil anclado al header de 68px
+   en lugar del viewport, colapsando su altura. */
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.header.desplazado { box-shadow: var(--sombra-md); }
+
+.header .contenedor {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e4);
+}
+
+/* El header fijo tapa el inicio del documento: se compensa en el <main> */
+.con-header-fijo { padding-top: var(--alto-header); }
+
+/* --- Logo --- */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  flex-shrink: 0;
+}
+.logo:hover { text-decoration: none; }
+.logo img, .logo svg { height: 36px; width: auto; }
+.logo-texto {
+  font-family: var(--fuente-titulo);
+  font-weight: 800;
+  font-size: 1.0625rem;
+  line-height: 1.1;
+  color: var(--azul-900);
+  letter-spacing: -.02em;
+}
+.logo-texto span { display: block; font-size: .625rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--cyan-600); }
+
+/* --- Navegacion: en movil es un panel lateral --- */
+.nav {
+  position: fixed;
+  inset-block: var(--alto-header) 0;
+  inset-inline-end: 0;
+  width: min(320px, 84vw);
+  z-index: var(--z-menu);
+  background: var(--blanco);
+  border-left: 1px solid var(--gris-200);
+  box-shadow: var(--sombra-lg);
+  padding: var(--e5) var(--e4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  overflow-y: auto;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform var(--trans), visibility var(--trans);
+}
+.nav.abierto { transform: translateX(0); visibility: visible; }
+
+.nav a.nav-link {
+  display: block;
+  padding: var(--e3) var(--e3);
+  border-radius: var(--radio-sm);
+  font-weight: 500;
+  color: var(--gris-900);
+  transition: background var(--trans), color var(--trans);
+}
+.nav a.nav-link:hover { background: var(--azul-050); color: var(--azul-600); text-decoration: none; }
+.nav a.nav-link.activo { color: var(--azul-600); font-weight: 600; }
+
+.nav-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  margin-top: var(--e4);
+  padding-top: var(--e4);
+  border-top: 1px solid var(--gris-200);
+}
+.nav-acciones .btn { width: 100%; }
+
+/* Capa oscura detras del menu movil */
+.velo-nav {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-velo);
+  background: rgba(4, 38, 63, .45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--trans), visibility var(--trans);
+}
+.velo-nav.abierto { opacity: 1; visibility: visible; }
+
+/* --- Boton hamburguesa --- */
+.btn-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border-radius: var(--radio-sm);
+  flex-shrink: 0;
+}
+.btn-menu span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--azul-900);
+  border-radius: 2px;
+  transition: transform var(--trans), opacity var(--trans);
+}
+.btn-menu[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.btn-menu[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.btn-menu[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.footer {
+  background: var(--azul-900);
+  color: var(--azul-200);
+  padding-block: var(--e7) var(--e5);
+  margin-top: auto;
+}
+.footer a { color: var(--azul-200); }
+.footer a:hover { color: var(--blanco); }
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--e6);
+  padding-bottom: var(--e6);
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+.footer-marca { max-width: 340px; }
+.footer-marca p { margin-top: var(--e3); font-size: .9375rem; line-height: 1.7; }
+.footer-marca .logo-texto { color: var(--blanco); }
+
+.footer h4 {
+  color: var(--blanco);
+  font-size: .875rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: var(--e3);
+}
+.footer ul { display: flex; flex-direction: column; gap: var(--e2); list-style: none; }
+.footer ul a { font-size: .9375rem; }
+
+.footer-contacto li { display: flex; align-items: flex-start; gap: var(--e2); font-size: .9375rem; }
+.footer-contacto svg { flex-shrink: 0; margin-top: 3px; color: var(--cyan-400); }
+
+.footer-redes { display: flex; gap: var(--e3); margin-top: var(--e4); }
+.footer-redes a {
+  display: grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  border-radius: var(--radio-full);
+  background: rgba(255, 255, 255, .08);
+  transition: background var(--trans), transform var(--trans);
+}
+.footer-redes a:hover { background: var(--azul-600); transform: translateY(-2px); }
+
+.footer-legal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  padding-top: var(--e5);
+  font-size: .8125rem;
+}
+.footer-legal nav { display: flex; flex-wrap: wrap; gap: var(--e2) var(--e4); }
+
+/* Aviso legal obligatorio: la plataforma no presta servicios medicos (CLAUDE.md 11) */
+.footer-aviso-legal {
+  margin-top: var(--e4);
+  padding: var(--e3) var(--e4);
+  border-radius: var(--radio-sm);
+  background: rgba(255, 255, 255, .06);
+  font-size: .8125rem;
+  line-height: 1.6;
+  color: var(--azul-200);
+}
+
+/* --- Boton flotante de WhatsApp --- */
+.btn-whatsapp {
+  position: fixed;
+  inset-block-end: var(--e5);
+  inset-inline-end: var(--e4);
+  z-index: var(--z-flotante);
+  display: grid;
+  place-items: center;
+  width: 56px; height: 56px;
+  border-radius: var(--radio-full);
+  background: #25D366;
+  color: var(--blanco);
+  box-shadow: var(--sombra-lg);
+  transition: transform var(--trans);
+}
+.btn-whatsapp:hover { transform: scale(1.06); }

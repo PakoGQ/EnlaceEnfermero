@@ -1,0 +1,103 @@
+/* ==========================================================================
+   Enlace Enfermero — Responsive
+   Todas las media queries del sitio viven aqui. El resto del CSS es movil.
+   Puntos de corte: 480 (movil grande), 768 (tablet), 1024 (laptop), 1280 (desktop).
+   IMPORTANTE: este archivo se carga SIEMPRE al final de la cascada.
+   ========================================================================== */
+
+/* ==========================================================================
+   >= 480px — movil grande
+   ========================================================================== */
+@media (min-width: 480px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+
+  .nav-acciones { flex-direction: row; }
+  .modal-velo { place-items: center; padding: var(--e5); }
+  .modal { max-width: 560px; border-radius: var(--radio-lg); }
+  .footer-legal { flex-direction: row; align-items: center; justify-content: space-between; }
+}
+
+/* ==========================================================================
+   >= 768px — tablet
+   ========================================================================== */
+@media (min-width: 768px) {
+  .contenedor { padding-inline: var(--e5); }
+
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+
+  .seccion    { padding-block: var(--e8); }
+  .seccion-lg { padding-block: var(--e9); }
+
+  .campos-fila { grid-template-columns: repeat(2, 1fr); }
+
+  .footer-grid { grid-template-columns: 1.4fr 1fr 1fr; gap: var(--e7); }
+
+  .toasts { inset-inline: auto var(--e5); width: 380px; }
+
+  .tarjeta-enfermero { padding: var(--e5); }
+}
+
+/* ==========================================================================
+   >= 1024px — laptop: el menu deja de ser panel lateral
+   ========================================================================== */
+@media (min-width: 1024px) {
+  :root { --alto-header: 76px; }
+
+  .btn-menu { display: none; }
+
+  /* Navegacion horizontal dentro del header */
+  .nav {
+    position: static;
+    width: auto;
+    inset: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--e2);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+    transform: none;
+    visibility: visible;
+  }
+  .nav a.nav-link { padding: var(--e2) var(--e3); font-size: .9375rem; }
+  .nav a.nav-link.activo { background: var(--azul-050); }
+
+  .nav-acciones {
+    flex-direction: row;
+    margin-top: 0;
+    margin-left: var(--e4);
+    padding-top: 0;
+    border-top: 0;
+    border-left: 1px solid var(--gris-200);
+    padding-left: var(--e4);
+  }
+  .nav-acciones .btn { width: auto; }
+
+  .velo-nav { display: none; }
+
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .logo img, .logo svg { height: 42px; }
+  .footer-grid { grid-template-columns: 1.6fr 1fr 1fr 1.2fr; }
+}
+
+/* ==========================================================================
+   >= 1280px — desktop
+   ========================================================================== */
+@media (min-width: 1280px) {
+  .contenedor { padding-inline: var(--e6); }
+}
+
+/* ==========================================================================
+   Impresion: quita cromo de navegacion
+   ========================================================================== */
+@media print {
+  .header, .footer, .btn-whatsapp, .nav, .velo-nav, .toasts, .salta-contenido { display: none !important; }
+  .con-header-fijo { padding-top: 0; }
+  body { background: #fff; color: #000; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: .75rem; }
+}
