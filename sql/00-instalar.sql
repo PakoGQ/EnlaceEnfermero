@@ -484,6 +484,60 @@ as $$
   select id from public.enfermeros where usuario_id = auth.uid();
 $$;
 
+-- ----------------------------------------------------------------------------
+-- Que documentos exige cada nivel (regla 10.2)
+-- Todos entregan identidad y domicilio; la diferencia esta en la acreditacion
+-- profesional: cedula y titulo para quienes ejercen con cedula, constancia de
+-- estudios para el resto.
+-- ----------------------------------------------------------------------------
+create or replace function public.documentos_obligatorios(p_nivel nivel_enfermeria)
+returns tipo_documento[]
+language sql
+immutable
+as $$
+  select case
+    when p_nivel in ('general', 'licenciado', 'especialista')
+      then array['ine', 'curp', 'comprobante_domicilio', 'cedula_profesional', 'titulo']::tipo_documento[]
+    else
+      array['ine', 'curp', 'comprobante_domicilio', 'titulo']::tipo_documento[]
+  end;
+$$;
+
+comment on function public.documentos_obligatorios(nivel_enfermeria) is
+  'Documentos sin los cuales un perfil no puede verificarse (CLAUDE.md 10.2). Para los niveles sin cedula, `titulo` se acepta como constancia de estudios.';
+
+-- true si el perfil tiene algun documento OBLIGATORIO caducado.
+--
+-- La regla 10.3 dice que un documento vencido despublica el perfil, pero el
+-- vencimiento no es un evento: pasa por el paso del tiempo, y ningun trigger
+-- se entera. Si la regla dependiera de que alguien corra un proceso, un perfil
+-- con la cedula caducada seguiria en el catalogo hasta que ese proceso corriera.
+--
+-- Por eso la condicion se evalua al momento de consultar, no se guarda. Solo
+-- cuentan los obligatorios: un BLS caducado no despublica a nadie, nada mas le
+-- cierra la puerta a los turnos que pidan esa certificacion.
+create or replace function public.tiene_obligatorio_vencido(p_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.documentos d
+    join public.enfermeros e on e.id = d.enfermero_id
+    where d.enfermero_id = p_id
+      and d.tipo = any(public.documentos_obligatorios(e.nivel))
+      and d.fecha_vencimiento is not null
+      and d.fecha_vencimiento < current_date
+      and d.estatus <> 'rechazado'
+  );
+$$;
+
+comment on function public.tiene_obligatorio_vencido(uuid) is
+  'Regla 10.3 evaluada al vuelo: un obligatorio caducado saca el perfil del catalogo sin necesidad de que corra ningun proceso.';
+
 -- true si el perfil aparece en el catalogo publico. Es security definer porque
 -- se usa dentro de policies: sin eso, la subconsulta a `enfermeros` quedaria
 -- filtrada por el propio RLS y siempre daria falso para un visitante.
@@ -499,7 +553,8 @@ as $$
     where id = p_id
       and publicado = true
       and estatus_verificacion = 'verificado'
-  );
+  )
+  and not public.tiene_obligatorio_vencido(p_id);
 $$;
 
 -- id del registro en `clientes` que pertenece al usuario en sesion
@@ -605,6 +660,61 @@ grant insert on public.visitas        to anon, authenticated;
 -- fino lo hacen las policies de abajo.
 grant select, insert, update on all tables in schema public to authenticated;
 grant usage on all sequences in schema public to authenticated;
+
+-- ----------------------------------------------------------------------------
+-- PERMISOS POR COLUMNA — LA TERCERA CAPA
+--
+-- RLS filtra FILAS y GRANT abre la TABLA, pero varias reglas del negocio son de
+-- COLUMNA, y ninguna de las dos capas anteriores puede expresarlas.
+--
+-- Sin esto, la policy que le deja a un enfermero ver sus asignaciones le dejaba
+-- ver TODA la fila, incluida `comision_agencia`: sabia exactamente cuanto se
+-- queda la agencia en cada turno. Y al cliente le pasaba lo mismo al reves:
+-- veia `tarifa_enfermero` y podia calcular el margen. Los dos son el argumento
+-- perfecto para saltarse a la agencia, que es justo lo que el modelo no puede
+-- permitir (CLAUDE.md 6 y 15.2).
+--
+-- OJO CON EL ORDEN: un `revoke select (columna)` NO hace nada si el rol
+-- conserva el `select` de la tabla completa; Postgres entiende que el permiso
+-- de tabla ya cubre todas las columnas. Hay que quitar primero el de tabla y
+-- despues otorgar la lista de columnas permitidas.
+--
+-- Las pantallas no se ven afectadas: leen por funciones `security definer`,
+-- que corren como propietario y no pasan por esta capa. Lo que se cierra es la
+-- puerta de atras, la de abrir la consola del navegador y consultar la tabla.
+-- ----------------------------------------------------------------------------
+
+-- `asignaciones` y `solicitudes` dejan de ser legibles directamente. Todo lo
+-- que los tres paneles necesitan de ellas sale de funciones que devuelven solo
+-- columnas seguras (06 a 11). Ningun archivo de js/ las consulta directo.
+revoke select on public.asignaciones from authenticated;
+revoke select on public.solicitudes  from authenticated;
+
+-- En `enfermeros` y `clientes` si hay lectura directa desde el panel, asi que
+-- se otorga columna por columna: todas menos las notas que escribe la agencia.
+-- La lista se arma sola para que una columna nueva nazca cerrada en vez de
+-- abierta por descuido.
+do $$
+declare
+  cols text;
+  v_tabla text;
+  v_oculta text;
+begin
+  foreach v_tabla in array array['enfermeros', 'clientes'] loop
+    v_oculta := case v_tabla when 'enfermeros' then 'notas_internas' else 'notas' end;
+
+    execute format('revoke select on public.%I from authenticated', v_tabla);
+
+    select string_agg(quote_ident(column_name), ', ' order by ordinal_position)
+      into cols
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name   = v_tabla
+      and column_name <> v_oculta;
+
+    execute format('grant select (%s) on public.%I to authenticated', cols, v_tabla);
+  end loop;
+end $$;
 
 -- ----------------------------------------------------------------------------
 -- USUARIOS
@@ -1229,37 +1339,73 @@ as $$
 $$;
 
 -- ----------------------------------------------------------------------------
--- Regla 10.3: un documento vencido despublica el perfil hasta su renovacion.
--- Se invoca a diario desde Make.com (Fase 4) o manualmente desde el panel.
+-- Regla 10.3: pone al corriente lo que ya caduco.
+--
+-- El catalogo publico NO depende de esta funcion: la vista `enfermeros_publico`
+-- evalua el vencimiento al momento de consultar (ver tiene_obligatorio_vencido
+-- en 02-rls.sql). Si dependiera de un proceso, entre que un documento caduca y
+-- que ese proceso corre habria una ventana en la que se sigue ofreciendo como
+-- verificado a alguien que ya no lo esta.
+--
+-- Lo que esta funcion hace es que el ESTADO GUARDADO diga la verdad, que es lo
+-- que ve la agencia en su panel: sin ella, el admin leeria "publicado: si"
+-- sobre un perfil que el catalogo ya dejo de mostrar.
+--
+-- Solo los documentos OBLIGATORIOS despublican. La version anterior bajaba el
+-- perfil por cualquier documento vencido, asi que un BLS caducado sacaba del
+-- catalogo a alguien cuyo expediente obligatorio estaba completo.
+--
+-- Se invoca desde el dashboard de la agencia al abrirse, y en la Fase 4
+-- conviene ademas dispararla a diario desde Make.com.
 -- ----------------------------------------------------------------------------
+drop function if exists public.marcar_documentos_vencidos();
+
 create or replace function public.marcar_documentos_vencidos()
-returns int
+returns jsonb
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  afectados int;
+  v_docs  int := 0;
+  v_bajas int := 0;
 begin
-  update public.documentos
-  set estatus = 'vencido'
-  where fecha_vencimiento is not null
-    and fecha_vencimiento < current_date
-    and estatus <> 'vencido';
+  if not public.es_staff_estricto() then
+    raise exception 'Solo el personal de la agencia puede correr esta revisión'
+      using errcode = '42501';
+  end if;
 
-  get diagnostics afectados = row_count;
+  -- Un documento caducado deja de contar como vigente. Los rechazados se
+  -- quedan como estan: ya tienen un motivo y su propio flujo de correccion.
+  with tocados as (
+    update public.documentos
+    set estatus = 'vencido'
+    where fecha_vencimiento is not null
+      and fecha_vencimiento < current_date
+      and estatus not in ('vencido', 'rechazado')
+    returning 1
+  )
+  select count(*) into v_docs from tocados;
 
-  update public.enfermeros e
-  set publicado = false
-  where e.publicado = true
-    and exists (
-      select 1 from public.documentos d
-      where d.enfermero_id = e.id and d.estatus = 'vencido'
-    );
+  -- Y si lo caducado era obligatorio, el perfil sale del catalogo
+  with bajados as (
+    update public.enfermeros e
+    set publicado = false
+    where e.publicado = true
+      and public.tiene_obligatorio_vencido(e.id)
+    returning 1
+  )
+  select count(*) into v_bajas from bajados;
 
-  return afectados;
+  return jsonb_build_object(
+    'documentos_marcados',     v_docs,
+    'perfiles_despublicados',  v_bajas
+  );
 end;
 $$;
+
+revoke all    on function public.marcar_documentos_vencidos() from public;
+grant execute on function public.marcar_documentos_vencidos() to authenticated;
 
 -- ----------------------------------------------------------------------------
 -- PROTECCION DE CAMPOS RESERVADOS AL ADMIN (regla 10.6)
@@ -1588,9 +1734,14 @@ select
   calificacion_promedio,
   total_servicios,
   cedula_verificada
-from public.enfermeros
+from public.enfermeros e
 where publicado = true
-  and estatus_verificacion = 'verificado';
+  and estatus_verificacion = 'verificado'
+  -- Regla 10.3: un documento obligatorio caducado saca el perfil del catalogo.
+  -- Va aqui y no en un proceso programado porque el vencimiento ocurre por el
+  -- paso del tiempo: si dependiera de un job, entre que caduca y que el job
+  -- corre el perfil seguiria ofreciendose como verificado.
+  and not public.tiene_obligatorio_vencido(e.id);
 
 grant select on public.enfermeros_publico to anon, authenticated;
 
@@ -1792,11 +1943,25 @@ begin
 
   return jsonb_build_object(
 
+    -- Vencidos, separados en dos. Solo los OBLIGATORIOS sacan el perfil del
+    -- catalogo (regla 10.3); un BLS caducado no despublica a nadie. Contarlos
+    -- juntos hacia que el panel dijera "el perfil se despublica" sobre alguien
+    -- que en realidad seguia publicado y con razon.
     'documentos_vencidos', (
       select count(*) from public.documentos
       where fecha_vencimiento is not null
         and fecha_vencimiento < current_date
         and estatus <> 'rechazado'
+    ),
+
+    'vencidos_obligatorios', (
+      select count(*)
+      from public.documentos d
+      join public.enfermeros e on e.id = d.enfermero_id
+      where d.tipo = any(public.documentos_obligatorios(e.nivel))
+        and d.fecha_vencimiento is not null
+        and d.fecha_vencimiento < current_date
+        and d.estatus <> 'rechazado'
     ),
 
     'documentos_por_vencer', (
@@ -2443,29 +2608,14 @@ drop function if exists public.documentos_bandeja(estatus_verif, uuid);
 drop function if exists public.expediente_enfermero(uuid);
 drop function if exists public.revisar_documento(uuid, boolean, text);
 drop function if exists public.verificar_enfermero(uuid, boolean);
-drop function if exists public.documentos_obligatorios(nivel_enfermeria);
 
 -- ----------------------------------------------------------------------------
 -- Que documentos exige cada nivel (regla 10.2)
--- Todos entregan identidad y domicilio; la diferencia esta en la acreditacion
--- profesional: cedula y titulo para quienes ejercen con cedula, constancia de
--- estudios para el resto.
+--
+-- La definicion se movio a 02-rls.sql porque la necesitan enfermero_es_publico()
+-- y la vista del catalogo, que se crean antes que este archivo. Aqui se sigue
+-- usando igual; solo cambio de lugar.
 -- ----------------------------------------------------------------------------
-create or replace function public.documentos_obligatorios(p_nivel nivel_enfermeria)
-returns tipo_documento[]
-language sql
-immutable
-as $$
-  select case
-    when p_nivel in ('general', 'licenciado', 'especialista')
-      then array['ine', 'curp', 'comprobante_domicilio', 'cedula_profesional', 'titulo']::tipo_documento[]
-    else
-      array['ine', 'curp', 'comprobante_domicilio', 'titulo']::tipo_documento[]
-  end;
-$$;
-
-comment on function public.documentos_obligatorios(nivel_enfermeria) is
-  'Documentos sin los cuales un perfil no puede verificarse (CLAUDE.md 10.2). Para los niveles sin cedula, `titulo` se acepta como constancia de estudios.';
 
 -- ----------------------------------------------------------------------------
 -- BANDEJA: documentos esperando revision, con su contexto
@@ -2529,6 +2679,7 @@ begin
     d.created_at;
 end;
 $$;
+
 
 -- ----------------------------------------------------------------------------
 -- EXPEDIENTE: todo lo que hay que saber de un candidato para decidir
@@ -5388,6 +5539,29 @@ select
   'aceptada'
 from public.enfermeros e
 where e.nombre_completo = 'María Fernanda Ruiz Delgado';
+
+-- ----------------------------------------------------------------------------
+-- Cotizacion de las solicitudes que ya pasaron de "en busqueda"
+--
+-- La regla dice que no se puede proponer sin haber cotizado, y proponer_asignacion()
+-- la hace cumplir. Pero el seed inserta directo y se la brincaba, asi que dejaba
+-- solicitudes en "propuesta enviada" y "confirmada" sin tarifa: un estado que la
+-- aplicacion nunca produciria y que hace ver el panel de la agencia como roto.
+--
+-- La tarifa sale de lo que realmente se facturo en sus turnos, para que el
+-- reparto que muestra el panel cuadre con las asignaciones.
+-- ----------------------------------------------------------------------------
+update public.solicitudes s
+set tarifa_ofrecida_cliente = v.tarifa
+from (
+  select a.solicitud_id, round(avg(a.tarifa_cliente), 2) as tarifa
+  from public.asignaciones a
+  where a.estatus <> 'rechazada'
+  group by a.solicitud_id
+) as v
+where v.solicitud_id = s.id
+  and s.tarifa_ofrecida_cliente is null
+  and s.estatus in ('propuesta_enviada', 'confirmada', 'en_curso', 'completada');
 
 -- ----------------------------------------------------------------------------
 -- Cobros al cliente

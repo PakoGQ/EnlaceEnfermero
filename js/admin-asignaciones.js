@@ -45,9 +45,18 @@ function botonesAsignacion(a) {
     return `<button type="button" class="btn btn-secundario btn-sm" data-incidencia="${esc(a.id)}">Cancelar</button>`;
   }
   if (['completada', 'no_asistio', 'cancelada', 'rechazada'].includes(a.estatus)) {
-    return a.motivo_rechazo
-      ? `<span class="texto-xs txt-error" title="${esc(a.motivo_rechazo)}">Con incidencia</span>`
-      : '';
+    if (!a.motivo_rechazo) return '';
+
+    // El motivo se muestra completo, no escondido en un `title`. Cuando el
+    // profesional rechaza un turno desde su panel, ese texto es justo lo que el
+    // coordinador necesita para reasignar con criterio; en un tooltip no se ve
+    // en celular y en escritorio hay que adivinar que hay algo que leer.
+    const rechazoDelProfesional = a.estatus === 'rechazada';
+    return `
+      <span class="motivo-asignacion ${rechazoDelProfesional ? 'motivo-rechazo' : 'motivo-incidencia'}">
+        <strong>${rechazoDelProfesional ? 'No pudo:' : 'Incidencia:'}</strong>
+        ${esc(a.motivo_rechazo)}
+      </span>`;
   }
   return `<button type="button" class="btn btn-fantasma btn-sm" data-incidencia="${esc(a.id)}">Incidencia</button>`;
 }
@@ -129,14 +138,23 @@ function iniciarAsignaciones() {
   document.getElementById('desde').value = p.desde;
   document.getElementById('hasta').value = p.hasta;
 
+  // El filtro de la URL se lee ANTES de pintar los chips. Al reves, se llegaba
+  // desde una alerta del panel con la lista ya filtrada pero con "Todos"
+  // resaltado, y parecia que se estaban viendo todos los turnos.
+  const estatus = paramURL('estatus');
+  if (estatus) asign.filtro = estatus;
+
   pintarFiltros('filtros', [
     { id: '', texto: 'Todos' },
     { id: 'propuesta',  texto: 'Propuestas' },
     { id: 'aceptada',   texto: 'Aceptadas' },
     { id: 'en_curso',   texto: 'En curso' },
     { id: 'completada', texto: 'Completadas' },
+    // Desde la Fase 3 el profesional rechaza desde su panel y deja un motivo,
+    // asi que los rechazos dejaron de ser una rareza: merecen su propio filtro.
+    { id: 'rechazada',  texto: 'Rechazadas' },
     { id: 'no_asistio', texto: 'Incidencias' }
-  ], '', (v) => { asign.filtro = v; cargarAsignaciones(); });
+  ], asign.filtro || '', (v) => { asign.filtro = v; cargarAsignaciones(); });
 
   ['desde', 'hasta'].forEach(id =>
     document.getElementById(id).addEventListener('change', () => {
@@ -146,9 +164,6 @@ function iniciarAsignaciones() {
 
   document.getElementById('btnExportar').addEventListener('click', () =>
     exportarCSV('asignaciones', asign.filas, COLUMNAS_ASIGNACION.filter(c => c.titulo)));
-
-  const estatus = paramURL('estatus');
-  if (estatus) asign.filtro = estatus;
 
   cargarAsignaciones();
 }

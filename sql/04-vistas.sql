@@ -34,9 +34,14 @@ select
   calificacion_promedio,
   total_servicios,
   cedula_verificada
-from public.enfermeros
+from public.enfermeros e
 where publicado = true
-  and estatus_verificacion = 'verificado';
+  and estatus_verificacion = 'verificado'
+  -- Regla 10.3: un documento obligatorio caducado saca el perfil del catalogo.
+  -- Va aqui y no en un proceso programado porque el vencimiento ocurre por el
+  -- paso del tiempo: si dependiera de un job, entre que caduca y que el job
+  -- corre el perfil seguiria ofreciendose como verificado.
+  and not public.tiene_obligatorio_vencido(e.id);
 
 grant select on public.enfermeros_publico to anon, authenticated;
 

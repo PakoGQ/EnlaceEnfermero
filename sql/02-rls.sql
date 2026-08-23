@@ -74,6 +74,60 @@ as $$
   select id from public.enfermeros where usuario_id = auth.uid();
 $$;
 
+-- ----------------------------------------------------------------------------
+-- Que documentos exige cada nivel (regla 10.2)
+-- Todos entregan identidad y domicilio; la diferencia esta en la acreditacion
+-- profesional: cedula y titulo para quienes ejercen con cedula, constancia de
+-- estudios para el resto.
+-- ----------------------------------------------------------------------------
+create or replace function public.documentos_obligatorios(p_nivel nivel_enfermeria)
+returns tipo_documento[]
+language sql
+immutable
+as $$
+  select case
+    when p_nivel in ('general', 'licenciado', 'especialista')
+      then array['ine', 'curp', 'comprobante_domicilio', 'cedula_profesional', 'titulo']::tipo_documento[]
+    else
+      array['ine', 'curp', 'comprobante_domicilio', 'titulo']::tipo_documento[]
+  end;
+$$;
+
+comment on function public.documentos_obligatorios(nivel_enfermeria) is
+  'Documentos sin los cuales un perfil no puede verificarse (CLAUDE.md 10.2). Para los niveles sin cedula, `titulo` se acepta como constancia de estudios.';
+
+-- true si el perfil tiene algun documento OBLIGATORIO caducado.
+--
+-- La regla 10.3 dice que un documento vencido despublica el perfil, pero el
+-- vencimiento no es un evento: pasa por el paso del tiempo, y ningun trigger
+-- se entera. Si la regla dependiera de que alguien corra un proceso, un perfil
+-- con la cedula caducada seguiria en el catalogo hasta que ese proceso corriera.
+--
+-- Por eso la condicion se evalua al momento de consultar, no se guarda. Solo
+-- cuentan los obligatorios: un BLS caducado no despublica a nadie, nada mas le
+-- cierra la puerta a los turnos que pidan esa certificacion.
+create or replace function public.tiene_obligatorio_vencido(p_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.documentos d
+    join public.enfermeros e on e.id = d.enfermero_id
+    where d.enfermero_id = p_id
+      and d.tipo = any(public.documentos_obligatorios(e.nivel))
+      and d.fecha_vencimiento is not null
+      and d.fecha_vencimiento < current_date
+      and d.estatus <> 'rechazado'
+  );
+$$;
+
+comment on function public.tiene_obligatorio_vencido(uuid) is
+  'Regla 10.3 evaluada al vuelo: un obligatorio caducado saca el perfil del catalogo sin necesidad de que corra ningun proceso.';
+
 -- true si el perfil aparece en el catalogo publico. Es security definer porque
 -- se usa dentro de policies: sin eso, la subconsulta a `enfermeros` quedaria
 -- filtrada por el propio RLS y siempre daria falso para un visitante.
@@ -89,7 +143,8 @@ as $$
     where id = p_id
       and publicado = true
       and estatus_verificacion = 'verificado'
-  );
+  )
+  and not public.tiene_obligatorio_vencido(p_id);
 $$;
 
 -- id del registro en `clientes` que pertenece al usuario en sesion
@@ -195,6 +250,61 @@ grant insert on public.visitas        to anon, authenticated;
 -- fino lo hacen las policies de abajo.
 grant select, insert, update on all tables in schema public to authenticated;
 grant usage on all sequences in schema public to authenticated;
+
+-- ----------------------------------------------------------------------------
+-- PERMISOS POR COLUMNA — LA TERCERA CAPA
+--
+-- RLS filtra FILAS y GRANT abre la TABLA, pero varias reglas del negocio son de
+-- COLUMNA, y ninguna de las dos capas anteriores puede expresarlas.
+--
+-- Sin esto, la policy que le deja a un enfermero ver sus asignaciones le dejaba
+-- ver TODA la fila, incluida `comision_agencia`: sabia exactamente cuanto se
+-- queda la agencia en cada turno. Y al cliente le pasaba lo mismo al reves:
+-- veia `tarifa_enfermero` y podia calcular el margen. Los dos son el argumento
+-- perfecto para saltarse a la agencia, que es justo lo que el modelo no puede
+-- permitir (CLAUDE.md 6 y 15.2).
+--
+-- OJO CON EL ORDEN: un `revoke select (columna)` NO hace nada si el rol
+-- conserva el `select` de la tabla completa; Postgres entiende que el permiso
+-- de tabla ya cubre todas las columnas. Hay que quitar primero el de tabla y
+-- despues otorgar la lista de columnas permitidas.
+--
+-- Las pantallas no se ven afectadas: leen por funciones `security definer`,
+-- que corren como propietario y no pasan por esta capa. Lo que se cierra es la
+-- puerta de atras, la de abrir la consola del navegador y consultar la tabla.
+-- ----------------------------------------------------------------------------
+
+-- `asignaciones` y `solicitudes` dejan de ser legibles directamente. Todo lo
+-- que los tres paneles necesitan de ellas sale de funciones que devuelven solo
+-- columnas seguras (06 a 11). Ningun archivo de js/ las consulta directo.
+revoke select on public.asignaciones from authenticated;
+revoke select on public.solicitudes  from authenticated;
+
+-- En `enfermeros` y `clientes` si hay lectura directa desde el panel, asi que
+-- se otorga columna por columna: todas menos las notas que escribe la agencia.
+-- La lista se arma sola para que una columna nueva nazca cerrada en vez de
+-- abierta por descuido.
+do $$
+declare
+  cols text;
+  v_tabla text;
+  v_oculta text;
+begin
+  foreach v_tabla in array array['enfermeros', 'clientes'] loop
+    v_oculta := case v_tabla when 'enfermeros' then 'notas_internas' else 'notas' end;
+
+    execute format('revoke select on public.%I from authenticated', v_tabla);
+
+    select string_agg(quote_ident(column_name), ', ' order by ordinal_position)
+      into cols
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name   = v_tabla
+      and column_name <> v_oculta;
+
+    execute format('grant select (%s) on public.%I to authenticated', cols, v_tabla);
+  end loop;
+end $$;
 
 -- ----------------------------------------------------------------------------
 -- USUARIOS

@@ -1468,3 +1468,18 @@ a.alerta-panel:hover { text-decoration: none; transform: translateX(3px); box-sh
 /* Separación puntual sin recurrir a estilo en línea (CLAUDE.md regla 4) */
 .mt-bloque { margin-top: var(--e5); }
 .mb-bloque { margin-bottom: var(--e4); }
+
+/* Motivo de un rechazo o una incidencia en la tabla de asignaciones.
+   Va a la vista y no en un `title`: en celular no hay hover, y es el dato que
+   el coordinador necesita para reasignar. */
+.motivo-asignacion {
+  display: block;
+  max-width: 240px;
+  font-size: .75rem;
+  line-height: 1.35;
+}
+.motivo-asignacion strong { display: block; font-weight: 600; }
+.motivo-rechazo    { color: var(--gris-600); }
+.motivo-rechazo strong    { color: #B54708; }
+.motivo-incidencia { color: var(--gris-600); }
+.motivo-incidencia strong { color: var(--error); }

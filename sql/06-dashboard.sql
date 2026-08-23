@@ -107,11 +107,25 @@ begin
 
   return jsonb_build_object(
 
+    -- Vencidos, separados en dos. Solo los OBLIGATORIOS sacan el perfil del
+    -- catalogo (regla 10.3); un BLS caducado no despublica a nadie. Contarlos
+    -- juntos hacia que el panel dijera "el perfil se despublica" sobre alguien
+    -- que en realidad seguia publicado y con razon.
     'documentos_vencidos', (
       select count(*) from public.documentos
       where fecha_vencimiento is not null
         and fecha_vencimiento < current_date
         and estatus <> 'rechazado'
+    ),
+
+    'vencidos_obligatorios', (
+      select count(*)
+      from public.documentos d
+      join public.enfermeros e on e.id = d.enfermero_id
+      where d.tipo = any(public.documentos_obligatorios(e.nivel))
+        and d.fecha_vencimiento is not null
+        and d.fecha_vencimiento < current_date
+        and d.estatus <> 'rechazado'
     ),
 
     'documentos_por_vencer', (

@@ -668,5 +668,117 @@ select 'Panel del enfermero cerrado a visitantes',
                        'public.panel_enfermero_resumen()', 'execute')
             then 'OK' else 'FALLA' end;
 
+-- ----------------------------------------------------------------------------
+-- PERMISOS POR COLUMNA
+--
+-- RLS filtra filas y GRANT abre la tabla, pero el margen de la agencia es una
+-- regla de COLUMNA. Sin esta capa, la policy que le deja a un enfermero ver
+-- sus asignaciones le entregaba tambien `comision_agencia`, y al cliente le
+-- entregaba `tarifa_enfermero`: los dos podian calcular cuanto se queda la
+-- agencia, que es el argumento para contratarse directo (CLAUDE.md 6).
+--
+-- OJO: un `revoke select (columna)` no hace nada si el rol conserva el select
+-- de la tabla completa. Estas comprobaciones existen para que ese detalle no
+-- se pierda en una refactorizacion.
+-- ----------------------------------------------------------------------------
+select 'El margen de la agencia no se lee desde el navegador' as prueba,
+       case when not has_column_privilege('authenticated', 'public.asignaciones',
+                                          'comision_agencia', 'select')
+             and not has_column_privilege('authenticated', 'public.asignaciones',
+                                          'tarifa_enfermero', 'select')
+             and not has_column_privilege('authenticated', 'public.asignaciones',
+                                          'tarifa_cliente', 'select')
+            then 'OK' else 'FALLA' end as resultado
+union all
+select 'La cotizacion y el contacto del cliente estan cerrados',
+       case when not has_column_privilege('authenticated', 'public.solicitudes',
+                                          'tarifa_ofrecida_cliente', 'select')
+             and not has_column_privilege('authenticated', 'public.solicitudes',
+                                          'contacto_telefono', 'select')
+            then 'OK' else 'FALLA' end
+union all
+select 'Las notas internas no llegan al interesado',
+       case when not has_column_privilege('authenticated', 'public.enfermeros',
+                                          'notas_internas', 'select')
+             and not has_column_privilege('authenticated', 'public.clientes',
+                                          'notas', 'select')
+            then 'OK' else 'FALLA' end
+union all
+-- Y lo que si debe seguir abierto, para no romper los paneles al cerrar de mas
+select 'El profesional sigue pudiendo leer su propio perfil',
+       case when has_column_privilege('authenticated', 'public.enfermeros', 'bio', 'select')
+             and has_column_privilege('authenticated', 'public.enfermeros', 'especialidades', 'select')
+            then 'OK' else 'FALLA' end;
+
+-- ----------------------------------------------------------------------------
+-- REGLA 10.3: EL DOCUMENTO QUE CADUCA SOLO
+--
+-- El vencimiento no es un evento, pasa por el paso del tiempo, y ningun trigger
+-- se entera. Por eso el catalogo lo evalua al consultar en vez de confiar en
+-- que alguien corra un proceso. Solo los OBLIGATORIOS despublican.
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  v_id  uuid;
+  n     int;
+  r     jsonb;
+begin
+  select id into v_id from public.enfermeros where nombre_completo = 'Enfermero De Prueba';
+
+  -- Un obligatorio vigente y una certificacion opcional caducada
+  insert into public.documentos (enfermero_id, tipo, archivo_url, fecha_vencimiento, estatus)
+  values (v_id, 'certificado_bls', 'documentos/x/bls.pdf', current_date - 1, 'verificado');
+
+  select count(*) into n from public.enfermeros_publico where id = v_id;
+  if n = 1
+  then raise notice 'Una certificacion opcional vencida NO despublica: OK';
+  else raise warning 'Una certificacion opcional vencida despublico el perfil: FALLA';
+  end if;
+
+  -- Ahora uno obligatorio
+  insert into public.documentos (enfermero_id, tipo, archivo_url, fecha_vencimiento, estatus)
+  values (v_id, 'ine', 'documentos/x/ine.pdf', current_date - 1, 'verificado');
+
+  select count(*) into n from public.enfermeros_publico where id = v_id;
+  if n = 0
+  then raise notice 'Un obligatorio vencido saca del catalogo al instante: OK';
+  else raise warning 'Sigue en el catalogo con un obligatorio vencido: FALLA';
+  end if;
+
+  -- La vista y la funcion que usan las policies tienen que decir lo mismo
+  if not public.enfermero_es_publico(v_id)
+  then raise notice 'La vista y enfermero_es_publico() concuerdan: OK';
+  else raise warning 'La vista y enfermero_es_publico() se contradicen: FALLA';
+  end if;
+
+  -- Y la sincronizacion del estado guardado, que es lo que ve la agencia
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', (select id from public.usuarios where rol = 'admin' limit 1))::text,
+    true);
+
+  r := public.marcar_documentos_vencidos();
+  select count(*) into n from public.enfermeros where id = v_id and publicado = false;
+  if n = 1
+  then raise notice 'La sincronizacion baja la bandera publicado: OK';
+  else raise warning 'La bandera publicado quedo desfasada: FALLA';
+  end if;
+
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- Un enfermero no puede correr la revision de vencimientos: mueve banderas
+do $$
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', '99999999-9999-9999-9999-999999999999')::text, true);
+  begin
+    perform public.marcar_documentos_vencidos();
+    raise warning 'Un enfermero corrio la revision de vencimientos: FALLA';
+  exception when insufficient_privilege then
+    raise notice 'Solo la agencia corre la revision de vencimientos: OK (bloqueado)';
+  end;
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
 -- Todo lo insertado se descarta
 rollback;

@@ -152,5 +152,25 @@ async function iniciarPanel(rolesPermitidos, activa = 'index.html') {
   const perfil = await protegerRuta(rolesPermitidos);
   if (!perfil) return null;
   renderPanel(perfil, activa);
+
+  // El vencimiento de un documento ocurre por el paso del tiempo, no por un
+  // evento, asi que ningun trigger lo detecta. El catalogo publico no depende
+  // de esto (la vista lo evalua al consultar), pero el ESTADO GUARDADO si, y es
+  // el que la agencia lee en sus pantallas: sin esta llamada, la bandeja de
+  // documentos mostraba "vencidos: 0" con papeles ya caducados enfrente.
+  //
+  // Va aqui y no en cada pantalla porque si no seria un juego de topos: basta
+  // que una lo olvide para que muestre datos rancios. Casi siempre no cambia
+  // nada, asi que solo se avisa cuando de verdad despublico a alguien.
+  if (['admin', 'coordinador'].includes(perfil.rol)) {
+    consultar(db.rpc('marcar_documentos_vencidos')).then(({ datos }) => {
+      if (datos?.perfiles_despublicados > 0) {
+        const n = datos.perfiles_despublicados;
+        toast(`${n} ${n === 1 ? 'perfil salió' : 'perfiles salieron'} del catálogo ` +
+              'por documentos vencidos.', 'alerta');
+      }
+    });
+  }
+
   return perfil;
 }

@@ -342,6 +342,29 @@ from public.enfermeros e
 where e.nombre_completo = 'María Fernanda Ruiz Delgado';
 
 -- ----------------------------------------------------------------------------
+-- Cotizacion de las solicitudes que ya pasaron de "en busqueda"
+--
+-- La regla dice que no se puede proponer sin haber cotizado, y proponer_asignacion()
+-- la hace cumplir. Pero el seed inserta directo y se la brincaba, asi que dejaba
+-- solicitudes en "propuesta enviada" y "confirmada" sin tarifa: un estado que la
+-- aplicacion nunca produciria y que hace ver el panel de la agencia como roto.
+--
+-- La tarifa sale de lo que realmente se facturo en sus turnos, para que el
+-- reparto que muestra el panel cuadre con las asignaciones.
+-- ----------------------------------------------------------------------------
+update public.solicitudes s
+set tarifa_ofrecida_cliente = v.tarifa
+from (
+  select a.solicitud_id, round(avg(a.tarifa_cliente), 2) as tarifa
+  from public.asignaciones a
+  where a.estatus <> 'rechazada'
+  group by a.solicitud_id
+) as v
+where v.solicitud_id = s.id
+  and s.tarifa_ofrecida_cliente is null
+  and s.estatus in ('propuesta_enviada', 'confirmada', 'en_curso', 'completada');
+
+-- ----------------------------------------------------------------------------
 -- Cobros al cliente
 -- Uno pagado, uno pendiente y uno vencido: sin esto la pantalla de facturacion
 -- del cliente sale vacia y no hay forma de validarla. El monto sale de los

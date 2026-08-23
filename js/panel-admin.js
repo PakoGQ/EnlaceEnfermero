@@ -61,10 +61,21 @@ async function cargarKpis() {
    ========================================================================== */
 
 const ALERTAS = [
-  { clave: 'documentos_vencidos',      nivel: 'error',
-    texto: n => `${n} ${n === 1 ? 'documento vencido' : 'documentos vencidos'}`,
-    detalle: 'El perfil se despublica hasta que se renueve.',
+  // Solo los obligatorios despublican (regla 10.3). Decir lo contrario sobre un
+  // BLS caducado manda al coordinador a "arreglar" un perfil que esta bien.
+  { clave: 'vencidos_obligatorios',   nivel: 'error',
+    texto: n => `${n} ${n === 1 ? 'documento obligatorio vencido' : 'documentos obligatorios vencidos'}`,
+    detalle: 'Esos perfiles ya salieron del catálogo hasta que se renueven.',
     href: 'documentos.html?estatus=vencido' },
+
+  { clave: 'documentos_vencidos',     nivel: 'alerta',
+    texto: (n, datos) => {
+      const opcionales = n - (datos.vencidos_obligatorios || 0);
+      return `${opcionales} ${opcionales === 1 ? 'certificación vencida' : 'certificaciones vencidas'}`;
+    },
+    detalle: 'El perfil sigue publicado, pero ya no califica para turnos que la exijan.',
+    href: 'documentos.html?estatus=vencido',
+    soloSi: datos => datos.documentos_vencidos > (datos.vencidos_obligatorios || 0) },
 
   { clave: 'solicitudes_sin_cubrir',   nivel: 'error',
     texto: n => `${n} ${n === 1 ? 'solicitud sin cubrir' : 'solicitudes sin cubrir'} hace más de 24 h`,
@@ -99,7 +110,9 @@ async function cargarAlertas() {
   const { datos, error } = await consultar(db.rpc('alertas_dashboard'));
   if (error || !datos) return;
 
-  const activas = ALERTAS.filter(a => (datos[a.clave] ?? 0) > 0);
+  const activas = ALERTAS.filter(a =>
+    (datos[a.clave] ?? 0) > 0 && (!a.soloSi || a.soloSi(datos))
+  );
 
   if (!activas.length) {
     zona.innerHTML = `
@@ -121,7 +134,7 @@ async function cargarAlertas() {
       <a href="${a.href}" class="alerta-panel alerta-${a.nivel}">
         ${icono(a.nivel === 'info' ? 'inbox' : 'alerta', 20)}
         <div>
-          <strong>${esc(a.texto(n))}</strong>
+          <strong>${esc(a.texto(n, datos))}</strong>
           <span>${esc(a.detalle)}</span>
         </div>
         ${icono('flechaDer', 18, 'alerta-flecha')}
@@ -342,6 +355,8 @@ function horasLegibles(horas) {
    ARRANQUE
    ========================================================================== */
 
+// La revision de vencimientos vive en iniciarPanel() (js/panel.js): corre al
+// entrar a cualquier pantalla de la agencia, no solo a esta.
 function iniciarDashboard() {
   cargarKpis();
   cargarAlertas();

@@ -180,7 +180,7 @@ en una transacción: si algo falla, no se aplica nada.
 | `09-operacion.sql` | Asignaciones, calendario, enfermeros, clientes |
 | `10-finanzas.sql` | Pagos, reportes, referidos, configuración |
 | `11-paneles.sql` | Paneles del enfermero y del cliente: todo lo que consumen sus pantallas |
-| `99-pruebas.sql` | **53 verificaciones.** Hace rollback, no deja datos |
+| `99-pruebas.sql` | **62 verificaciones.** Hace rollback, no deja datos |
 
 ---
 
@@ -252,7 +252,47 @@ filtrando por `auth.uid()`, así que no aflojan nada.
 **Regla para lo que viene:** cualquier policy nueva que consulte otra tabla con
 RLS tiene que hacerlo por función `security definer`, no con un `exists` directo.
 
-### 7. El cliente nunca toca la tabla `enfermeros`
+### 7. Hay TRES capas de permisos, no dos
+
+RLS filtra **filas**, GRANT abre la **tabla**, y varias reglas del negocio son
+de **columna**. Ninguna de las dos primeras puede expresarlas.
+
+La policy que le deja a un enfermero ver sus asignaciones le entregaba la fila
+completa, incluida `comision_agencia`: sabía exactamente cuánto se queda la
+agencia en cada turno. Al cliente le pasaba lo mismo al revés, con
+`tarifa_enfermero`. Los dos son el argumento perfecto para saltarse a la agencia
+y contratarse directo, que es justo lo que el modelo no puede permitir.
+
+Se cerró en `02-rls.sql` con permisos por columna. **Ojo con el orden:** un
+`revoke select (columna)` no hace nada si el rol conserva el `select` de la
+tabla completa; Postgres entiende que el permiso de tabla ya cubre todo. Hay que
+quitar primero el de tabla y después otorgar la lista de columnas permitidas.
+
+Lo que se cierra es la puerta de atrás —abrir la consola y consultar la tabla—,
+no las pantallas: todas leen por funciones `security definer`, que corren como
+propietario y no pasan por esta capa.
+
+### 8. El vencimiento no es un evento
+
+Un documento caduca por el paso del tiempo, no porque alguien haga algo, así que
+ningún trigger se entera. Si la regla 10.3 dependiera de un proceso programado,
+entre que la cédula caduca y que ese proceso corre el perfil se seguiría
+ofreciendo como verificado.
+
+Por eso el catálogo lo evalúa **al momento de consultar**:
+`tiene_obligatorio_vencido()` se llama desde la vista `enfermeros_publico` y
+desde `enfermero_es_publico()`. La regla se cumple sola.
+
+`marcar_documentos_vencidos()` es otra cosa: pone al corriente el **estado
+guardado** (`documentos.estatus` y la bandera `publicado`), que es lo que la
+agencia lee en su panel. Corre al entrar a cualquier pantalla de la agencia,
+desde `iniciarPanel()` en `js/panel.js` — ahí y no en cada pantalla, porque si
+no basta que una lo olvide para que muestre datos rancios.
+
+**Solo los documentos obligatorios despublican.** Un BLS caducado no saca a
+nadie del catálogo; nada más le cierra la puerta a los turnos que lo exijan.
+
+### 9. El cliente nunca toca la tabla `enfermeros`
 
 Su RLS no le abre ni una fila, y es a propósito. Todo lo que el cliente ve de un
 profesional —nombre, folio, nivel, foto, calificación, experiencia y
@@ -268,7 +308,7 @@ todavía puede rechazarla y el cliente no tendría por qué haber sabido su nomb
 `99-pruebas.sql` comprueba las dos cosas: que el detalle no traiga contacto ni
 tarifas, y que la tabla siga cerrada.
 
-### 8. El motor de match
+### 10. El motor de match
 
 `sugerir_enfermeros(solicitud_id)` cruza nivel (jerárquico: un especialista
 cubre un puesto de auxiliar, no al revés), zona, disponibilidad en la fecha,
@@ -375,22 +415,11 @@ Dos cosas que la Fase 3 dejó listas para engancharse ahí:
 
 ### Cabos sueltos detectados (22 de agosto)
 
-Ninguno bloquea seguir, pero conviene no olvidarlos:
+Los dos primeros —la fuga de datos de contacto y del margen, y la despublicación
+por vencimiento— **ya se cerraron** el mismo día; ver los conceptos 7 y 8 de
+arriba. Queda uno:
 
-0. **El enfermero ve el teléfono del cliente una vez que acepta el turno.** La
-   policy `solicitudes_enfermero_lee` es row-level, no column-level: al abrirle
-   la solicitud del turno aceptado le abre también `contacto_telefono` y
-   `contacto_email`. Las pantallas del panel no los muestran —salen de
-   funciones que devuelven sólo columnas seguras—, pero con la consola abierta
-   son alcanzables. Choca con el modelo de negocio (la coordinación pasa por la
-   agencia). Se cierra con una vista de columnas acotadas o quitándole el SELECT
-   directo y dejando sólo las funciones. **Decisión pendiente.**
-1. **Nada despublica un perfil cuando un documento se vence solo.** La regla 10.3
-   sí se aplica al *rechazar* un documento, pero el vencimiento es un hecho que
-   ocurre por el paso del tiempo y ningún trigger lo detecta. Hoy la única señal
-   es la alerta del dashboard. Se resuelve con una tarea programada (Fase 4) o
-   con una revisión al entrar al panel.
-2. **`diagnostico()` da un falso positivo dentro de un panel.** Su prueba 5
+1. **`diagnostico()` da un falso positivo dentro de un panel.** Su prueba 5
    asume que no hay sesión, así que al correrlo desde `/panel` marca *«GRAVE: la
    tabla enfermeros es legible sin sesión»* cuando en realidad el enfermero está
    leyendo su propia fila, que es justo lo que debe pasar. Verificado con `curl`
@@ -414,7 +443,7 @@ Ninguno bloquea seguir, pero conviene no olvidarlos:
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/99-pruebas.sql
 ```
 
-**53 comprobaciones, todas deben decir `OK`.** Cubren folios, reparto 60/40,
+**62 comprobaciones, todas deben decir `OK`.** Cubren folios, reparto 60/40,
 traslapes, permisos del sitio público, aislamiento de datos sensibles y acceso
 al panel. No dejan datos.
 

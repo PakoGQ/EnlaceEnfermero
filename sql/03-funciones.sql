@@ -331,37 +331,73 @@ as $$
 $$;
 
 -- ----------------------------------------------------------------------------
--- Regla 10.3: un documento vencido despublica el perfil hasta su renovacion.
--- Se invoca a diario desde Make.com (Fase 4) o manualmente desde el panel.
+-- Regla 10.3: pone al corriente lo que ya caduco.
+--
+-- El catalogo publico NO depende de esta funcion: la vista `enfermeros_publico`
+-- evalua el vencimiento al momento de consultar (ver tiene_obligatorio_vencido
+-- en 02-rls.sql). Si dependiera de un proceso, entre que un documento caduca y
+-- que ese proceso corre habria una ventana en la que se sigue ofreciendo como
+-- verificado a alguien que ya no lo esta.
+--
+-- Lo que esta funcion hace es que el ESTADO GUARDADO diga la verdad, que es lo
+-- que ve la agencia en su panel: sin ella, el admin leeria "publicado: si"
+-- sobre un perfil que el catalogo ya dejo de mostrar.
+--
+-- Solo los documentos OBLIGATORIOS despublican. La version anterior bajaba el
+-- perfil por cualquier documento vencido, asi que un BLS caducado sacaba del
+-- catalogo a alguien cuyo expediente obligatorio estaba completo.
+--
+-- Se invoca desde el dashboard de la agencia al abrirse, y en la Fase 4
+-- conviene ademas dispararla a diario desde Make.com.
 -- ----------------------------------------------------------------------------
+drop function if exists public.marcar_documentos_vencidos();
+
 create or replace function public.marcar_documentos_vencidos()
-returns int
+returns jsonb
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  afectados int;
+  v_docs  int := 0;
+  v_bajas int := 0;
 begin
-  update public.documentos
-  set estatus = 'vencido'
-  where fecha_vencimiento is not null
-    and fecha_vencimiento < current_date
-    and estatus <> 'vencido';
+  if not public.es_staff_estricto() then
+    raise exception 'Solo el personal de la agencia puede correr esta revisión'
+      using errcode = '42501';
+  end if;
 
-  get diagnostics afectados = row_count;
+  -- Un documento caducado deja de contar como vigente. Los rechazados se
+  -- quedan como estan: ya tienen un motivo y su propio flujo de correccion.
+  with tocados as (
+    update public.documentos
+    set estatus = 'vencido'
+    where fecha_vencimiento is not null
+      and fecha_vencimiento < current_date
+      and estatus not in ('vencido', 'rechazado')
+    returning 1
+  )
+  select count(*) into v_docs from tocados;
 
-  update public.enfermeros e
-  set publicado = false
-  where e.publicado = true
-    and exists (
-      select 1 from public.documentos d
-      where d.enfermero_id = e.id and d.estatus = 'vencido'
-    );
+  -- Y si lo caducado era obligatorio, el perfil sale del catalogo
+  with bajados as (
+    update public.enfermeros e
+    set publicado = false
+    where e.publicado = true
+      and public.tiene_obligatorio_vencido(e.id)
+    returning 1
+  )
+  select count(*) into v_bajas from bajados;
 
-  return afectados;
+  return jsonb_build_object(
+    'documentos_marcados',     v_docs,
+    'perfiles_despublicados',  v_bajas
+  );
 end;
 $$;
+
+revoke all    on function public.marcar_documentos_vencidos() from public;
+grant execute on function public.marcar_documentos_vencidos() to authenticated;
 
 -- ----------------------------------------------------------------------------
 -- PROTECCION DE CAMPOS RESERVADOS AL ADMIN (regla 10.6)

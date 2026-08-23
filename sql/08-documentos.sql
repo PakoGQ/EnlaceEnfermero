@@ -11,29 +11,14 @@ drop function if exists public.documentos_bandeja(estatus_verif, uuid);
 drop function if exists public.expediente_enfermero(uuid);
 drop function if exists public.revisar_documento(uuid, boolean, text);
 drop function if exists public.verificar_enfermero(uuid, boolean);
-drop function if exists public.documentos_obligatorios(nivel_enfermeria);
 
 -- ----------------------------------------------------------------------------
 -- Que documentos exige cada nivel (regla 10.2)
--- Todos entregan identidad y domicilio; la diferencia esta en la acreditacion
--- profesional: cedula y titulo para quienes ejercen con cedula, constancia de
--- estudios para el resto.
+--
+-- La definicion se movio a 02-rls.sql porque la necesitan enfermero_es_publico()
+-- y la vista del catalogo, que se crean antes que este archivo. Aqui se sigue
+-- usando igual; solo cambio de lugar.
 -- ----------------------------------------------------------------------------
-create or replace function public.documentos_obligatorios(p_nivel nivel_enfermeria)
-returns tipo_documento[]
-language sql
-immutable
-as $$
-  select case
-    when p_nivel in ('general', 'licenciado', 'especialista')
-      then array['ine', 'curp', 'comprobante_domicilio', 'cedula_profesional', 'titulo']::tipo_documento[]
-    else
-      array['ine', 'curp', 'comprobante_domicilio', 'titulo']::tipo_documento[]
-  end;
-$$;
-
-comment on function public.documentos_obligatorios(nivel_enfermeria) is
-  'Documentos sin los cuales un perfil no puede verificarse (CLAUDE.md 10.2). Para los niveles sin cedula, `titulo` se acepta como constancia de estudios.';
 
 -- ----------------------------------------------------------------------------
 -- BANDEJA: documentos esperando revision, con su contexto
@@ -97,6 +82,7 @@ begin
     d.created_at;
 end;
 $$;
+
 
 -- ----------------------------------------------------------------------------
 -- EXPEDIENTE: todo lo que hay que saber de un candidato para decidir
