@@ -142,7 +142,23 @@ strong, b { font-weight: 600; }
 .aparece {
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 400ms var(--trans), transform 400ms var(--trans);
+  /* Curva de la direccion Pulso: entra con un poco de inercia en vez de
+     frenar en seco. */
+  transition: opacity var(--entrada), transform var(--entrada);
   will-change: opacity, transform;
 }
 .aparece.visible { opacity: 1; transform: none; }
+
+/* Escalonado dentro de un mismo bloque: las tarjetas de una rejilla entran una
+   tras otra en vez de todas de golpe. Se aplica al contenedor. */
+.aparece-serie > * { transition-delay: 0ms; }
+.aparece-serie > *:nth-child(2) { transition-delay:  80ms; }
+.aparece-serie > *:nth-child(3) { transition-delay: 160ms; }
+.aparece-serie > *:nth-child(4) { transition-delay: 240ms; }
+.aparece-serie > *:nth-child(5) { transition-delay: 320ms; }
+.aparece-serie > *:nth-child(6) { transition-delay: 400ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aparece { opacity: 1; transform: none; transition: none; }
+  .aparece-serie > * { transition-delay: 0ms; }
+}

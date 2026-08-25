@@ -88,11 +88,18 @@ En corto:
 4. **La pantalla entra**: bloques escalonados al cargar, y lo que está vivo
    late. Todo respeta `prefers-reduced-motion`.
 
-**Estado del despliegue.** El sistema compartido ya está aplicado, así que las
-**24 pantallas de los tres paneles** heredaron el estilo de una vez: encabezado
-con degradado, indicadores por tono, alertas con riel de color y la tarjeta de
-turno como pieza protagonista. **El sitio público (11 pantallas) sigue con el
-estilo anterior** — es el siguiente paso.
+**Estado del despliegue: completo.** Las **35 pantallas** llevan la dirección.
+
+- **Los tres paneles (24):** encabezado con degradado y encabalgamiento,
+  indicadores por tono, alertas con riel de color y la tarjeta de turno como
+  pieza protagonista.
+- **El sitio público (11):** hero con el degradado de marca y manchas radiales,
+  barra de confianza encabalgada, tarjeta de enfermero con anillo degradado y
+  lavado de esquina, iconos de servicio con un tono cada uno, y la sección de
+  verificación —el argumento de venta más fuerte— con profundidad.
+
+Como el tratamiento vive en los tokens y en el chrome compartido, una pantalla
+nueva nace ya con el estilo: no hay que aplicarlo a mano.
 
 ---
 

@@ -189,18 +189,20 @@
 /* ==========================================================================
    TARJETAS
    ========================================================================== */
+/* Direccion Pulso: se quita el borde gris y se sube el radio. El borde de 1px
+   sumaba a la sensacion de renglon de tabla; con una sombra suave la tarjeta
+   ya se despega del fondo sin necesidad de dibujarle un marco. */
 .tarjeta {
   background: var(--blanco);
-  border: 1px solid var(--gris-200);
-  border-radius: var(--radio-md);
-  box-shadow: var(--sombra-sm);
+  border: 0;
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-suave);
   padding: var(--e5);
-  transition: box-shadow var(--trans), transform var(--trans), border-color var(--trans);
+  transition: box-shadow var(--trans-suave), transform var(--trans-suave);
 }
 .tarjeta-hover:hover {
-  box-shadow: var(--sombra-lg);
-  transform: translateY(-4px);
-  border-color: var(--azul-200);
+  box-shadow: var(--sombra-md);
+  transform: translateY(-5px);
 }
 .tarjeta-plana { box-shadow: none; }
 .tarjeta-cabecera {
@@ -215,13 +217,43 @@
 .tarjeta-cabecera h3 { font-size: 1.125rem; }
 
 /* --- Tarjeta de enfermero (CLAUDE.md 3.4) --- */
+/* Es la pieza que vende el catalogo, asi que se le da relieve: radio grande,
+   una franja de marca arriba que la distingue de una tarjeta cualquiera, y
+   elevacion al pasar el cursor. */
 .tarjeta-enfermero {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: var(--e3);
-  padding: var(--e5);
+  padding: var(--e6) var(--e5) var(--e5);
   height: 100%;
+  border-radius: var(--radio-2xl);
 }
+/* Un lavado en la esquina, no una franja recta: con un radio de 24px la barra
+   queda cortada en diagonal por la curva y parece una repisa pegada encima. */
+.tarjeta-enfermero::before {
+  content: '';
+  position: absolute;
+  top: -70px; right: -50px;
+  width: 190px; height: 190px;
+  border-radius: var(--radio-full);
+  background: radial-gradient(circle, rgba(34, 211, 238, .16), transparent 68%);
+  pointer-events: none;
+}
+.tarjeta-enfermero > * { position: relative; z-index: 1; }
+
+/* El anillo de la foto pasa a degradado: es el detalle que hace ver la ficha
+   como un perfil y no como una celda de tabla. */
+.enfermero-foto::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--grad-turno);
+}
+.enfermero-foto img,
+.enfermero-foto .inicial { position: relative; }
 .enfermero-top { display: flex; align-items: flex-start; gap: var(--e4); }
 
 .enfermero-foto {
@@ -234,7 +266,7 @@
   width: 100%; height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--azul-100);   /* anillo azul */
+  border: 3px solid var(--blanco);   /* separa la foto del anillo degradado */
   background: var(--azul-100);
 }
 .enfermero-foto .inicial {

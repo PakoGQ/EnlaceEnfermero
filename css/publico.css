@@ -8,9 +8,29 @@
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--azul-800), var(--azul-600) 60%, var(--cyan-600));
+  background: var(--grad-marca);
   color: var(--blanco);
   padding-block: var(--e8) var(--e9);
+}
+/* Manchas radiales: las mismas del encabezado de panel, para que el sitio
+   publico y las areas privadas se sientan del mismo producto. */
+.hero::before,
+.hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  border-radius: var(--radio-full);
+  pointer-events: none;
+}
+.hero::before {
+  top: -140px; right: -110px;
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(34, 211, 238, .34), transparent 68%);
+}
+.hero::after {
+  bottom: -180px; left: -120px;
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(13, 110, 253, .38), transparent 70%);
 }
 .hero h1, .hero h2 { color: var(--blanco); }
 .hero p { color: rgba(255, 255, 255, .88); }
@@ -57,8 +77,8 @@
   position: relative;
   z-index: 2;
   background: var(--blanco);
-  border-radius: var(--radio-md);
-  box-shadow: var(--sombra-lg);
+  border-radius: var(--radio-2xl);
+  box-shadow: var(--sombra-azul);
 }
 .metrica { text-align: center; }
 .metrica .valor {
@@ -165,12 +185,12 @@
   width: 44px; height: 44px;
   margin-bottom: var(--e4);
   border-radius: var(--radio-full);
-  background: var(--azul-600);
+  background: var(--grad-turno);
   color: var(--blanco);
   font-family: var(--fuente-titulo);
   font-size: 1.125rem;
   font-weight: 800;
-  box-shadow: var(--sombra-md);
+  box-shadow: var(--sombra-azul);
 }
 .paso-tarjeta h3 { margin-bottom: var(--e2); }
 .paso-tarjeta p  { color: var(--gris-600); }
@@ -185,9 +205,18 @@
   place-items: center;
   width: 52px; height: 52px;
   border-radius: var(--radio-md);
-  background: var(--azul-100);
-  color: var(--azul-600);
+  background: var(--grad-frio);
+  color: var(--azul-700);
+  transition: transform var(--trans-suave);
 }
+.tarjeta-servicio:hover .servicio-icono { transform: scale(1.08) rotate(-4deg); }
+
+/* Cuatro servicios con el mismo icono azul se leen como cuatro renglones. Se
+   les da un tono a cada uno para que el ojo los distinga antes de leerlos
+   (CLAUDE.md 3.4: el color dice QUE es, no que tan bonito se ve). */
+.tarjeta-servicio:nth-child(2) .servicio-icono { background: linear-gradient(150deg, var(--cyan-100), #A5F3FC); color: var(--cyan-600); }
+.tarjeta-servicio:nth-child(3) .servicio-icono { background: linear-gradient(150deg, var(--exito-bg), #A7F3D0);  color: #05784A; }
+.tarjeta-servicio:nth-child(4) .servicio-icono { background: linear-gradient(150deg, var(--alerta-bg), #FED7AA); color: #B54708; }
 .enlace-flecha {
   font-size: .875rem;
   font-weight: 600;
@@ -197,7 +226,24 @@
 .tarjeta-servicio:hover .enlace-flecha::after { transform: translateX(4px); }
 
 /* --- Sección de verificación --- */
-.verificacion { background: var(--azul-900); color: var(--azul-200); }
+.verificacion {
+  position: relative;
+  overflow: hidden;
+  background: var(--azul-900);
+  color: var(--azul-200);
+}
+/* Es el argumento de venta mas fuerte del negocio, asi que no puede ser un
+   bloque azul plano: lleva las mismas manchas que el hero. */
+.verificacion::before {
+  content: '';
+  position: absolute;
+  top: -160px; left: -120px;
+  width: 460px; height: 460px;
+  border-radius: var(--radio-full);
+  background: radial-gradient(circle, rgba(8, 145, 178, .34), transparent 68%);
+  pointer-events: none;
+}
+.verificacion > .contenedor { position: relative; z-index: 1; }
 .verificacion h2, .verificacion h3 { color: var(--blanco); }
 .verificacion .antetitulo { color: var(--cyan-400); }
 .verificacion .txt-secundario { color: rgba(255, 255, 255, .75); }
@@ -244,16 +290,28 @@
 .cta-contenido p  { margin-bottom: var(--e5); }
 
 .cta-azul {
-  background: linear-gradient(135deg, var(--azul-800), var(--azul-600));
+  position: relative;
+  overflow: hidden;
+  background: var(--grad-marca);
   color: var(--blanco);
 }
+.cta-azul::after {
+  content: '';
+  position: absolute;
+  top: -100px; right: -80px;
+  width: 300px; height: 300px;
+  border-radius: var(--radio-full);
+  background: radial-gradient(circle, rgba(34, 211, 238, .3), transparent 70%);
+  pointer-events: none;
+}
+.cta-azul > * { position: relative; z-index: 1; }
 .cta-azul h2 { color: var(--blanco); }
 .cta-azul p  { color: rgba(255, 255, 255, .85); }
 .cta-blanca  { background: var(--azul-050); }
 .cta-blanca p { color: var(--gris-600); }
 
 /* --- Preguntas frecuentes --- */
-.faq { border-top: 1px solid var(--gris-200); }
+.faq { background: var(--fondo-panel); }
 
 /* ==========================================================================
    Puntos de corte de la landing
