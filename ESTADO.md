@@ -71,6 +71,31 @@ llena. Solo se muestra en `localhost`.
 
 ---
 
+## Identidad visual — dirección «Pulso»
+
+Elegida el 23 de agosto de 2026 tras comparar tres propuestas en un lienzo de
+diseño. Sustituye al planteamiento original, que resultó plano: todo pesaba
+igual, así que nada resaltaba y cada pantalla se leía como una lista.
+
+Las cuatro reglas están en `CLAUDE.md` §3 y los tokens en `css/variables.css`.
+En corto:
+
+1. **Jerarquía por color**, no por tamaño. Naranja urge, verde es dinero, cyan
+   informa, blanco es el resto.
+2. **Profundidad real**: degradados en las piezas protagonistas, sombras con
+   tinte de color, y superficies que se encabalgan.
+3. **Una sola pieza protagonista por pantalla** — la única con degradado.
+4. **La pantalla entra**: bloques escalonados al cargar, y lo que está vivo
+   late. Todo respeta `prefers-reduced-motion`.
+
+**Estado del despliegue.** El sistema compartido ya está aplicado, así que las
+**24 pantallas de los tres paneles** heredaron el estilo de una vez: encabezado
+con degradado, indicadores por tono, alertas con riel de color y la tarjeta de
+turno como pieza protagonista. **El sitio público (11 pantallas) sigue con el
+estilo anterior** — es el siguiente paso.
+
+---
+
 ## Dónde está publicado
 
 **https://pakogq.github.io/EnlaceEnfermero/** — GitHub Pages, rama `main`, raíz.

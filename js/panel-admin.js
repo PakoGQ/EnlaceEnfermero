@@ -13,7 +13,8 @@ const KPIS = [
   { clave: 'turnos_en_curso',            titulo: 'En curso ahora',     icono: 'reloj',      href: 'asignaciones.html?estatus=en_curso' },
   { clave: 'enfermeros_disponibles_hoy', titulo: 'Disponibles hoy',    icono: 'usuarios',   href: 'enfermeros.html?disponible=1' },
   { clave: 'ingresos_mes',               titulo: 'Ingresos del mes',   icono: 'dinero',     href: 'reportes.html', moneda: true },
-  { clave: 'comision_mes',               titulo: 'Comisión del mes',   icono: 'maletin',    href: 'reportes.html', moneda: true, comparar: 'comision_mes_anterior' }
+  // La comision es el numero del negocio: va en verde (CLAUDE.md 3.4)
+  { clave: 'comision_mes',               titulo: 'Comisión del mes',   icono: 'maletin',    href: 'reportes.html', moneda: true, dinero: true, comparar: 'comision_mes_anterior' }
 ];
 
 async function cargarKpis() {
@@ -29,10 +30,10 @@ async function cargarKpis() {
     return;
   }
 
-  zona.innerHTML = KPIS.map(k => {
+  zona.innerHTML = KPIS.map((k, i) => {
     const valor = datos[k.clave] ?? 0;
     const texto = k.moneda ? monedaCorta(valor) : new Intl.NumberFormat('es-MX').format(valor);
-    const enAlerta = k.alertaSi?.(valor);
+    const tono = k.alertaSi?.(valor) ? ' kpi-alerta' : (k.dinero ? ' kpi-dinero' : '');
 
     // Comparativo contra el periodo anterior, cuando aplica
     let cambio = '';
@@ -45,7 +46,7 @@ async function cargarKpis() {
     }
 
     return `
-      <a href="${k.href}" class="tarjeta tarjeta-hover kpi${enAlerta ? ' kpi-alerta' : ''}">
+      <a href="${k.href}" class="tarjeta kpi entra entra-${Math.min(i + 1, 6)}${tono}">
         <span class="kpi-icono">${icono(k.icono, 20)}</span>
         <span class="kpi-valor">${esc(texto)}</span>
         <span class="kpi-etiqueta">${esc(k.titulo)}</span>

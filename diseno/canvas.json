@@ -1,0 +1,46 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html",     "title": "Actual (referencia)", "x": 0,    "y": 0, "w": 390, "h": 1180 },
+    { "file": "Pulso.dc.html",    "title": "A · Pulso",           "x": 470,  "y": 0, "w": 390, "h": 1180 },
+    { "file": "Nocturno.dc.html", "title": "B · Turno Nocturno",  "x": 940,  "y": 0, "w": 390, "h": 1180 },
+    { "file": "Cuidado.dc.html",  "title": "C · Cuidado",         "x": 1410, "y": 0, "w": 390, "h": 1180 }
+  ],
+  "annotations": [
+    {
+      "id": "brief",
+      "x": 0,
+      "y": -230,
+      "w": 460,
+      "text": "Misma pantalla (Inicio del enfermero, ancho de celular) en cuatro tratamientos.\n\nCompara y dime cuál dirección te late — o qué robarle a cada una. Lo que elijas se vuelve el nuevo sistema visual y se aplica a los 24 paneles."
+    },
+    {
+      "id": "nota-actual",
+      "x": 0,
+      "y": 1230,
+      "w": 390,
+      "text": "LO QUE HAY HOY\n\nTarjeta blanca, borde gris de 1px, sombra casi invisible, un solo azul. Todo pesa igual, así que nada resalta: por eso se lee como lista.\n\nSin animación."
+    },
+    {
+      "id": "nota-pulso",
+      "x": 470,
+      "y": 1230,
+      "w": 390,
+      "text": "A · PULSO — evolución\n\nMantiene el azul de salud, pero con jerarquía: encabezado con degradado, el KPI urgente en naranja, el dinero en verde con su tendencia, la tarjeta de turno como pieza protagonista.\n\nEntrada escalonada, punto que late en \"visible\", brillo en la tarjeta urgente.\n\nA favor: cambio grande a la vista, riesgo bajo. Sigue siendo reconociblemente Enlace Enfermero.\nEn contra: es la más convencional de las tres."
+    },
+    {
+      "id": "nota-nocturno",
+      "x": 940,
+      "y": 1230,
+      "w": 390,
+      "text": "B · TURNO NOCTURNO — oscuro\n\nNo es solo estética: tu gente revisa el celular a las 3 de la mañana en una guardia. Una pantalla blanca a esa hora encandila.\n\nVidrio esmerilado, acentos cyan y lima, la gráfica se dibuja sola al entrar, números enormes.\n\nA favor: se ve caro y moderno; el argumento del turno nocturno es real.\nEn contra: rompe con \"limpio, clínico y cálido\" del spec. Y el cliente hospital quizá espere algo más sobrio."
+    },
+    {
+      "id": "nota-cuidado",
+      "x": 1410,
+      "y": 1230,
+      "w": 390,
+      "text": "C · CUIDADO — editorial cálido\n\nEl que más rompe la sensación de lista. Serif grande, verde profundo con terracota, esquinas asimétricas, formas orgánicas de fondo.\n\nLa copia cambia de tono: \"Tu ACLS venció\" en vez de \"1 certificación vencida\".\n\nA favor: no se parece a ningún software de hospital. Se siente humano, que es lo que vendes.\nEn contra: el más caro de mantener — cada pantalla nueva pide criterio, no solo aplicar tokens."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

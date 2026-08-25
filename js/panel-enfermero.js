@@ -17,8 +17,10 @@ const KPIS_ENFERMERO = [
     icono: 'inbox',  alertaSi: v => v > 0 },
   { clave: 'turnos_proximos',       titulo: 'Turnos aceptados',
     icono: 'calendario' },
+  // `dinero: true` lo pinta en verde: es el numero por el que el profesional
+  // abre la aplicacion (CLAUDE.md 3.4).
   { clave: 'ganancias_mes',         titulo: 'Ganado este mes',
-    icono: 'dinero', moneda: true, comparar: 'ganancias_mes_anterior' },
+    icono: 'dinero', moneda: true, dinero: true, comparar: 'ganancias_mes_anterior' },
   { clave: 'calificacion',          titulo: 'Tu calificación',
     icono: 'estrella', decimal: true }
 ];
@@ -28,7 +30,7 @@ function pintarResumen(datos) {
   const zona = document.getElementById('kpis');
   if (!zona) return;
 
-  zona.innerHTML = KPIS_ENFERMERO.map(k => {
+  zona.innerHTML = KPIS_ENFERMERO.map((k, i) => {
     const valor = datos[k.clave] ?? 0;
 
     let texto;
@@ -51,8 +53,10 @@ function pintarResumen(datos) {
       cambio = `<span class="kpi-cambio">${datos.total_servicios} servicios</span>`;
     }
 
+    const tono = k.alertaSi?.(valor) ? ' kpi-alerta' : (k.dinero ? ' kpi-dinero' : '');
+
     return `
-      <div class="tarjeta kpi${k.alertaSi?.(valor) ? ' kpi-alerta' : ''}">
+      <div class="tarjeta kpi entra entra-${Math.min(i + 1, 6)}${tono}">
         <span class="kpi-icono">${icono(k.icono, 20)}</span>
         <span class="kpi-valor">${esc(texto)}</span>
         <span class="kpi-etiqueta">${esc(k.titulo)}</span>

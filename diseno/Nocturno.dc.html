@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Chivo:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #070C16; font-family: 'Chivo', system-ui, sans-serif; }
+    a { color: #22D3EE; } a:hover { color: #67E8F9; }
+    .t { font-family: 'Space Grotesk', system-ui, sans-serif; }
+
+    @keyframes entra { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+    @keyframes respira { 0%,100% { box-shadow: 0 0 0 0 rgba(34,211,238,.5); } 50% { box-shadow: 0 0 0 9px rgba(34,211,238,0); } }
+    @keyframes fluye { from { stroke-dashoffset: 300; } to { stroke-dashoffset: 0; } }
+    .e { animation: entra 700ms cubic-bezier(.2,.75,.3,1) backwards; }
+    .vivo { animation: respira 2.4s ease-out infinite; }
+    .linea { stroke-dasharray: 300; animation: fluye 2.2s ease-out forwards; }
+    .glass { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(14px); }
+    .lift { transition: transform 240ms cubic-bezier(.2,.75,.3,1), border-color 240ms; cursor: pointer; }
+    .lift:hover { transform: translateY(-5px); border-color: rgba(34,211,238,.42); }
+  </style>
+</helmet>
+
+<div style="width: 390px; min-height: 1180px; background: #070C16; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column">
+
+  <div style="position: absolute; top: -110px; left: -80px; width: 300px; height: 300px; border-radius: 999px; background: radial-gradient(circle, rgba(13,110,253,.3), transparent 68%)"></div>
+  <div style="position: absolute; top: 300px; right: -120px; width: 280px; height: 280px; border-radius: 999px; background: radial-gradient(circle, rgba(34,211,238,.16), transparent 70%)"></div>
+  <div style="position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; border-radius: 999px; background: radial-gradient(circle, rgba(163,230,53,.11), transparent 70%)"></div>
+
+  <div style="position: relative; padding: 28px 18px 40px; display: flex; flex-direction: column; gap: 24px">
+
+    <div class="e" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px">
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #22D3EE">Domingo 23 · agosto</div>
+        <div class="t" style="font-size: 31px; font-weight: 700; color: #F8FAFC; letter-spacing: -0.03em; line-height: 1.08">Hola,<br>María</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px">
+          <span class="vivo" style="width: 8px; height: 8px; border-radius: 999px; background: #A3E635; flex-shrink: 0"></span>
+          <span style="font-size: 12px; color: #94A3B8">Visible en el catálogo · EE-00001</span>
+        </div>
+      </div>
+      <div style="flex-shrink: 0; width: 50px; height: 50px; border-radius: 16px; background: linear-gradient(150deg, #0D6EFD, #22D3EE); display: flex; align-items: center; justify-content: center">
+        <span class="t" style="font-size: 17px; font-weight: 700; color: #04263F">MR</span>
+      </div>
+    </div>
+
+    <div class="e" style="animation-delay: 90ms; position: relative; overflow: hidden; padding: 22px; border-radius: 24px; background: linear-gradient(150deg, rgba(13,110,253,.22), rgba(34,211,238,.09)); border: 1px solid rgba(34,211,238,.26)">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px">
+        <span style="font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #94A3B8">Ganado este mes</span>
+        <span style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: rgba(163,230,53,.14); color: #A3E635">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 15 12 9 18 15"></polyline></svg>200%
+        </span>
+      </div>
+      <div class="t" style="font-size: 44px; font-weight: 700; color: #FFFFFF; line-height: 1; letter-spacing: -0.035em">$5,850</div>
+      <svg width="100%" height="56" viewBox="0 0 330 56" fill="none" preserveAspectRatio="none" style="margin-top: 14px; display: block">
+        <defs>
+          <linearGradient id="gn" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(34,211,238,.28)"></stop>
+            <stop offset="100%" stop-color="rgba(34,211,238,0)"></stop>
+          </linearGradient>
+        </defs>
+        <path d="M0 48 L55 40 L110 44 L165 26 L220 32 L275 12 L330 4 L330 56 L0 56 Z" fill="url(#gn)"></path>
+        <path class="linea" d="M0 48 L55 40 L110 44 L165 26 L220 32 L275 12 L330 4" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: #64748B">
+        <span>hace 6 meses</span><span>hoy</span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <div class="glass lift e" style="animation-delay: 160ms; padding: 15px 12px; border-radius: 18px; display: flex; flex-direction: column; gap: 7px; align-items: flex-start">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F79009" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+        <span class="t" style="font-size: 25px; font-weight: 700; color: #F79009; line-height: 1">1</span>
+        <span style="font-size: 11px; color: #94A3B8; line-height: 1.3">Por<br>responder</span>
+      </div>
+      <div class="glass lift e" style="animation-delay: 220ms; padding: 15px 12px; border-radius: 18px; display: flex; flex-direction: column; gap: 7px; align-items: flex-start">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span class="t" style="font-size: 25px; font-weight: 700; color: #F8FAFC; line-height: 1">1</span>
+        <span style="font-size: 11px; color: #94A3B8; line-height: 1.3">Turno<br>aceptado</span>
+      </div>
+      <div class="glass lift e" style="animation-delay: 280ms; padding: 15px 12px; border-radius: 18px; display: flex; flex-direction: column; gap: 7px; align-items: flex-start">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#A3E635" stroke-width="2" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span class="t" style="font-size: 25px; font-weight: 700; color: #F8FAFC; line-height: 1">4.9</span>
+        <span style="font-size: 11px; color: #94A3B8; line-height: 1.3">87<br>servicios</span>
+      </div>
+    </div>
+
+    <div class="e" style="animation-delay: 340ms; display: flex; flex-direction: column; gap: 11px">
+      <div style="display: flex; align-items: center; gap: 9px">
+        <div class="t" style="font-size: 15px; font-weight: 600; color: #F8FAFC; letter-spacing: .01em">Requiere tu atención</div>
+        <span style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(247,144,9,.16); color: #F79009">2</span>
+      </div>
+
+      <div class="glass lift" style="padding: 15px 16px; border-radius: 18px; border-left: 3px solid #F79009; display: flex; align-items: flex-start; gap: 12px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F79009" stroke-width="2.2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 2px"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <div style="display: flex; flex-direction: column; gap: 3px">
+          <span class="t" style="font-size: 13px; font-weight: 600; color: #F8FAFC">1 certificación vencida</span>
+          <span style="font-size: 12px; color: #94A3B8; line-height: 1.45">Sigues en el catálogo, pero no podemos proponerte turnos que la exijan.</span>
+        </div>
+      </div>
+
+      <div class="glass lift" style="padding: 15px 16px; border-radius: 18px; border-left: 3px solid #22D3EE; display: flex; align-items: flex-start; gap: 12px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 2px"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <div style="display: flex; flex-direction: column; gap: 3px">
+          <span class="t" style="font-size: 13px; font-weight: 600; color: #F8FAFC">1 documento vence en 18 días</span>
+          <span style="font-size: 12px; color: #94A3B8; line-height: 1.45">Renuévalo antes de que caduque.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="e" style="animation-delay: 410ms; display: flex; flex-direction: column; gap: 12px">
+      <div class="t" style="font-size: 15px; font-weight: 600; color: #F8FAFC">Tus próximos turnos</div>
+
+      <div style="position: relative; overflow: hidden; padding: 20px; border-radius: 24px; background: rgba(255,255,255,.05); border: 1px solid rgba(34,211,238,.28); display: flex; flex-direction: column; gap: 17px">
+        <div style="position: absolute; top: -60px; right: -40px; width: 170px; height: 170px; border-radius: 999px; background: radial-gradient(circle, rgba(34,211,238,.22), transparent 70%)"></div>
+
+        <div style="position: relative; display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; padding: 5px 11px; border-radius: 999px; background: rgba(34,211,238,.16); color: #22D3EE; border: 1px solid rgba(34,211,238,.3)">Propuesta</span>
+          <span style="font-size: 12px; font-weight: 600; color: #A3E635">En 2 días</span>
+        </div>
+
+        <div style="position: relative; display: flex; align-items: flex-end; gap: 14px">
+          <div class="t" style="font-size: 54px; font-weight: 700; color: #FFFFFF; line-height: .85; letter-spacing: -0.045em">25</div>
+          <div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px">
+            <span style="font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #64748B">martes · agosto</span>
+            <span class="t" style="font-size: 17px; font-weight: 600; color: #F8FAFC">Turno nocturno</span>
+          </div>
+        </div>
+
+        <div style="position: relative; display: flex; flex-direction: column; gap: 8px">
+          <span style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #CBD5E1">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            11:00 p.m. — 07:00 a.m.
+          </span>
+          <span style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #CBD5E1">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            Zapopan · dirección al aceptar
+          </span>
+        </div>
+
+        <div style="position: relative; display: flex; flex-wrap: wrap; gap: 6px">
+          <span style="font-size: 11px; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #94A3B8">Oxigenoterapia</span>
+          <span style="font-size: 11px; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #94A3B8">Medicamentos IV</span>
+          <span style="font-size: 11px; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #94A3B8">Sondas</span>
+        </div>
+
+        <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,.09)">
+          <div style="display: flex; flex-direction: column">
+            <span style="font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #64748B">Te toca</span>
+            <span class="t" style="font-size: 23px; font-weight: 700; color: #A3E635; letter-spacing: -0.02em">$1,400</span>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <span style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.11)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </span>
+            <span style="display: flex; align-items: center; gap: 8px; padding: 0 20px; height: 42px; border-radius: 14px; background: linear-gradient(120deg, #22D3EE, #A3E635); box-shadow: 0 6px 20px rgba(34,211,238,.32)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#04263F" stroke-width="2.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span class="t" style="font-size: 14px; font-weight: 700; color: #04263F">Aceptar</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

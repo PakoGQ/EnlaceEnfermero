@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Public+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #EEF4FB; font-family: 'Public Sans', system-ui, sans-serif; }
+    a { color: #0D6EFD; } a:hover { color: #0B5394; }
+    .t { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+    @keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @keyframes late { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .35; } }
+    @keyframes barre { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+    .ap { animation: sube 620ms cubic-bezier(.2,.7,.3,1) backwards; }
+    .kpi-p { transition: transform 220ms cubic-bezier(.2,.7,.3,1), box-shadow 220ms; cursor: pointer; }
+    .kpi-p:hover { transform: translateY(-5px); }
+    .punto { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: #12B76A; animation: late 1.8s ease-in-out infinite; }
+    .brillo { background: linear-gradient(100deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%); background-size: 200% 100%; animation: barre 3.2s linear infinite; }
+  </style>
+</helmet>
+
+<div style="width: 390px; min-height: 1180px; background: #EEF4FB; box-sizing: border-box; display: flex; flex-direction: column">
+
+  <div style="position: relative; padding: 26px 20px 58px; background: linear-gradient(145deg, #04263F 0%, #0B5394 48%, #0891B2 100%); overflow: hidden">
+    <div style="position: absolute; top: -70px; right: -50px; width: 210px; height: 210px; border-radius: 999px; background: radial-gradient(circle, rgba(34,211,238,.42), transparent 68%)"></div>
+    <div style="position: absolute; bottom: -90px; left: -40px; width: 190px; height: 190px; border-radius: 999px; background: radial-gradient(circle, rgba(13,110,253,.4), transparent 70%)"></div>
+
+    <div class="ap" style="position: relative; display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 13px; color: rgba(255,255,255,.72); letter-spacing: .02em">Domingo, 23 de agosto</div>
+      <div class="t" style="font-size: 30px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.025em; line-height: 1.1">¡Hola, María!</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px">
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); color: #FFFFFF; backdrop-filter: blur(8px)">
+          <span class="punto"></span>Visible en el catálogo
+        </span>
+        <span style="font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); color: #FFFFFF">EE-00001 · Verificado</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: -40px; padding: 0 16px 40px; display: flex; flex-direction: column; gap: 22px">
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <div class="kpi-p ap" style="animation-delay: 80ms; position: relative; overflow: hidden; padding: 18px; border-radius: 20px; background: linear-gradient(150deg, #F79009, #EA580C); box-shadow: 0 10px 24px rgba(234,88,12,.28); display: flex; flex-direction: column; gap: 10px">
+        <div class="brillo" style="position: absolute; inset: 0"></div>
+        <div style="position: relative; display: flex; align-items: center; justify-content: space-between">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+          <span style="font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.24); color: #FFFFFF">URGE</span>
+        </div>
+        <div class="t" style="position: relative; font-size: 34px; font-weight: 800; color: #FFFFFF; line-height: 1">1</div>
+        <div style="position: relative; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.9)">Por responder</div>
+      </div>
+
+      <div class="kpi-p ap" style="animation-delay: 150ms; padding: 18px; border-radius: 20px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(4,38,63,.07); display: flex; flex-direction: column; gap: 10px">
+        <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(150deg, #E3F0FF, #CFFAFE); display: flex; align-items: center; justify-content: center">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0B5394" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+        <div class="t" style="font-size: 34px; font-weight: 800; color: #04263F; line-height: 1">1</div>
+        <div style="font-size: 12px; font-weight: 600; color: #475569">Turno aceptado</div>
+      </div>
+
+      <div class="kpi-p ap" style="animation-delay: 220ms; grid-column: span 2; padding: 20px; border-radius: 20px; background: linear-gradient(140deg, #0F766E, #12B76A); box-shadow: 0 10px 24px rgba(18,183,106,.26); display: flex; align-items: center; justify-content: space-between; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,.82)">Ganado este mes</div>
+          <div class="t" style="font-size: 36px; font-weight: 800; color: #FFFFFF; line-height: 1; letter-spacing: -0.02em">$5,850</div>
+          <div style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #A7F3D0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 15 12 9 18 15"></polyline></svg>
+            200% vs mes pasado
+          </div>
+        </div>
+        <svg width="96" height="52" viewBox="0 0 96 52" fill="none" style="flex-shrink: 0">
+          <path d="M2 44 L18 38 L34 40 L50 26 L66 30 L82 10 L94 6" stroke="rgba(255,255,255,.95)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M2 44 L18 38 L34 40 L50 26 L66 30 L82 10 L94 6 L94 50 L2 50 Z" fill="rgba(255,255,255,.16)"></path>
+          <circle cx="94" cy="6" r="4" fill="#FFFFFF"></circle>
+        </svg>
+      </div>
+
+      <div class="kpi-p ap" style="animation-delay: 290ms; grid-column: span 2; padding: 18px 20px; border-radius: 20px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(4,38,63,.07); display: flex; align-items: center; gap: 16px">
+        <div style="position: relative; width: 56px; height: 56px; flex-shrink: 0">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="24" stroke="#F1F5F9" stroke-width="6" fill="none"></circle>
+            <circle cx="28" cy="28" r="24" stroke="#F79009" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="151" stroke-dashoffset="7" transform="rotate(-90 28 28)"></circle>
+          </svg>
+          <div class="t" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: #04263F">4.9</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px">
+          <div class="t" style="font-size: 15px; font-weight: 700; color: #04263F">Tu calificación</div>
+          <div style="font-size: 12px; color: #475569">87 servicios · el 8% mejor de la agencia</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ap" style="animation-delay: 360ms; display: flex; flex-direction: column; gap: 12px">
+      <div class="t" style="font-size: 17px; font-weight: 700; color: #04263F">Requiere tu atención</div>
+
+      <div style="position: relative; overflow: hidden; padding: 16px 18px; border-radius: 18px; background: linear-gradient(120deg, #FFF7ED, #FEF3E2); box-shadow: 0 4px 14px rgba(247,144,9,.14); display: flex; align-items: flex-start; gap: 13px">
+        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(#F79009, #EA580C)"></div>
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; background: rgba(247,144,9,.18); display: flex; align-items: center; justify-content: center">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B54708" stroke-width="2.2" stroke-linecap="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px">
+          <div class="t" style="font-size: 14px; font-weight: 700; color: #7C2D12">1 certificación vencida</div>
+          <div style="font-size: 12px; color: #9A3412; line-height: 1.45">Sigues en el catálogo, pero no podemos proponerte turnos que la exijan.</div>
+        </div>
+      </div>
+
+      <div style="position: relative; overflow: hidden; padding: 16px 18px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 4px 14px rgba(4,38,63,.06); display: flex; align-items: flex-start; gap: 13px">
+        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(#22D3EE, #0891B2)"></div>
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; background: #CFFAFE; display: flex; align-items: center; justify-content: center">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0891B2" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px">
+          <div class="t" style="font-size: 14px; font-weight: 700; color: #04263F">1 documento vence en 18 días</div>
+          <div style="font-size: 12px; color: #475569; line-height: 1.45">Renuévalo antes de que caduque y evita salir del catálogo.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ap" style="animation-delay: 430ms; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <div class="t" style="font-size: 17px; font-weight: 700; color: #04263F">Tus próximos turnos</div>
+        <span style="font-size: 12px; font-weight: 600; color: #0D6EFD">Ver todos</span>
+      </div>
+
+      <div style="position: relative; overflow: hidden; padding: 20px; border-radius: 22px; background: linear-gradient(155deg, #0B5394, #0891B2); box-shadow: 0 12px 28px rgba(11,83,148,.3); display: flex; flex-direction: column; gap: 16px">
+        <div style="position: absolute; top: -50px; right: -30px; width: 150px; height: 150px; border-radius: 999px; background: radial-gradient(circle, rgba(34,211,238,.35), transparent 70%)"></div>
+
+        <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px">
+          <span style="font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.3); color: #FFFFFF">Propuesta</span>
+          <span style="font-size: 12px; font-weight: 700; color: #A5F3FC">En 2 días</span>
+        </div>
+
+        <div style="position: relative; display: flex; align-items: center; gap: 16px">
+          <div style="flex-shrink: 0; width: 62px; padding: 10px 0; border-radius: 16px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.24); display: flex; flex-direction: column; align-items: center; gap: 1px">
+            <span style="font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.75)">mar</span>
+            <strong class="t" style="font-size: 26px; color: #FFFFFF; line-height: 1">25</strong>
+            <span style="font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.75)">ago</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px; min-width: 0">
+            <strong class="t" style="font-size: 17px; color: #FFFFFF; letter-spacing: -0.01em">Nocturno</strong>
+            <span style="display: flex; align-items: center; gap: 7px; font-size: 13px; color: rgba(255,255,255,.85)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              11:00 p.m. — 07:00 a.m.
+            </span>
+            <span style="display: flex; align-items: center; gap: 7px; font-size: 13px; color: rgba(255,255,255,.85)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              Zapopan
+            </span>
+          </div>
+        </div>
+
+        <div style="position: relative; display: flex; flex-wrap: wrap; gap: 6px">
+          <span style="font-size: 11px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); color: rgba(255,255,255,.92)">Oxigenoterapia</span>
+          <span style="font-size: 11px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); color: rgba(255,255,255,.92)">Medicamentos IV</span>
+          <span style="font-size: 11px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); color: rgba(255,255,255,.92)">Sondas</span>
+        </div>
+
+        <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.18)">
+          <div style="display: flex; flex-direction: column">
+            <span style="font-size: 11px; color: rgba(255,255,255,.7)">Te corresponde</span>
+            <span class="t" style="font-size: 22px; font-weight: 800; color: #FFFFFF">$1,400</span>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <span style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </span>
+            <span style="display: flex; align-items: center; gap: 8px; padding: 0 20px; height: 42px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 6px 16px rgba(0,0,0,.18)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0B5394" stroke-width="2.6" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span class="t" style="font-size: 14px; font-weight: 700; color: #0B5394">Aceptar</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Karla:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; background: #FBF7F2; font-family: 'Karla', system-ui, sans-serif; }
+    a { color: #C2410C; } a:hover { color: #9A3412; }
+    .d { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; }
+
+    @keyframes flota { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    @keyframes gira { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes pulsa { 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.12); } }
+    .f { animation: flota 720ms cubic-bezier(.2,.75,.3,1) backwards; }
+    .anillo { animation: gira 26s linear infinite; transform-origin: center; }
+    .chispa { animation: pulsa 2.6s ease-in-out infinite; }
+    .tarj { transition: transform 260ms cubic-bezier(.2,.75,.3,1), box-shadow 260ms; cursor: pointer; }
+    .tarj:hover { transform: translateY(-4px) rotate(-.5deg); }
+  </style>
+</helmet>
+
+<div style="width: 390px; min-height: 1180px; background: #FBF7F2; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column">
+
+  <svg width="420" height="330" viewBox="0 0 420 330" fill="none" style="position: absolute; top: -70px; left: -30px; opacity: .5">
+    <path class="anillo" d="M210 40 C300 40 370 110 370 190 C370 265 300 300 215 300 C130 300 55 265 55 185 C55 105 120 40 210 40 Z" fill="none" stroke="#F0D9C4" stroke-width="34"></path>
+  </svg>
+  <div style="position: absolute; top: 190px; right: -70px; width: 190px; height: 190px; border-radius: 999px; background: radial-gradient(circle, rgba(194,65,12,.09), transparent 70%)"></div>
+
+  <div style="position: relative; padding: 30px 20px 44px; display: flex; flex-direction: column; gap: 26px">
+
+    <div class="f" style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 9px">
+        <span class="chispa" style="width: 7px; height: 7px; border-radius: 999px; background: #C2410C"></span>
+        <span style="font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #78716C; font-weight: 600">Domingo 23 de agosto</span>
+      </div>
+      <div class="d" style="font-size: 46px; color: #134E4A; line-height: .98; letter-spacing: -0.02em">
+        Buen día,<br><em style="color: #C2410C">María.</em>
+      </div>
+      <div style="font-size: 15px; color: #57534E; line-height: 1.5; max-width: 300px">
+        Tienes <strong style="color: #134E4A">una propuesta</strong> esperando tu respuesta y un turno confirmado esta semana.
+      </div>
+    </div>
+
+    <div class="f tarj" style="animation-delay: 100ms; position: relative; overflow: hidden; padding: 26px 24px; border-radius: 28px 28px 28px 8px; background: #134E4A; box-shadow: 0 14px 34px rgba(19,78,74,.24)">
+      <svg width="150" height="150" viewBox="0 0 150 150" fill="none" style="position: absolute; top: -40px; right: -30px; opacity: .22">
+        <circle cx="75" cy="75" r="55" stroke="#FDBA74" stroke-width="16" fill="none"></circle>
+      </svg>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 5px">
+        <span style="font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #99F6E4; font-weight: 600">Ganado este mes</span>
+        <span class="d" style="font-size: 52px; color: #FFFFFF; line-height: 1; letter-spacing: -0.02em">$5,850</span>
+        <div style="display: flex; align-items: center; gap: 7px; margin-top: 8px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FDBA74" stroke-width="3" stroke-linecap="round"><polyline points="6 15 12 9 18 15"></polyline></svg>
+          <span style="font-size: 13px; font-weight: 600; color: #FDBA74">El triple que el mes pasado</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 14px">
+      <div class="f tarj" style="animation-delay: 170ms; padding: 20px; border-radius: 24px 8px 24px 24px; background: #C2410C; box-shadow: 0 10px 26px rgba(194,65,12,.24); display: flex; flex-direction: column; gap: 9px">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFEDD5" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+        <span class="d" style="font-size: 40px; color: #FFFFFF; line-height: .9">1</span>
+        <span style="font-size: 13px; font-weight: 600; color: #FFEDD5; line-height: 1.3">propuesta<br>por responder</span>
+      </div>
+      <div class="f tarj" style="animation-delay: 230ms; padding: 20px; border-radius: 8px 24px 24px 24px; background: #FFFFFF; border: 1.5px solid #E7E0D6; display: flex; flex-direction: column; gap: 9px">
+        <div style="display: flex; align-items: baseline; gap: 3px">
+          <span class="d" style="font-size: 40px; color: #134E4A; line-height: .9">4.9</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#F79009" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: #57534E; line-height: 1.3">de 87<br>servicios</span>
+      </div>
+    </div>
+
+    <div class="f" style="animation-delay: 300ms; display: flex; flex-direction: column; gap: 13px">
+      <div class="d" style="font-size: 25px; color: #134E4A; letter-spacing: -0.01em">Pide tu atención</div>
+
+      <div class="tarj" style="padding: 18px 20px; border-radius: 22px; background: #FFF3E6; border: 1.5px solid #FBCFA4; display: flex; align-items: flex-start; gap: 14px">
+        <div style="flex-shrink: 0; width: 38px; height: 38px; border-radius: 999px; background: #C2410C; display: flex; align-items: center; justify-content: center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFEDD5" stroke-width="2.3" stroke-linecap="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; color: #7C2D12">Tu ACLS venció</span>
+          <span style="font-size: 13px; color: #9A3412; line-height: 1.5">Sigues en el catálogo, pero no podemos proponerte turnos que lo pidan.</span>
+        </div>
+      </div>
+
+      <div class="tarj" style="padding: 18px 20px; border-radius: 22px; background: #FFFFFF; border: 1.5px solid #E7E0D6; display: flex; align-items: flex-start; gap: 14px">
+        <div style="flex-shrink: 0; width: 38px; height: 38px; border-radius: 999px; background: #CCFBF1; display: flex; align-items: center; justify-content: center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2.3" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; color: #134E4A">Tu BLS vence en 18 días</span>
+          <span style="font-size: 13px; color: #57534E; line-height: 1.5">Renuévalo con tiempo y no pierdes turnos.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="f" style="animation-delay: 380ms; display: flex; flex-direction: column; gap: 14px">
+      <div class="d" style="font-size: 25px; color: #134E4A; letter-spacing: -0.01em">Lo que viene</div>
+
+      <div class="tarj" style="position: relative; overflow: hidden; padding: 0; border-radius: 28px; background: #FFFFFF; border: 1.5px solid #E7E0D6; box-shadow: 0 12px 30px rgba(19,78,74,.1)">
+
+        <div style="padding: 22px 22px 18px; background: linear-gradient(140deg, #FDBA74, #FB923C); position: relative; overflow: hidden">
+          <svg width="130" height="130" viewBox="0 0 130 130" fill="none" style="position: absolute; bottom: -55px; right: -25px; opacity: .3">
+            <circle cx="65" cy="65" r="48" stroke="#FFFFFF" stroke-width="14" fill="none"></circle>
+          </svg>
+          <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+            <div style="display: flex; align-items: flex-end; gap: 12px">
+              <span class="d" style="font-size: 56px; color: #FFFFFF; line-height: .82">25</span>
+              <div style="display: flex; flex-direction: column; padding-bottom: 5px">
+                <span style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.85); font-weight: 600">martes</span>
+                <span style="font-size: 15px; font-weight: 700; color: #FFFFFF">agosto</span>
+              </div>
+            </div>
+            <span style="font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: #FFFFFF; color: #C2410C">En 2 días</span>
+          </div>
+        </div>
+
+        <div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 15px">
+          <div class="d" style="font-size: 26px; color: #134E4A; line-height: 1.1">Turno nocturno<br>en Zapopan</div>
+
+          <div style="display: flex; flex-direction: column; gap: 9px">
+            <span style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #57534E">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              De 11 de la noche a 7 de la mañana
+            </span>
+            <span style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #57534E">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><line x1="12" y1="10" x2="12" y2="16"></line><line x1="9" y1="13" x2="15" y2="13"></line></svg>
+              Cuidado domiciliario · paciente paliativo
+            </span>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 7px">
+            <span style="font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: #CCFBF1; color: #0F766E">Oxigenoterapia</span>
+            <span style="font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: #CCFBF1; color: #0F766E">Medicamentos IV</span>
+            <span style="font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: #CCFBF1; color: #0F766E">Sondas</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1.5px dashed #E7E0D6">
+            <div style="display: flex; flex-direction: column">
+              <span style="font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #A8A29E; font-weight: 600">Te toca</span>
+              <span class="d" style="font-size: 30px; color: #134E4A; line-height: 1.05">$1,400</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 9px">
+              <span style="font-size: 14px; font-weight: 600; color: #A8A29E">No puedo</span>
+              <span style="display: flex; align-items: center; gap: 8px; padding: 0 22px; height: 46px; border-radius: 999px; background: #134E4A; box-shadow: 0 8px 20px rgba(19,78,74,.26)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span style="font-size: 15px; font-weight: 700; color: #FFFFFF">Acepto</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

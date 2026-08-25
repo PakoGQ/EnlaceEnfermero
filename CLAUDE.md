@@ -72,11 +72,32 @@ Proyecto nuevo, desde cero. Replica la arquitectura ya validada del proyecto Don
 
 ## 3. Identidad visual
 
-### 3.1 Concepto
-Limpio, clínico pero cálido. Debe transmitir **confianza médica + humanidad**.
-Referencias de tono: dashboards de salud digital modernos (Doctoralia, Nurse.com, Mediktor),
-no hospital burocrático. Mucho espacio en blanco, tarjetas con sombras suaves, esquinas redondeadas,
-iconografía de línea. Nada de imágenes genéricas de stock con jeringas.
+### 3.1 Concepto — dirección «Pulso»
+
+> Dirección elegida el 23 de agosto de 2026, tras comparar tres propuestas.
+> Sustituye al planteamiento original, que resultó demasiado plano: todo pesaba
+> igual —misma tarjeta, mismo borde, misma sombra— y la pantalla se leía como
+> una lista sin importar el contenido.
+
+Clínico pero con **pulso**: transmite confianza médica sin parecer una hoja de
+cálculo. Referencias de tono: producto digital de salud moderno, no panel
+administrativo de hospital.
+
+Las cuatro decisiones que definen la dirección:
+
+1. **Jerarquía por color, no por tamaño.** Lo que urge se pinta de naranja, el
+   dinero de verde, lo informativo queda en blanco. Si todo es azul, nada
+   resalta.
+2. **Profundidad real.** Degradados en las piezas protagonistas, sombras con
+   tinte de color en vez de gris, y superficies que se encabalgan (una tarjeta
+   que sube sobre el encabezado). El plano tiene capas.
+3. **La pantalla entra, no aparece.** Los bloques suben escalonados al cargar;
+   lo que está vivo late. El movimiento comunica estado, no adorna.
+4. **Radios generosos.** Las piezas grandes van a 20–24px. Lo pequeño conserva
+   8–14px, para que el contraste de escala se note.
+
+Sigue vigente: mucho aire, iconografía de línea, nada de fotos de stock con
+jeringas ni simbología clínica agresiva.
 
 ### 3.2 Paleta de colores
 
@@ -121,10 +142,31 @@ iconografía de línea. Nada de imágenes genéricas de stock con jeringas.
   --sombra-md: 0 4px 16px rgba(4, 38, 63, .08);
   --sombra-lg: 0 12px 32px rgba(4, 38, 63, .12);
 
+  /* Sombras con tinte — dirección Pulso.
+     Una sombra gris bajo una tarjeta de color la ensucia; la sombra tiene que
+     ser del mismo tono que la pieza que levanta. */
+  --sombra-suave:  0 6px 18px rgba(4, 38, 63, .07);
+  --sombra-azul:   0 12px 28px rgba(11, 83, 148, .30);
+  --sombra-exito:  0 10px 24px rgba(18, 183, 106, .26);
+  --sombra-alerta: 0 10px 24px rgba(234, 88, 12, .28);
+
+  /* Degradados — solo para piezas protagonistas, nunca de fondo general */
+  --grad-marca:  linear-gradient(145deg, var(--azul-900) 0%, var(--azul-700) 48%, var(--cyan-600) 100%);
+  --grad-turno:  linear-gradient(155deg, var(--azul-700), var(--cyan-600));
+  --grad-exito:  linear-gradient(140deg, #0F766E, var(--exito));
+  --grad-alerta: linear-gradient(150deg, var(--alerta), #EA580C);
+  --grad-frio:   linear-gradient(150deg, var(--azul-100), var(--cyan-100));
+
+  /* Fondo de los paneles: un neutro ligeramente azulado, para que el blanco
+     de las tarjetas se despegue en vez de fundirse con la página */
+  --fondo-panel: #EEF4FB;
+
   /* Radios */
   --radio-sm: 8px;
   --radio-md: 14px;
   --radio-lg: 22px;
+  --radio-xl: 20px;    /* tarjeta de indicador */
+  --radio-2xl: 24px;   /* pieza protagonista */
   --radio-full: 999px;
 
   /* Espaciado (escala de 4) */
@@ -135,15 +177,25 @@ iconografía de línea. Nada de imágenes genéricas de stock con jeringas.
   --fuente-titulo: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
   --fuente-texto:  'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Transiciones */
+  /* Transiciones y entradas */
   --trans: 200ms cubic-bezier(.4, 0, .2, 1);
+  --trans-suave: 240ms cubic-bezier(.2, .75, .3, 1);
+  --entrada: 620ms cubic-bezier(.2, .7, .3, 1);
 }
 ```
 
-**Regla de uso de color:** fondo blanco dominante (mínimo 70% de la pantalla).
-El azul se usa en botones, encabezados, iconos y acentos. El cyan solo para gráficas,
-badges de especialidad y detalles decorativos. Nunca fondos azules a pantalla completa
-salvo el hero de la landing y el footer.
+**Regla de uso de color (dirección Pulso).** El color ya no es solo acento: es
+el que marca la jerarquía. Pero se gana, no se reparte.
+
+- **Fondo claro dominante**, mínimo 65% de la pantalla. El degradado y los
+  bloques saturados son islas, nunca la marea.
+- **Una sola pieza protagonista por pantalla.** Es la que lleva degradado y
+  sombra con tinte. Si hay dos, no hay ninguna.
+- **El color dice qué es**, no qué tan bonito se ve: naranja urge, verde es
+  dinero ganado, cyan es informativo, rojo es un problema. Blanco es el resto.
+- **Cyan** para gráficas, detalles decorativos y badges de especialidad.
+- Nunca un fondo azul a pantalla completa salvo el hero de la landing, el
+  encabezado de panel y el footer.
 
 ### 3.3 Tipografía
 - Títulos: **Plus Jakarta Sans** 600/700/800 — Google Fonts.
@@ -152,13 +204,55 @@ salvo el hero de la landing y el footer.
 - Interlineado: 1.6 en párrafos, 1.2 en títulos.
 
 ### 3.4 Componentes visuales clave
-- **Tarjeta de enfermero:** foto circular con anillo azul, nombre, badge de nivel, badge verde "Verificado" con ícono de escudo, especialidades como chips cyan, años de experiencia, estrellas de calificación, botón "Ver perfil" y "Solicitar".
-- **Badge de verificación:** obligatorio y muy visible. Es el diferenciador del negocio.
-- **Botón primario:** fondo `--azul-600`, texto blanco, radio `--radio-full`, sombra media, hover que sube 2px.
-- **Hero de landing:** degradado `linear-gradient(135deg, var(--azul-800), var(--azul-600) 60%, var(--cyan-600))`, texto blanco, con formas orgánicas SVG en el fondo (ondas suaves, nunca cruces rojas ni simbología clínica agresiva).
-- **Iconografía:** SVG inline de trazo 1.5–2px, sin librerías externas.
-- **Animaciones:** solo `opacity` y `transform`. Fade-in al hacer scroll vía `IntersectionObserver`. Duración máx 400ms.
-- **Accesibilidad:** contraste mínimo AA, `:focus-visible` con outline azul de 3px, todo interactivo alcanzable con teclado, `alt` en todas las imágenes.
+
+- **Encabezado de panel:** franja con `--grad-marca` y dos manchas radiales
+  suaves de cyan y azul. El saludo va en blanco, y los badges de estado en
+  vidrio esmerilado (`rgba(255,255,255,.14)` con borde claro). El contenido que
+  sigue **sube 40px sobre la franja**: ese encabalgamiento es lo que da
+  profundidad.
+- **Indicador (KPI):** radio `--radio-xl`. Tres tratamientos según lo que dice:
+  el que **urge** va con `--grad-alerta` y `--sombra-alerta`; el de **dinero**
+  con `--grad-exito` y `--sombra-exito`, acompañado de su tendencia; el resto
+  en blanco con `--sombra-suave` y el icono en un cuadro redondeado con
+  `--grad-frio`. Suben 5px al pasar el cursor.
+- **Pieza protagonista** (el próximo turno, el servicio activo): radio
+  `--radio-2xl`, fondo `--grad-turno`, mancha radial de cyan arriba a la
+  derecha, chips en vidrio, y el botón principal en blanco sólido para que
+  gane sobre el degradado. Una por pantalla.
+- **Alerta:** radio `--radio-xl`, sin borde. Lleva un riel de color de 4px como
+  elemento posicionado (no `border-left`, para poder degradarlo) y el icono en
+  un cuadro redondeado del mismo tono. La de mayor severidad va con fondo
+  degradado; las demás en blanco.
+- **Tarjeta de enfermero:** foto circular con anillo azul, nombre, badge de
+  nivel, badge verde "Verificado" con ícono de escudo, especialidades como
+  chips cyan, años de experiencia, estrellas de calificación, botón "Ver perfil"
+  y "Solicitar".
+- **Badge de verificación:** obligatorio y muy visible. Es el diferenciador del
+  negocio.
+- **Botón primario:** fondo `--azul-600`, texto blanco, radio `--radio-full`,
+  sombra media, hover que sube 2px. Sobre un degradado se invierte: fondo
+  blanco y texto `--azul-700`.
+- **Hero de landing:** `--grad-marca`, texto blanco, con formas orgánicas SVG
+  en el fondo (ondas suaves, nunca cruces rojas ni simbología clínica agresiva).
+- **Iconografía:** SVG inline de trazo 1.5–2px, sin librerías externas. Nunca
+  emoji como icono.
+- **Animaciones.** Solo `opacity` y `transform` — nunca animar `width`,
+  `height` ni `top`, que fuerzan al navegador a recalcular la página entera.
+  Tres usos, y ninguno más:
+  1. **Entrada escalonada** al cargar: cada bloque sube 14px con `--entrada` y
+     un retraso de ~70ms respecto al anterior. Máximo 6 pasos; a partir de ahí
+     la espera se siente.
+  2. **Estado vivo:** un punto que late marca algo que está ocurriendo ahora
+     (visible en el catálogo, turno en curso). Si no está pasando nada, no
+     late nada.
+  3. **Respuesta al cursor:** la tarjeta sube 4–5px con `--trans-suave`.
+  
+  Todo debe respetar `prefers-reduced-motion: reduce`: quien pidió menos
+  movimiento ve la interfaz quieta, sin excepción.
+- **Accesibilidad:** contraste mínimo AA, `:focus-visible` con outline azul de
+  3px, todo interactivo alcanzable con teclado, `alt` en todas las imágenes.
+  Sobre degradado el texto va en blanco puro o con 85% de opacidad como
+  mínimo — nunca gris.
 
 ---
 

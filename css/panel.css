@@ -226,18 +226,100 @@ body.panel { background: var(--gris-050); }
 .velo-panel.abierto { opacity: 1; visibility: visible; }
 
 /* --- Area de contenido --- */
-.panel-contenido { padding: calc(64px + var(--e5)) var(--e4) var(--e7); }
+/* El fondo azulado hace que el blanco de las tarjetas se despegue en vez de
+   fundirse con la pagina (CLAUDE.md 3.2). */
+body.panel { background: var(--fondo-panel); }
+
+.panel-contenido { padding: 64px var(--e4) var(--e7); }
 .panel-contenido > .contenedor { padding-inline: 0; }
 
+/* ==========================================================================
+   ENCABEZADO DE PANEL — direccion Pulso (CLAUDE.md 3.4)
+
+   Franja con degradado de marca y dos manchas radiales suaves. Lo que sigue
+   sube 40px sobre la franja: ese encabalgamiento es lo que da profundidad, y
+   es la diferencia entre una pagina con capas y una lista.
+   ========================================================================== */
 .panel-encabezado {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: var(--e3);
-  margin-bottom: var(--e6);
+  /* Se extiende hasta los bordes cancelando el padding lateral del contenedor */
+  margin: 0 calc(var(--e4) * -1);
+  padding: var(--e6) var(--e4) var(--e8);
+  background: var(--grad-marca);
+  color: var(--blanco);
 }
-.panel-encabezado h1 { font-size: clamp(1.5rem, 3vw, 2rem); }
-.panel-encabezado p  { color: var(--gris-600); }
+/* Las manchas van en pseudoelementos para no ensuciar el marcado */
+.panel-encabezado::before,
+.panel-encabezado::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  border-radius: var(--radio-full);
+  pointer-events: none;
+}
+.panel-encabezado::before {
+  top: -70px; right: -50px;
+  width: 210px; height: 210px;
+  background: radial-gradient(circle, rgba(34, 211, 238, .42), transparent 68%);
+}
+.panel-encabezado::after {
+  bottom: -90px; left: -40px;
+  width: 190px; height: 190px;
+  background: radial-gradient(circle, rgba(13, 110, 253, .40), transparent 70%);
+}
+.panel-encabezado h1 {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  color: var(--blanco);
+  letter-spacing: -0.025em;
+}
+/* Sobre degradado el texto nunca va en gris: se pierde. Blanco al 78% minimo. */
+.panel-encabezado p { color: rgba(255, 255, 255, .78); }
+
 .panel-acciones { display: flex; flex-wrap: wrap; gap: var(--e3); }
+/* El boton primario se invierte sobre el degradado para ganarle al fondo */
+.panel-encabezado .btn-primario {
+  background: var(--blanco);
+  color: var(--azul-700);
+  box-shadow: var(--sombra-md);
+}
+.panel-encabezado .btn-primario:hover:not(:disabled) {
+  background: var(--azul-050);
+  color: var(--azul-800);
+}
+.panel-encabezado .btn-secundario {
+  background: rgba(255, 255, 255, .14);
+  border-color: rgba(255, 255, 255, .3);
+  color: var(--blanco);
+}
+.panel-encabezado .btn-secundario:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .24);
+  color: var(--blanco);
+}
+
+/* Los badges de estado en vidrio esmerilado, no en pastilla de color: sobre el
+   degradado un badge claro se ve como un parche pegado encima. */
+.panel-encabezado .estado-perfil .badge {
+  background: rgba(255, 255, 255, .14);
+  border: 1px solid rgba(255, 255, 255, .22);
+  color: var(--blanco);
+  backdrop-filter: blur(8px);
+}
+
+/* Lo que sigue sube sobre la franja */
+/* El tiron hacia arriba es el encabalgamiento. Va aqui y no como margen
+   negativo del encabezado para que funcione sea cual sea el bloque que sigue. */
+.panel-encabezado + * { position: relative; margin-top: -40px; }
+
+/* Una barra de filtros no es una superficie: si se encabalga, los chips quedan
+   partidos a la mitad sobre el borde del degradado y parece un error de
+   maquetacion. En esas pantallas el encabezado se acorta y no hay tiron. */
+.panel-encabezado:has(+ .filtros-barra) { padding-bottom: var(--e6); }
+.panel-encabezado + .filtros-barra { margin-top: var(--e5); }
 
 /* Tarjetas de indicadores */
 .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--e4); margin-bottom: var(--e6); }
@@ -291,9 +373,49 @@ body.panel { background: var(--gris-050); }
 
 /* En la rejilla de seis del reporte las columnas son estrechas */
 .kpis-reporte .kpi-valor { font-size: clamp(1.125rem, 2.2vw, 1.625rem); }
-.kpi-alerta { border-color: var(--alerta); background: var(--alerta-bg); }
-.kpi-alerta .kpi-icono { background: rgba(247, 144, 9, .18); color: #B54708; }
-.kpi-alerta .kpi-valor { color: #B54708; }
+
+/* ==========================================================================
+   INDICADORES — direccion Pulso (CLAUDE.md 3.4)
+
+   Tres tratamientos segun lo que DICE el indicador, no segun donde este:
+   lo que urge en naranja, el dinero en verde, lo informativo en blanco.
+   Cuando todos se ven igual, el ojo los lee como lista y ninguno resalta.
+   ========================================================================== */
+.kpi {
+  padding: var(--e4) var(--e4) var(--e5);
+  gap: var(--e2);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-suave);
+  transition: transform var(--trans-suave), box-shadow var(--trans-suave);
+}
+.kpi .kpi-icono { width: 38px; height: 38px; }
+.kpi .kpi-icono svg { width: 19px; height: 19px; }
+.kpi-icono { border-radius: 11px; background: var(--grad-frio); color: var(--azul-700); }
+a.kpi:hover, .kpi.eleva:hover { transform: translateY(-5px); box-shadow: var(--sombra-md); }
+
+/* Lo que urge: naranja saturado con su propia sombra. La sombra gris debajo de
+   una tarjeta de color la ensucia; tiene que ser del mismo tono. */
+.kpi-alerta {
+  border: 0;
+  background: var(--grad-alerta);
+  box-shadow: var(--sombra-alerta);
+}
+.kpi-alerta .kpi-icono   { background: rgba(255, 255, 255, .22); color: var(--blanco); }
+.kpi-alerta .kpi-valor   { color: var(--blanco); }
+.kpi-alerta .kpi-etiqueta,
+.kpi-alerta .kpi-cambio  { color: rgba(255, 255, 255, .9); }
+
+/* El dinero ganado: verde. Es el numero por el que el profesional abre la app. */
+.kpi-dinero {
+  border: 0;
+  background: var(--grad-exito);
+  box-shadow: var(--sombra-exito);
+}
+.kpi-dinero .kpi-icono   { background: rgba(255, 255, 255, .22); color: var(--blanco); }
+.kpi-dinero .kpi-valor   { color: var(--blanco); }
+.kpi-dinero .kpi-etiqueta{ color: rgba(255, 255, 255, .85); }
+.kpi-dinero .kpi-cambio.sube,
+.kpi-dinero .kpi-cambio.baja { color: #A7F3D0; }
 
 .kpi-cambio { font-size: .6875rem; font-weight: 600; }
 .kpi-cambio.sube { color: var(--exito); }
@@ -322,14 +444,50 @@ a.alerta-panel:hover { text-decoration: none; transform: translateX(3px); box-sh
 .alerta-panel > svg  { flex-shrink: 0; margin-top: 2px; }
 .alerta-flecha { color: var(--gris-400); align-self: center; }
 
-.alerta-panel.alerta-error  { border-left: 4px solid var(--error);  background: var(--error-bg); }
-.alerta-panel.alerta-error > svg  { color: var(--error); }
-.alerta-panel.alerta-alerta { border-left: 4px solid var(--alerta); background: var(--alerta-bg); }
-.alerta-panel.alerta-alerta > svg { color: #B54708; }
-.alerta-panel.alerta-info   { border-left: 4px solid var(--azul-600); }
-.alerta-panel.alerta-info > svg   { color: var(--azul-600); }
-.alerta-panel.alerta-ok     { border-left: 4px solid var(--exito); background: var(--exito-bg); }
-.alerta-panel.alerta-ok > svg     { color: var(--exito); }
+/* --- Alertas, direccion Pulso ---
+   El riel de color va en un pseudoelemento y no en `border-left` para poder
+   degradarlo, y el borde gris desaparece: con sombra suave no hace falta y
+   sumaba a la sensacion de renglon de tabla. */
+.alerta-panel {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-suave);
+  transition: transform var(--trans-suave), box-shadow var(--trans-suave);
+}
+.alerta-panel::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+a.alerta-panel:hover { transform: translateY(-3px); box-shadow: var(--sombra-md); }
+
+/* El icono en un cuadro redondeado del mismo tono, no suelto sobre el fondo */
+.alerta-panel > svg {
+  box-sizing: content-box;
+  width: 18px; height: 18px;
+  padding: 8px;
+  border-radius: 10px;
+  margin-top: 0;
+}
+
+.alerta-panel.alerta-error  { background: linear-gradient(120deg, #FFF1F0, var(--error-bg)); box-shadow: 0 4px 14px rgba(217, 45, 32, .13); }
+.alerta-panel.alerta-error::before { background: linear-gradient(var(--error), #B42318); }
+.alerta-panel.alerta-error > svg  { color: var(--error); background: rgba(217, 45, 32, .12); }
+
+.alerta-panel.alerta-alerta { background: linear-gradient(120deg, #FFF7ED, var(--alerta-bg)); box-shadow: 0 4px 14px rgba(247, 144, 9, .14); }
+.alerta-panel.alerta-alerta::before { background: linear-gradient(var(--alerta), #EA580C); }
+.alerta-panel.alerta-alerta > svg { color: #B54708; background: rgba(247, 144, 9, .18); }
+
+.alerta-panel.alerta-info   { background: var(--blanco); }
+.alerta-panel.alerta-info::before { background: linear-gradient(var(--cyan-400), var(--cyan-600)); }
+.alerta-panel.alerta-info > svg   { color: var(--cyan-600); background: var(--cyan-100); }
+
+.alerta-panel.alerta-ok     { background: linear-gradient(120deg, #F0FDF6, var(--exito-bg)); }
+.alerta-panel.alerta-ok::before { background: linear-gradient(#34D399, var(--exito)); }
+.alerta-panel.alerta-ok > svg     { color: var(--exito); background: rgba(18, 183, 106, .14); }
 
 /* --- Gráfica --- */
 .panel-columnas { display: grid; gap: var(--e5); margin-bottom: var(--e6); }
@@ -998,20 +1156,83 @@ a.alerta-panel:hover { text-decoration: none; transform: translateX(3px); box-sh
 .lista-turnos { display: flex; flex-direction: column; gap: var(--e3); }
 
 .turno {
+  position: relative;
+  overflow: hidden;
   display: flex;
   gap: var(--e4);
-  padding: var(--e4);
-  border: 1px solid var(--gris-200);
-  border-radius: var(--radio-md);
+  padding: var(--e5);
+  border: 0;
+  border-radius: var(--radio-2xl);
   background: var(--blanco);
-  transition: box-shadow var(--trans);
+  box-shadow: var(--sombra-suave);
+  transition: transform var(--trans-suave), box-shadow var(--trans-suave);
 }
-.turno:hover { box-shadow: var(--sombra-sm); }
-/* Lo que espera respuesta se distingue de un vistazo */
-.turno-propuesta { border-left: 3px solid var(--azul-600); background: var(--azul-050); }
+.turno:hover { transform: translateY(-4px); box-shadow: var(--sombra-md); }
+
+/* PIEZA PROTAGONISTA (CLAUDE.md 3.4): el turno que espera respuesta es la
+   unica cosa de la pantalla que lleva degradado. Si hubiera dos, no habria
+   ninguna. */
+.turno-propuesta {
+  background: var(--grad-turno);
+  box-shadow: var(--sombra-azul);
+  color: var(--blanco);
+}
+.turno-propuesta::after {
+  content: '';
+  position: absolute;
+  top: -50px; right: -30px;
+  width: 150px; height: 150px;
+  border-radius: var(--radio-full);
+  background: radial-gradient(circle, rgba(34, 211, 238, .35), transparent 70%);
+  pointer-events: none;
+}
+.turno-propuesta > * { position: relative; z-index: 1; }
+.turno-propuesta:hover { box-shadow: 0 16px 34px rgba(11, 83, 148, .34); }
+
+/* Todo lo de adentro se invierte a blanco: sobre degradado el gris se pierde */
+.turno-propuesta .turno-titulo { color: var(--blanco); }
+.turno-propuesta .turno-datos span,
+.turno-propuesta .turno-asistencia { color: rgba(255, 255, 255, .85); }
+.turno-propuesta .turno-datos svg  { color: rgba(255, 255, 255, .6); }
+.turno-propuesta .turno-cuando     { color: var(--cyan-100); }
+.turno-propuesta .turno-nota       { color: rgba(255, 255, 255, .6); }
+.turno-propuesta .turno-pago       { color: var(--blanco); }
+.turno-propuesta .turno-espera     { color: var(--cyan-100); }
+.turno-propuesta .turno-fecha {
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .24);
+  color: var(--blanco);
+  border-radius: var(--radio-md);
+}
+.turno-propuesta .badge {
+  background: rgba(255, 255, 255, .2);
+  border: 1px solid rgba(255, 255, 255, .3);
+  color: var(--blanco);
+}
+.turno-propuesta .chip {
+  background: rgba(255, 255, 255, .14);
+  color: rgba(255, 255, 255, .92);
+}
+.turno-propuesta .turno-acciones { border-top-color: rgba(255, 255, 255, .18); }
+/* El boton principal en blanco solido para ganarle al degradado */
+.turno-propuesta .btn-exito {
+  background: var(--blanco);
+  color: var(--azul-700);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+}
+.turno-propuesta .btn-exito:hover:not(:disabled) { background: var(--azul-050); color: var(--azul-800); }
+.turno-propuesta .btn-secundario {
+  background: rgba(255, 255, 255, .16);
+  border-color: rgba(255, 255, 255, .28);
+  color: var(--blanco);
+}
+.turno-propuesta .btn-secundario:hover:not(:disabled) { background: rgba(255, 255, 255, .26); color: var(--blanco); }
 
 .turno-fecha {
   flex-shrink: 0;
+  /* Sin esto el flex lo estira a todo lo alto de la tarjeta y el bloque de
+     fecha se convierte en una barra: tiene que abrazar su contenido. */
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -44,10 +44,33 @@
   --sombra-md: 0 4px 16px rgba(4, 38, 63, .08);
   --sombra-lg: 0 12px 32px rgba(4, 38, 63, .12);
 
+  /* --- Sombras con tinte (direccion Pulso, CLAUDE.md 3.2) ---
+     Una sombra gris debajo de una tarjeta de color la ensucia: la sombra tiene
+     que ser del mismo tono que la pieza que esta levantando. */
+  --sombra-suave:  0 6px 18px rgba(4, 38, 63, .07);
+  --sombra-azul:   0 12px 28px rgba(11, 83, 148, .30);
+  --sombra-exito:  0 10px 24px rgba(18, 183, 106, .26);
+  --sombra-alerta: 0 10px 24px rgba(234, 88, 12, .28);
+
+  /* --- Degradados ---
+     Solo para piezas protagonistas. Nunca como fondo general de pagina: el
+     degradado a pantalla completa es justo lo que hace ver barato un diseno. */
+  --grad-marca:  linear-gradient(145deg, var(--azul-900) 0%, var(--azul-700) 48%, var(--cyan-600) 100%);
+  --grad-turno:  linear-gradient(155deg, var(--azul-700), var(--cyan-600));
+  --grad-exito:  linear-gradient(140deg, #0F766E, var(--exito));
+  --grad-alerta: linear-gradient(150deg, var(--alerta), #EA580C);
+  --grad-frio:   linear-gradient(150deg, var(--azul-100), var(--cyan-100));
+
+  /* Fondo de los paneles: neutro ligeramente azulado, para que el blanco de
+     las tarjetas se despegue en vez de fundirse con la pagina. */
+  --fondo-panel: #EEF4FB;
+
   /* --- Radios --- */
   --radio-sm: 8px;
   --radio-md: 14px;
   --radio-lg: 22px;
+  --radio-xl: 20px;    /* tarjeta de indicador */
+  --radio-2xl: 24px;   /* pieza protagonista */
   --radio-full: 999px;
 
   /* --- Espaciado (escala de 4) --- */
@@ -58,8 +81,10 @@
   --fuente-titulo: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
   --fuente-texto:  'Inter', system-ui, -apple-system, sans-serif;
 
-  /* --- Transiciones --- */
+  /* --- Transiciones y entradas --- */
   --trans: 200ms cubic-bezier(.4, 0, .2, 1);
+  --trans-suave: 240ms cubic-bezier(.2, .75, .3, 1);
+  --entrada: 620ms cubic-bezier(.2, .7, .3, 1);
 
   /* --- Derivados de layout (no estan en el spec, son de implementacion) --- */
   --ancho-max: 1200px;       /* contenedor principal */

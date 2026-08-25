@@ -271,8 +271,13 @@ select
    order by sc.folio
    offset (v.semana % 3) limit 1),
   e.id,
-  -- un turno por semana durante las ultimas tres, escalonado por perfil
-  (date_trunc('week', current_date) - (v.semana || ' weeks')::interval)::date
+  -- Un turno por semana durante las ultimas tres, escalonado por perfil.
+  -- Se resta una semana de mas a proposito: `date_trunc('week', current_date)`
+  -- es el LUNES de esta semana, asi que sin ese ajuste, aplicado un lunes o un
+  -- martes, el seed generaba turnos marcados como "completada" con fecha
+  -- futura, y ademas chocaban con el turno en curso de hoy y con las
+  -- propuestas. Restando una, las tres semanas siempre quedan en el pasado.
+  (date_trunc('week', current_date) - ((v.semana + 1) || ' weeks')::interval)::date
     + ((row_number() over (partition by v.semana order by e.nombre_completo) % 5))::int,
   'guardia_12', '07:00', '19:00',
   public.cobro_cliente(e.tarifa_turno_12), e.tarifa_turno_12,
@@ -319,13 +324,15 @@ where e.nombre_completo in ('Claudia Ivette Sandoval Ríos', 'Verónica Alejandr
 -- El perfil ligado a la cuenta de prueba `enfermero@enlace.test` (EE-00001)
 -- necesita trabajo por delante, no solo historial: sin una propuesta que
 -- responder y un turno aceptado, el panel del enfermero se ve vacio y no hay
--- forma de validarlo. Las fechas se separan de sus turnos completados para no
--- chocar con validar_traslape().
+-- forma de validarlo.
+--
+-- Van cerca en el tiempo para que la demo se lea bien. Pueden hacerlo porque el
+-- bloque de turnos semanales de arriba ya solo ocupa semanas pasadas.
 insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_inicio,
                                  hora_fin, tarifa_cliente, tarifa_enfermero, estatus, created_at)
 select
   (select id from public.solicitudes where origen = 'seed' and estatus = 'propuesta_enviada' limit 1),
-  e.id, current_date + 3, 'nocturno', '23:00', '07:00',
+  e.id, current_date + 2, 'nocturno', '23:00', '07:00',
   public.cobro_cliente(e.tarifa_turno_8), e.tarifa_turno_8,
   'propuesta', now() - interval '6 hours'
 from public.enfermeros e
@@ -335,7 +342,7 @@ insert into public.asignaciones (solicitud_id, enfermero_id, fecha, turno, hora_
                                  hora_fin, tarifa_cliente, tarifa_enfermero, estatus)
 select
   (select id from public.solicitudes where origen = 'seed' and estatus = 'confirmada' limit 1),
-  e.id, current_date + 6, 'guardia_12', '07:00', '19:00',
+  e.id, current_date + 5, 'guardia_12', '07:00', '19:00',
   public.cobro_cliente(e.tarifa_turno_12), e.tarifa_turno_12,
   'aceptada'
 from public.enfermeros e

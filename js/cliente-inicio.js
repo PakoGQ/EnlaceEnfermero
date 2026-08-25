@@ -9,7 +9,7 @@ const KPIS_CLIENTE = [
   { clave: 'turnos_programados',   titulo: 'Turnos agendados',  icono: 'calendario',
     href: 'solicitudes.html' },
   { clave: 'gasto_mes',            titulo: 'Facturado este mes', icono: 'dinero',
-    href: 'facturacion.html', moneda: true },
+    href: 'facturacion.html', moneda: true, dinero: true },
   { clave: 'personal_distinto',    titulo: 'Personal asignado', icono: 'usuarios',
     href: 'personal.html' }
 ];
@@ -63,14 +63,14 @@ async function iniciarInicioCliente() {
 }
 
 function pintarKpisCliente(d) {
-  document.getElementById('kpis').innerHTML = KPIS_CLIENTE.map(k => {
+  document.getElementById('kpis').innerHTML = KPIS_CLIENTE.map((k, i) => {
     const valor = d[k.clave] ?? 0;
     const texto = k.moneda
       ? monedaCorta(valor)
       : new Intl.NumberFormat('es-MX').format(valor);
 
     return `
-      <a href="${k.href}" class="tarjeta tarjeta-hover kpi">
+      <a href="${k.href}" class="tarjeta kpi entra entra-${i + 1}${k.dinero ? ' kpi-dinero' : ''}">
         <span class="kpi-icono">${icono(k.icono, 20)}</span>
         <span class="kpi-valor">${esc(texto)}</span>
         <span class="kpi-etiqueta">${esc(k.titulo)}</span>
