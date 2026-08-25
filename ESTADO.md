@@ -3,16 +3,79 @@
 > Documento de continuidad. Léelo junto con `CLAUDE.md`, que es la especificación
 > maestra. Aquí está **qué se construyó, cómo funciona y qué falta**.
 >
-> Última actualización: 22 de agosto de 2026 (Fase 3 en curso)
+> Última actualización: 24 de agosto de 2026
+
+---
+
+## ⇢ EMPIEZA AQUÍ: lo que sigue
+
+**La tarea abierta es de diseño, no de funcionalidad.** El código funciona
+completo; lo que Paco quiere es que el sitio se vea distinto.
+
+### El encargo, en sus palabras
+
+> «Se me hizo muy soft el cambio, yo me esperaba ver más animaciones, colores,
+> todas las páginas más vivas. Se ve prácticamente igual.»
+>
+> Y después, ya con la segunda pasada aplicada:
+>
+> «Lo sigo viendo casi igual, quiero que tenga más el aspecto de los paneles.»
+
+**Lo primero que hay que aclararle:** «el aspecto de los paneles» admite dos
+lecturas y cambia por completo el trabajo.
+
+1. Que **el sitio público** (11 pantallas) se parezca a **los tres paneles
+   privados**, que sí recibieron el tratamiento fuerte —degradados, indicadores
+   de colores, línea de tendencia, anillo de progreso—. Esta es la lectura más
+   probable: los paneles se transformaron mucho más que el público.
+2. Que **todo** se parezca a las maquetas del lienzo de diseño.
+
+Pregúntaselo en una línea antes de empezar. No lo asumas.
+
+### Por qué sigue viéndose parecido: el diagnóstico honesto
+
+Se hicieron dos pasadas y las dos cambiaron **superficies**: color, sombra,
+radio, degradado, movimiento. Ninguna tocó la **estructura**.
+
+Todas las pantallas siguen siendo el mismo esqueleto:
+
+```
+encabezado  →  rejilla de tarjetas  →  lista  →  lista
+```
+
+Mientras ese esqueleto no cambie, cualquier ajuste de color se va a sentir
+tibio, porque el ojo reconoce la composición antes que la paleta. **Si el
+objetivo es que se sienta otro producto, hay que rediseñar la composición**, no
+subirle el volumen a los tokens:
+
+- Layouts asimétricos en vez de rejillas de dos columnas iguales.
+- Piezas que se traslapen y rompan la retícula.
+- Una pieza dominante por pantalla, mucho más grande que el resto.
+- Secciones que no empiecen todas con un título del mismo tamaño.
+
+Eso es trabajo **pantalla por pantalla**, no de tokens, y conviene decírselo
+antes de empezar para que sepa lo que está pidiendo.
+
+### Lo que ya está agotado
+
+No vuelvas a proponer esto, ya se hizo y no resolvió la queja:
+
+- Subir saturación y meter degradados a las superficies.
+- Sombras con tinte y radios más grandes.
+- Animaciones de entrada, latidos, brillos y elevación al pasar el cursor.
 
 ---
 
 ## Resumen en una línea
 
-**Fase 3 completa.** Los tres paneles funcionan y el ciclo de negocio corre de
-punta a punta: el cliente solicita → la agencia cotiza y propone → el profesional
-acepta → cubre el turno y marca entrada y salida → el cliente evalúa → se
-factura. Falta la Fase 4 (automatización) y migrar a Supabase Pro.
+**Fases 0 a 3 completas.** Los tres paneles funcionan y el ciclo de negocio
+corre de punta a punta: el cliente solicita → la agencia cotiza y propone → el
+profesional acepta → cubre el turno y marca entrada y salida → el cliente evalúa
+→ se factura. Las 35 pantallas existen y están verificadas.
+
+**Nada de esto está bloqueado por código.** Lo abierto es (a) el rediseño visual
+de arriba, (b) hospedar la base cuando Paco lo decida, y (c) la Fase 4, que por
+especificación no se toca hasta tener clientes reales.
 
 | Fase | Alcance | Estado |
 |---|---|---|
@@ -100,6 +163,70 @@ En corto:
 
 Como el tratamiento vive en los tokens y en el chrome compartido, una pantalla
 nueva nace ya con el estilo: no hay que aplicarlo a mano.
+
+---
+
+### Qué se hizo en cada pasada, con precisión
+
+Para no repetir trabajo ni volver a proponer lo ya hecho.
+
+**Pasada 1 — el sistema y los tres paneles** (commit `73762a3`)
+
+- `CLAUDE.md` §3 reescrito primero, antes del código.
+- `css/variables.css`: sombras con tinte, degradados de marca, radios 20 y 24,
+  `--fondo-panel`, curvas `--trans-suave` y `--entrada`.
+- `css/componentes.css`: utilidades de movimiento (`.entra`, `.punto-vivo`,
+  `.brillo`, `.eleva`) con su bloque `prefers-reduced-motion`.
+- `css/panel.css`: encabezado con degradado y encabalgamiento de 40px,
+  indicadores por tono, alertas con riel degradado, turno propuesto como pieza
+  protagonista.
+
+**Pasada 2 — el sitio público** (commit `e7abf16`)
+
+- `.tarjeta` pierde el borde gris de 1px y sube a radio 20.
+- `.tarjeta-enfermero`: radio 24, anillo degradado en la foto, lavado de
+  esquina. *(Primer intento fallido: una franja recta arriba, que el radio de
+  24px corta en diagonal y deja como repisa.)*
+- `css/publico.css`: hero al token de marca con manchas radiales, barra de
+  confianza a radio 24 con sombra azul, un tono por icono de servicio, sección
+  de verificación con profundidad, FAQ sin la línea gris.
+- `css/base.css`: `.aparece` a la curva de Pulso y `.aparece-serie` para
+  escalonar rejillas.
+
+**Pasada 3 — subir el volumen** (commit `5a8c0b5`)
+
+Motivada por «se me hizo muy soft». La causa real: en la pasada 1 escribí el CSS
+de `.brillo` y `.punto-vivo` y **nunca los conecté**, y dejé fuera el sparkline
+y el anillo que sí estaban en la maqueta aprobada.
+
+- `panel_enfermero_resumen()` devuelve `serie_ganancias` (últimos 6 meses).
+- `js/panel-enfermero.js`: los indicadores se arman a mano, no desde una tabla
+  de configuración, porque cada uno tiene su pieza gráfica. Funciones
+  `chispita()` (línea de tendencia SVG) y `anillo()` (progreso).
+- Sello «Urge» y barrido de brillo en el indicador de propuestas.
+- El badge de «visible en el catálogo» late, y sólo si está publicado.
+- `css/publico.css`: manchas del hero que respiran, sello que late, métricas con
+  número en degradado, servicios que encienden color, chips que crecen.
+- `CLAUDE.md` §3.4 gana el cuarto uso del movimiento —el dato que se dibuja— y
+  la regla de contención: **el movimiento se gana**.
+
+### El lienzo con las tres direcciones
+
+https://claude.ai/code/artifact/7e296b49-732e-4f83-8bf7-427c7981169c
+
+Cuatro artboards de la misma pantalla (Inicio del enfermero, ancho de celular):
+la actual como referencia, más **A · Pulso** (la elegida), **B · Turno
+Nocturno** (tema oscuro) y **C · Cuidado** (editorial cálido). Cada uno con su
+nota de argumentos y contras.
+
+Los archivos fuente viven en `diseno/` (`Main.dc.html`, `Pulso.dc.html`,
+`Nocturno.dc.html`, `Cuidado.dc.html`, `canvas.json`). **Si hay que rehacer o
+ampliar el lienzo, se edita ahí y se vuelve a sembrar** — nunca se edita el
+`.html` ya generado.
+
+Vale la pena releer la maqueta de Pulso antes de seguir: sigue habiendo cosas
+en ella que no llegaron al código, como la tarjeta de turno con los botones
+Aceptar / cerrar en el pie y los chips en vidrio.
 
 ---
 
@@ -408,15 +535,31 @@ de negocio.
 
 ## Qué falta hacer
 
-### Fase 3 — Paneles de enfermero y cliente
+### 1. Rediseño visual — la tarea viva
 
-**Enfermero** (`/panel`) — **hecho.** Las 7 pantallas están construidas y
-verificadas. Lo que quedó pendiente ahí es de producto, no de código: decidir si
-el registro por `unete.html` crea cuenta siempre, porque hoy 12 de los 13
-perfiles del catálogo no tienen una y el panel sólo rinde si la gente lo usa.
+Está descrita al principio del documento. Es lo único en lo que Paco quiere
+trabajar ahora mismo.
 
-**Cliente** (`/cliente`) — **hecho.** Las 6 pantallas están construidas y
-verificadas.
+### 2. Hospedar la base — cuando él lo diga
+
+**No proponerlo hasta que el diseño esté cerrado.** Decisión suya del 23 de
+agosto: primero prueba y ajusta apariencia en local, y hasta que la mayoría esté
+lista se contrata Supabase Pro, para no pagar durante semanas de iteración.
+
+Su cuenta ya tiene **2 proyectos gratuitos activos (Vaxti y Doncellas), que
+necesita como están**, y ese es el límite. Crear uno nuevo exige pausar alguno o
+subir a Pro.
+
+Cuando llegue el momento, el camino está probado: `sql/00-instalar.sql`, las 4
+cuentas a mano en Authentication, y `sql/98-usuarios-prueba.sql`. Ver
+`docs/conectar-supabase.md`.
+
+### 3. Una decisión de producto pendiente
+
+**¿El registro por `unete.html` debe crear cuenta siempre?** Hoy 12 de los 13
+perfiles del catálogo no tienen cuenta, así que no pueden entrar a `/panel`. El
+panel del enfermero sólo rinde si la gente lo usa. Alternativa: invitar por
+correo después de verificar.
 
 ### Fase 4 — Automatización e IA
 
@@ -466,6 +609,41 @@ arriba. Queda uno:
   individual antes del primero.
 - **Storage se queda corto en el plan gratuito.** ~10 MB de documentos por
   profesional; con 1 GB se llega a unos 100 perfiles.
+
+---
+
+## Cómo trabaja Paco
+
+Contexto que no está en el código y se pierde al cambiar de conversación.
+
+- **Una cosa a la vez, y la valida él.** Es regla suya y está en `CLAUDE.md` §0.
+  Espera que le digas qué abrir y qué debe ver. No encadenes tres features y se
+  las entregues juntas.
+- **Prueba en el navegador, no en tu cabeza.** Varios bugs de esta sesión sólo
+  aparecieron al abrir la pantalla: el sello que se estiraba, la barra de
+  filtros partida por el degradado, la franja de la tarjeta cortada por el
+  radio. Ninguno se veía en el código.
+- **Dice lo que piensa, sin adornos.** «Se ve prácticamente igual» y «no me
+  gustan nada» son la clase de comentario que da. No lo suavices ni te
+  defiendas: casi siempre tiene razón y lo que quiere es que lo arregles.
+- **Le importa el costo.** Decidió no pagar hosting mientras itera. No le
+  propongas gastar sin necesidad.
+- **Escribe en español mexicano**, y todo el proyecto está así: interfaz,
+  comentarios, mensajes de error, nombres de tabla y columna sin acentos.
+
+### Cómo probar sin romper nada
+
+- Los datos del seed usan fechas relativas al momento de instalación. Si algo se
+  ve raro —«0 solicitudes hoy», turnos que ya pasaron— corre `aplicar-esquema.sh`
+  y después **siempre** `crear-usuarios-prueba.sh` y `subir-documentos-prueba.sh`.
+- Tras tocar cualquier `sql/*.sql`, `bash sql/generar-instalador.sh`.
+- Antes de dar algo por terminado: `sql/99-pruebas.sql` debe salir en **62 OK**,
+  y la pantalla debe verse bien a **390, 768 y 1440px** sin errores de consola.
+- **El scroll programático no funciona en el panel del navegador de Claude
+  Code.** `window.scrollTo` y `scrollIntoView` no mueven la página. Para ver la
+  parte baja de una pantalla, agranda el alto de la ventana o esconde con JS los
+  bloques de arriba. Perdí un rato creyendo que los contadores estaban rotos
+  cuando lo que pasaba es que nunca entraban en pantalla.
 
 ---
 
