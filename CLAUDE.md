@@ -246,6 +246,14 @@ el que marca la jerarquía. Pero se gana, no se reparte.
      (visible en el catálogo, turno en curso). Si no está pasando nada, no
      late nada.
   3. **Respuesta al cursor:** la tarjeta sube 4–5px con `--trans-suave`.
+  4. **El dato se dibuja.** Una línea de tendencia se traza sola y un anillo de
+     progreso se llena, una vez, al entrar. Un número dice *cuánto*; la línea
+     dice *si va subiendo*, que suele ser la pregunta real. Se dibuja en SVG en
+     línea, sin librerías.
+
+  Y una regla de contención: **el movimiento se gana**. Antes de animar algo,
+  la pregunta es qué información aporta. Si la respuesta es «se ve bonito», no
+  se anima.
   
   Todo debe respetar `prefers-reduced-motion: reduce`: quien pidió menos
   movimiento ve la interfaz quieta, sin excepción.

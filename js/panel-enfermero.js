@@ -12,57 +12,111 @@
    INDICADORES
    ========================================================================== */
 
-const KPIS_ENFERMERO = [
-  { clave: 'propuestas_pendientes', titulo: 'Por responder',
-    icono: 'inbox',  alertaSi: v => v > 0 },
-  { clave: 'turnos_proximos',       titulo: 'Turnos aceptados',
-    icono: 'calendario' },
-  // `dinero: true` lo pinta en verde: es el numero por el que el profesional
-  // abre la aplicacion (CLAUDE.md 3.4).
-  { clave: 'ganancias_mes',         titulo: 'Ganado este mes',
-    icono: 'dinero', moneda: true, dinero: true, comparar: 'ganancias_mes_anterior' },
-  { clave: 'calificacion',          titulo: 'Tu calificación',
-    icono: 'estrella', decimal: true }
-];
 
-/** Pinta los cuatro indicadores y el encabezado con el estado del perfil. */
+/* ==========================================================================
+   PIEZAS GRAFICAS
+
+   Un numero solo dice CUANTO. La linea dice si va subiendo, y el anillo dice
+   que tan cerca esta del tope: son la pregunta que de verdad se hace quien
+   vive de turnos. Se dibujan con SVG en linea, sin librerias (regla 4).
+   ========================================================================== */
+
+/** Linea de tendencia de los ultimos meses. */
+function chispita(serie) {
+  const v = (serie || []).map(Number);
+  if (v.length < 2) return '';
+
+  const alto = 46, ancho = 150;
+  const max = Math.max(...v, 1);
+  const puntos = v.map((n, i) => {
+    const x = (i / (v.length - 1)) * ancho;
+    const y = alto - (n / max) * (alto - 8) - 4;
+    return `${x.toFixed(1)} ${y.toFixed(1)}`;
+  });
+
+  const linea = 'M' + puntos.join(' L');
+  const area  = `${linea} L${ancho} ${alto} L0 ${alto} Z`;
+  const [ux, uy] = puntos[puntos.length - 1].split(' ');
+
+  return `
+    <svg class="chispita" width="${ancho}" height="${alto}" viewBox="0 0 ${ancho} ${alto}"
+         fill="none" aria-hidden="true">
+      <path d="${area}" fill="rgba(255,255,255,.22)"></path>
+      <path class="chispita-linea" d="${linea}" stroke="rgba(255,255,255,.95)"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle class="chispita-punta" cx="${ux}" cy="${uy}" r="4" fill="#FFFFFF"></circle>
+    </svg>`;
+}
+
+/** Anillo de progreso, para una calificacion sobre 5. */
+function anillo(valor, max = 5) {
+  const r = 26, circ = 2 * Math.PI * r;
+  const pct = Math.min(Number(valor) / max, 1);
+
+  return `
+    <div class="anillo">
+      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="${r}" stroke="var(--gris-100)" stroke-width="6" fill="none"></circle>
+        <circle class="anillo-arco" cx="32" cy="32" r="${r}" stroke="#F5B544" stroke-width="6"
+                fill="none" stroke-linecap="round"
+                stroke-dasharray="${circ.toFixed(1)}"
+                style="--arco: ${(circ * (1 - pct)).toFixed(1)}"
+                transform="rotate(-90 32 32)"></circle>
+      </svg>
+      <span class="anillo-valor">${esc(Number(valor) > 0 ? Number(valor).toFixed(1) : '—')}</span>
+    </div>`;
+}
+
+/** Pinta los indicadores y el encabezado con el estado del perfil. */
 function pintarResumen(datos) {
   const zona = document.getElementById('kpis');
   if (!zona) return;
 
-  zona.innerHTML = KPIS_ENFERMERO.map((k, i) => {
-    const valor = datos[k.clave] ?? 0;
+  const porResponder = Number(datos.propuestas_pendientes) || 0;
+  const ganado       = Number(datos.ganancias_mes) || 0;
+  const anterior     = Number(datos.ganancias_mes_anterior) || 0;
 
-    let texto;
-    if (k.moneda)       texto = monedaCorta(valor);
-    else if (k.decimal) texto = Number(valor) > 0 ? Number(valor).toFixed(1) : '—';
-    else                texto = new Intl.NumberFormat('es-MX').format(valor);
+  let cambio = '';
+  if (anterior > 0) {
+    const pct  = Math.round(((ganado - anterior) / anterior) * 100);
+    const sube = pct >= 0;
+    cambio = `<span class="kpi-cambio ${sube ? 'sube' : 'baja'}">
+      ${sube ? '▲' : '▼'} ${Math.abs(pct)}% vs mes pasado</span>`;
+  }
 
-    // El comparativo solo dice algo si el mes pasado hubo trabajo
-    let cambio = '';
-    if (k.comparar && Number(datos[k.comparar]) > 0) {
-      const anterior = Number(datos[k.comparar]);
-      const pct  = Math.round(((Number(valor) - anterior) / anterior) * 100);
-      const sube = pct >= 0;
-      cambio = `<span class="kpi-cambio ${sube ? 'sube' : 'baja'}">
-        ${sube ? '▲' : '▼'} ${Math.abs(pct)}% vs mes pasado</span>`;
-    }
+  zona.innerHTML = `
+    <div class="tarjeta kpi entra entra-1${porResponder ? ' kpi-alerta' : ''}">
+      ${porResponder ? '<span class="brillo"></span>' : ''}
+      <span class="kpi-icono">${icono('inbox', 20)}</span>
+      ${porResponder ? '<span class="kpi-sello">Urge</span>' : ''}
+      <span class="kpi-valor">${porResponder}</span>
+      <span class="kpi-etiqueta">Por responder</span>
+    </div>
 
-    // La calificacion se acompana del total de servicios que la sostienen
-    if (k.decimal && datos.total_servicios > 0) {
-      cambio = `<span class="kpi-cambio">${datos.total_servicios} servicios</span>`;
-    }
+    <div class="tarjeta kpi entra entra-2">
+      <span class="kpi-icono">${icono('calendario', 20)}</span>
+      <span class="kpi-valor">${Number(datos.turnos_proximos) || 0}</span>
+      <span class="kpi-etiqueta">Turnos aceptados</span>
+    </div>
 
-    const tono = k.alertaSi?.(valor) ? ' kpi-alerta' : (k.dinero ? ' kpi-dinero' : '');
+    <div class="tarjeta kpi kpi-dinero kpi-ancho entra entra-3">
+      <div class="kpi-dinero-cuerpo">
+        <div>
+          <span class="kpi-etiqueta">Ganado este mes</span>
+          <span class="kpi-valor">${esc(monedaCorta(ganado))}</span>
+          ${cambio}
+        </div>
+        ${chispita(datos.serie_ganancias)}
+      </div>
+    </div>
 
-    return `
-      <div class="tarjeta kpi entra entra-${Math.min(i + 1, 6)}${tono}">
-        <span class="kpi-icono">${icono(k.icono, 20)}</span>
-        <span class="kpi-valor">${esc(texto)}</span>
-        <span class="kpi-etiqueta">${esc(k.titulo)}</span>
-        ${cambio}
-      </div>`;
-  }).join('');
+    <div class="tarjeta kpi kpi-ancho kpi-calificacion entra entra-4">
+      ${anillo(datos.calificacion)}
+      <div>
+        <span class="kpi-titulo">Tu calificación</span>
+        <span class="kpi-etiqueta">${Number(datos.total_servicios) || 0} servicios completados</span>
+      </div>
+    </div>`;
 
   pintarEstadoPerfil(datos);
   pintarAvancePerfil(datos.perfil, datos);
@@ -81,8 +135,12 @@ function pintarEstadoPerfil(datos) {
 
   // Verificado y publicado no son lo mismo: se puede estar verificado y fuera
   // del catalogo, por ejemplo tras vencerse un documento (regla 10.3).
+  //
+  // El punto late solo cuando esta publicado, porque es lo unico que esta
+  // ocurriendo AHORA: hay clientes que en este momento pueden encontrarlo. Si
+  // late siempre, deja de significar algo (CLAUDE.md 3.4).
   const visible = datos.publicado
-    ? '<span class="badge badge-exito">Visible en el catálogo</span>'
+    ? '<span class="badge badge-exito"><span class="punto-vivo"></span>Visible en el catálogo</span>'
     : '<span class="badge badge-gris">Fuera del catálogo</span>';
 
   zona.innerHTML = `

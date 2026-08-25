@@ -3970,6 +3970,26 @@ begin
     'calificacion',    e.calificacion_promedio,
     'total_servicios', e.total_servicios,
 
+    -- Serie de los ultimos 6 meses para dibujar la tendencia en el panel.
+    -- Un numero solo dice cuanto; la linea dice si va subiendo, que es la
+    -- pregunta que de verdad se hace quien vive de turnos.
+    'serie_ganancias', coalesce((
+      select jsonb_agg(m.monto order by m.mes)
+      from (
+        select date_trunc('month', d)::date as mes,
+               coalesce((
+                 select sum(a.tarifa_enfermero)
+                 from public.asignaciones a
+                 where a.enfermero_id = v_id
+                   and a.estatus = 'completada'
+                   and date_trunc('month', a.fecha) = date_trunc('month', d)
+               ), 0) as monto
+        from generate_series(
+               (inicio_mes - interval '5 months'), inicio_mes, interval '1 month'
+             ) d
+      ) m
+    ), '[]'::jsonb),
+
     'perfil', public.perfil_completo_pct(v_id)
   );
 end;

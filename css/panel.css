@@ -1704,3 +1704,95 @@ a.alerta-panel:hover { transform: translateY(-3px); box-shadow: var(--sombra-md)
 .motivo-rechazo strong    { color: #B54708; }
 .motivo-incidencia { color: var(--gris-600); }
 .motivo-incidencia strong { color: var(--error); }
+
+/* ==========================================================================
+   PIEZAS GRÁFICAS DEL INDICADOR — dirección Pulso
+
+   Un número solo dice cuánto. La línea dice si va subiendo y el anillo qué tan
+   cerca está del tope: son la pregunta que de verdad se hace quien vive de
+   turnos, y por eso justifican el pixel que ocupan.
+   ========================================================================== */
+
+/* El indicador de dinero y el de calificación ocupan la fila completa: son los
+   dos que la gente abre la aplicación a mirar. */
+.kpi-ancho { grid-column: 1 / -1; }
+
+.kpi-dinero-cuerpo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e4);
+}
+.kpi-dinero-cuerpo > div { display: flex; flex-direction: column; gap: var(--e1); min-width: 0; }
+.kpi-dinero .kpi-valor { font-size: clamp(1.75rem, 8vw, 2.25rem); }
+
+/* La línea se dibuja sola al entrar: el trazo empieza oculto y se va
+   revelando. Es el único momento en que la gráfica se mueve. */
+.chispita { flex-shrink: 0; }
+.chispita-linea {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: ee-traza 1.5s cubic-bezier(.4, 0, .2, 1) 400ms forwards;
+}
+.chispita-punta { opacity: 0; animation: ee-asoma 400ms ease-out 1.7s forwards; }
+@keyframes ee-traza { to { stroke-dashoffset: 0; } }
+@keyframes ee-asoma { to { opacity: 1; } }
+
+/* Anillo de calificación */
+.kpi-calificacion { flex-direction: row; align-items: center; gap: var(--e4); }
+.kpi-calificacion > div { display: flex; flex-direction: column; gap: 2px; }
+.kpi-titulo {
+  font-family: var(--fuente-titulo);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--azul-900);
+}
+.anillo { position: relative; flex-shrink: 0; width: 64px; height: 64px; }
+.anillo-arco {
+  stroke-dashoffset: 164;              /* arranca vacío */
+  animation: ee-llena 1.2s cubic-bezier(.4, 0, .2, 1) 500ms forwards;
+}
+@keyframes ee-llena { to { stroke-dashoffset: var(--arco); } }
+.anillo-valor {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--fuente-titulo);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--azul-900);
+}
+
+/* Sello de urgencia sobre el indicador naranja */
+.kpi-sello {
+  position: absolute;
+  top: var(--e4); right: var(--e4);
+  padding: 3px 9px;
+  border-radius: var(--radio-full);
+  background: rgba(255, 255, 255, .26);
+  color: var(--blanco);
+  font-size: .625rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.kpi { position: relative; overflow: hidden; }
+/* El sello queda fuera: la regla de apilamiento le sobreescribia el
+   `position: absolute` y se estiraba a todo el ancho de la tarjeta. */
+.kpi > *:not(.brillo):not(.kpi-sello) { position: relative; z-index: 1; }
+.kpi-sello { z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chispita-linea { stroke-dashoffset: 0; animation: none; }
+  .chispita-punta { opacity: 1; animation: none; }
+  .anillo-arco    { stroke-dashoffset: var(--arco); animation: none; }
+}
+
+@media (min-width: 640px) {
+  .kpi-ancho { grid-column: span 2; }
+}
+
+/* El punto vivo dentro de un badge: hereda el color del badge en vez del verde
+   fijo, para que funcione sobre el vidrio del encabezado. */
+.badge .punto-vivo { background: currentColor; margin-right: 2px; }
