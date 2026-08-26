@@ -80,20 +80,9 @@
   background: linear-gradient(160deg, #E4FBFF 0%, #CFFAFE 100%);
   border: 1px solid rgba(8, 145, 178, .28);
 }
-.confianza .metrica {
-  padding: var(--e2) var(--e1);
-  border-radius: var(--radio-sm);
-  /* Acostada: la cifra a la izquierda y la etiqueta a su lado. Apiladas
-     ocupaban el doble de alto para decir lo mismo. */
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: var(--e2);
-  text-align: left;
-}
+.confianza .metrica { padding: var(--e2) var(--e1); border-radius: var(--radio-sm); }
 .confianza .metrica .valor {
   font-size: 1.0625rem;
-  white-space: nowrap;
   /* Teal oscuro, no --cyan-600: sobre este lavado el cyan se queda en 3.28:1 y
      no llega a AA. Este da 4.79. */
   background: none;
@@ -102,31 +91,10 @@
 }
 .confianza .metrica .etiqueta {
   font-size: .625rem;
-  line-height: 1.25;
+  line-height: 1.3;
   color: #155E75;
-  margin-top: 0;
 }
 .confianza .metrica:hover { background: rgba(255, 255, 255, .55); }
-
-/* Movimiento. Dos piezas: las filas entran escalonadas al aparecer, y un
-   barrido de luz recorre el recuadro cada 5 s. Amplitud baja a proposito: es
-   un dato de respaldo, y un parpadeo insistente ahi entrena a ignorarlo
-   (CLAUDE.md 3.4, el movimiento se gana). */
-.confianza { position: relative; overflow: hidden; }
-.confianza::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, .55) 50%, transparent 62%);
-  background-size: 220% 100%;
-  animation: ee-brilla 5s linear infinite;
-}
-.confianza .metrica { animation: ee-fila 620ms cubic-bezier(.2, .7, .3, 1) both; }
-.confianza .metrica:nth-child(2) { animation-delay:  90ms; }
-.confianza .metrica:nth-child(3) { animation-delay: 180ms; }
-.confianza .metrica:nth-child(4) { animation-delay: 270ms; }
-@keyframes ee-fila { from { opacity: 0; transform: translateX(-10px); } }
 .metrica { text-align: center; }
 .metrica .valor {
   font-family: var(--fuente-titulo);
@@ -604,11 +572,30 @@
    `display: contents` disuelve el envoltorio que los agrupaba en una pila:
    sin eso, buscador y contador seguirian contando como una sola celda y no
    habria forma de darles columnas distintas. */
-/* El contador es una tira horizontal en todo el escritorio, no una columna.
-   Como recuadro tendido necesita ancho, y en una tercera columna al borde
-   derecho solo caben 150 px: ahi no hay forma de acostarlo. Se queda con las
-   reglas de 1024 —a lo ancho, debajo de los dos recuadros, cuatro metricas en
-   fila— y asi chat y buscador conservan la mitad cada uno. */
+@media (min-width: 1280px) {
+  /* Ya hay ancho para las tres: el contador sube de la franja de abajo a su
+     propia columna `auto`, que se ajusta a su ancho fijo y no acapara nada. */
+  .asesor { grid-template-columns: 1fr 1fr auto; }
+
+  /* En una columna angosta el 2x2 aprieta las etiquetas: van en fila unica. */
+  .confianza {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+    align-self: start;
+    padding: var(--e2);
+    /* Ancho fijo y anclado al final de su celda: sin esto el margen negativo
+       de abajo estira la caja en vez de solo correrla, y termina mas grande
+       que antes. */
+    width: 150px;
+    justify-self: end;
+    /* Se sale del contenedor hacia el margen de la pagina, hasta quedar contra
+       la orilla. El min() lo deja en cero por debajo de 1200px, donde no hay
+       margen que aprovechar; los 8px son la holgura para no meterse debajo de
+       la barra de desplazamiento. */
+    margin-inline-end: min(0px, calc((var(--ancho-max) - 100vw) / 2 + var(--e2)));
+  }
+  .confianza .metrica { padding: var(--e2) var(--e1); }
+}
 
 /* --- Aviso de datos de demostracion --- */
 .aviso-demo {
@@ -2059,8 +2046,6 @@ body.con-barra-seleccion .footer { padding-bottom: var(--e9); }
   .verificacion-lista li:hover .verificacion-numero { transform: none; }
   .faq details[open] summary ~ * { animation: none; }
   .asesor-puntos i { animation: none; opacity: .6; }
-  .confianza::after { animation: none; opacity: 0; }
-  .confianza .metrica { animation: none; opacity: 1; transform: none; }
   .asesor-ficha { transition: none; }
   .asesor-ficha:hover { transform: none; }
 }
