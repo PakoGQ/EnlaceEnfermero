@@ -1315,7 +1315,12 @@ function crearFormularioPasos({ formId, pasos, alEnviar }) {
       </div>`).join('');
   }
 
-  function mostrar(indice) {
+  /* `mover` distingue el pintado inicial de un cambio de paso. En el primero no
+     se desplaza la pagina ni se toma el foco: al cargar, eso saltaba por encima
+     de todo lo que explica el servicio —las ventajas, el aviso de que es
+     prestacion de servicios— y dejaba al visitante directamente en los campos,
+     sin haber leido nada. */
+  function mostrar(indice, mover = true) {
     actual = indice;
     secciones.forEach((s, i) => s.classList.toggle('oculto', i !== indice));
 
@@ -1324,6 +1329,8 @@ function crearFormularioPasos({ formId, pasos, alEnviar }) {
     btnEnviar.classList.toggle('oculto', indice !== secciones.length - 1);
 
     pintarProgreso();
+
+    if (!mover) return;
 
     // El foco va al encabezado del paso para que un lector de pantalla lo anuncie
     secciones[indice].querySelector('h2')?.focus();
@@ -1438,7 +1445,7 @@ function crearFormularioPasos({ formId, pasos, alEnviar }) {
     }
   });
 
-  mostrar(0);
+  mostrar(0, false);   // pintado inicial: sin desplazar
   return { mostrar, pasoValido };
 }
 
