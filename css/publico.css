@@ -604,30 +604,11 @@
    `display: contents` disuelve el envoltorio que los agrupaba en una pila:
    sin eso, buscador y contador seguirian contando como una sola celda y no
    habria forma de darles columnas distintas. */
-@media (min-width: 1280px) {
-  /* Ya hay ancho para las tres: el contador sube de la franja de abajo a su
-     propia columna `auto`, que se ajusta a su ancho fijo y no acapara nada. */
-  .asesor { grid-template-columns: 1fr 1fr auto; }
-
-  /* En una columna angosta el 2x2 aprieta las etiquetas: van en fila unica. */
-  .confianza {
-    grid-column: auto;
-    grid-template-columns: 1fr;
-    align-self: start;
-    padding: var(--e2);
-    /* Ancho fijo y anclado al final de su celda: sin esto el margen negativo
-       de abajo estira la caja en vez de solo correrla, y termina mas grande
-       que antes. */
-    width: 150px;
-    justify-self: end;
-    /* Se sale del contenedor hacia el margen de la pagina, hasta quedar contra
-       la orilla. El min() lo deja en cero por debajo de 1200px, donde no hay
-       margen que aprovechar; los 8px son la holgura para no meterse debajo de
-       la barra de desplazamiento. */
-    margin-inline-end: min(0px, calc((var(--ancho-max) - 100vw) / 2 + var(--e2)));
-  }
-  .confianza .metrica { padding: var(--e2) var(--e1); }
-}
+/* El contador es una tira horizontal en todo el escritorio, no una columna.
+   Como recuadro tendido necesita ancho, y en una tercera columna al borde
+   derecho solo caben 150 px: ahi no hay forma de acostarlo. Se queda con las
+   reglas de 1024 —a lo ancho, debajo de los dos recuadros, cuatro metricas en
+   fila— y asi chat y buscador conservan la mitad cada uno. */
 
 /* --- Aviso de datos de demostracion --- */
 .aviso-demo {
