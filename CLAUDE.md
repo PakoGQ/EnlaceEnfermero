@@ -251,6 +251,12 @@ el que marca la jerarquía. Pero se gana, no se reparte.
      dice *si va subiendo*, que suele ser la pregunta real. Se dibuja en SVG en
      línea, sin librerías.
 
+  5. **El catálogo que se recorre solo.** Un carrusel se permite únicamente
+     cuando lo que rota es contenido que el visitante todavía no sabe que
+     existe —los servicios en el hero—, nunca para animar algo que ya se ve
+     completo. Obligatorio: se detiene con el cursor encima, con el foco
+     dentro y fuera de pantalla, y ofrece control manual.
+
   Y una regla de contención: **el movimiento se gana**. Antes de animar algo,
   la pregunta es qué información aporta. Si la respuesta es «se ve bonito», no
   se anima.
@@ -626,17 +632,66 @@ where publicado = true and estatus_verificacion = 'verificado';
 
 Secciones en orden:
 1. **Header fijo** — logo, nav (Servicios, Enfermeros, Nosotros, Contacto), botón secundario "Soy enfermero/a", botón primario "Solicitar personal". Menú hamburguesa en móvil.
-2. **Hero** — degradado azul, título `Personal de enfermería verificado, cuando lo necesitas`, subtítulo con la promesa (cobertura en menos de 24 h en la ZMG), dos botones, y una tarjeta flotante a la derecha con un mini-buscador (nivel + municipio + fecha) que lleva a `enfermeros.html` con filtros aplicados.
-3. **Barra de confianza** — 4 métricas en línea: enfermeros verificados, turnos cubiertos, calificación promedio, tiempo promedio de respuesta. Contadores animados.
-4. **Cómo funciona** — 3 pasos con icono para cliente y toggle para ver los 3 pasos del enfermero.
-5. **Servicios** — 4 tarjetas: cuidado domiciliario, turnos hospitalarios, colocación permanente, cobertura de eventos.
-6. **Personal destacado** — carrusel con 6 tarjetas de `enfermeros_publico` ordenadas por calificación.
-7. **Verificación** — sección que explica el proceso de validación de documentos y cédula. Es el argumento de venta más fuerte; dedicarle diseño.
-8. **Especialidades** — grid de chips clicables que filtran el catálogo.
-9. **Testimonios** — 3 tarjetas con evaluaciones públicas reales de la BD.
-10. **CTA doble** — bloque dividido: izquierda azul "¿Necesitas personal?", derecha blanca "¿Eres enfermero/a?".
-11. **FAQ** — acordeón con 8 preguntas.
-12. **Footer** — logo, contacto, WhatsApp, redes, aviso de privacidad, términos, aviso legal de la agencia.
+2. **Hero** — degradado azul. **La sección entera es un carrusel de 5 láminas**, no un panel que rota al lado de un texto quieto: cada lámina trae su propio título, su panel de datos y su tinte de fondo, y lo que se desplaza es la pantalla completa.
+
+   - **Lámina 1, la marca.** Sello con el punto vivo («Cobertura en menos de 24 h en la ZMG»), el `h1` del sitio y la promesa de verificación en el panel.
+   - **Láminas 2 a 5, los servicios.** Cuidado domiciliario, turnos hospitalarios, colocación permanente y cobertura de eventos, cada una con tres datos concretos y enlace a `servicios.html`.
+
+   **Solo la lámina 1 lleva `h1`**; las demás usan `h2` con el mismo tamaño. Cinco `h1` no le dicen a nadie —ni a un buscador ni a un lector de pantalla— cuál es el tema de la página.
+
+   **Cada lámina tiene color y carácter propios**, no solo una mancha de tinte:
+
+   | Lámina | Degradado | Sello |
+   |---|---|---|
+   | Marca | azul marino → azul | «Cobertura en menos de 24 h en la ZMG» |
+   | Domiciliario | azul marino → azul vivo | «En casa del paciente» |
+   | Hospitalario | teal → cyan | «En tu institución» |
+   | Permanente | verde oscuro → verde | «Contratación definitiva» |
+   | Eventos | café → ámbar | «Por evento o traslado» |
+
+   El tono es el mismo que ese servicio tiene en el bento de la sección 5: el color identifica el servicio, no decora (§3.2). Además del degradado, el acento tiñe **el sello, las dos manchas radiales, el icono del panel y las viñetas de sus datos**.
+
+   **El fondo lo pinta la lámina, nunca la sección**, y el relleno vertical también vive dentro de ella. Si el fondo estuviera en `.hero`, las franjas de relleno de arriba y abajo se quedarían con el color de una lámina mientras pasan las demás. Por lo mismo **los puntos flotan en posición absoluta** sobre las láminas: como bloque aparte, su franja mostraría un color distinto al de la lámina activa.
+
+   **Las ondas SVG también son de cada lámina**, no una capa común: con fondos distintos por lámina, una capa compartida taparía esos fondos o se imprimiría sobre el texto. El CSS voltea una de cada dos para que no se repita la misma silueta cinco veces.
+
+   **Todos los degradados se verificaron por contraste** con el texto blanco encima, midiendo el color real del degradado en la posición de cada texto más la mancha y el vidrio del panel. Cyan y verde no pasaban AA en el texto del panel (4.20 y 4.39) y se oscurecieron; el más bajo hoy es ámbar con 4.81. **Al cambiar cualquier degradado hay que volver a medir**: el extremo claro cae justo donde va el panel.
+
+   **El hero no lleva botones.** Los tenía y repetían exactamente los dos del header, que es fijo y está siempre a la vista; el mini-buscador que flotaba a su derecha se movió a la sección 3. Como el hero ya no cierra con una acción, **los dos botones del header cargan con toda la conversión**: por eso el primario va con degradado, sombra con tinte y un barrido lento de brillo, y el secundario deja de ser blanco sobre blanco.
+
+   El carrusel avanza cada 6 s, **se detiene** al pasar el cursor, al entrar con el teclado y cuando sale de pantalla, y **no se mueve** si el sistema pidió menos movimiento — ahí los puntos siguen sirviendo. Se recorre con las flechas del teclado. La lámina fuera de vista va con `aria-hidden` y sus enlaces con `tabindex="-1"`, para que el tabulador no caiga en algo que no se ve. Todas las láminas miden lo que la más alta, para que el hero no cambie de altura a media rotación.
+
+3. **Asesor de caso** — va **completamente debajo del hero, separado 48 px**: encabalgado, el degradado del hero y el fondo oscuro del chat se ensuciaban. Dos caminos **del mismo tamaño**, en una sola fila: a la izquierda un **chat** donde el cliente describe su situación en texto libre y recibe qué perfil necesita más los profesionales que encajan; a la derecha el **mini-buscador** (nivel + municipio + fecha) para quien ya sabe qué busca y va directo a `enfermeros.html`.
+
+   **El contador de confianza** —enfermeros verificados, turnos cubiertos, calificación promedio y tiempo de respuesta— va en un recuadro chico con degradado y contadores animados. **Cambia de sitio según el ancho:** a partir de 1280 px sube a una tercera columna angosta al extremo derecho, en fila con el chat y el buscador; por debajo de eso se acomoda bajo el buscador en 2×2. En la columna angosta las 4 métricas van una sobre otra: el 2×2 aprieta demasiado las etiquetas. Tenía su propia franja blanca a todo lo ancho; aquí responde «¿son de fiar?» en el mismo momento en que alguien decide si escribe o no. **Va discreto a propósito**: recuadro de 150 px en lavado turquesa con las cifras en teal oscuro. Es un dato de respaldo, no una acción; con degradado saturado y sombra de color terminaba pesando más que el buscador que tiene al lado, que sí lo es. De 1024 a 1279 px se tiende **a lo ancho, debajo de los dos**: compartiendo columna con el buscador desnivelaba ese lado 110 px y no había simetría posible. A partir de 1280 px sube a su propia columna y **se sale del contenedor hacia el margen de la página** con un margen negativo calculado, hasta quedar contra la orilla derecha. El ancho va fijo: sin eso el margen negativo estira la caja en vez de correrla. Las cifras no usan `--cyan-600`, que sobre ese lavado se queda en 3.28:1; el teal oscuro da 4.79.
+
+   **El hilo de la conversación va en blanco** dentro de la tarjeta oscura: así se ve de un vistazo dónde ocurre el chat y dónde no. Todo lo que vive adentro —burbujas, fichas de profesional, botones— está invertido respecto al resto de la tarjeta, y se verificó por contraste: lo más bajo es la burbuja del cliente con 5.36:1, en teal y no en cyan, porque sobre blanco el cyan claro se queda en 3.6:1.
+
+   **Chat y buscador miden exactamente lo mismo** de 1024 px en adelante. El alto mínimo vive en la tarjeta del chat, no en el hilo: al primer envío los chips de ejemplo se ocultan, y si el alto dependiera del contenido la tarjeta encogería 115 px y la sección entera brincaría justo cuando llega la respuesta. El hilo va con `flex: 1 1 0` —base cero, no automática— para que su alto natural no crezca con cada mensaje y arrastre la fila; se desplaza dentro de lo que le toca.
+
+   **Ninguna de las tres es blanca.** El chat va en degradado oscuro con mancha de cyan y los botones invertidos a blanco; el buscador en lavado frío azul-cyan con los campos en blanco para que resalten. Dos tarjetas blancas juntas no se leían como dos caminos sino como una lista partida. Sobre el fondo oscuro todo el texto se verificó por contraste: el más bajo es la nota legal, en 4.96:1.
+
+   **Cómo funciona el chat.** `analizarCaso()` en `js/publico.js` traduce el texto a los campos del catálogo —especialidad, nivel, entorno, turno, prisa, municipio— por coincidencia de palabras, **todo en el navegador**. Después consulta `enfermeros_publico` aflojando filtros hasta encontrar algo que mostrar, y propone tres perfiles con enlace al catálogo y a la solicitud.
+
+   **Tres reglas que no se negocian:**
+   - **El texto no se guarda ni se envía.** Casi siempre trae datos de salud de un tercero (LFPDPPP, §11) y en ese punto del recorrido todavía no hay consentimiento. Si algún día se quiere capturar, primero va el checkbox de aviso de privacidad.
+   - **Ante señales de urgencia clínica el asesor no recomienda a nadie**: responde que la agencia no da atención médica y manda al 911 (§11 y §9, misma regla que el agente de Fase 4).
+   - **No es IA.** El agente conversacional real es Fase 4 y necesita la Claude API detrás de un backend, porque la llave nunca puede vivir en el frontend. Cuando llegue, sustituye `analizarCaso()` y la interfaz no se toca.
+4. **Personal destacado** — 6 perfiles de `enfermeros_publico` ordenados por calificación. **Riel horizontal con scroll-snap en móvil**, rejilla de 3 a partir de 768 px.
+5. **Cómo funciona y Servicios** — **una sola sección con los dos temas en recuadro, uno junto al otro** a partir de 1024 px; apilados en pantallas menores. Son la misma pregunta vista de dos formas —cómo trabajamos y qué hacemos— y separados gastaban dos pantallas completas.
+
+   - **Recuadro izquierdo, «Cómo funciona»:** fondo blanco. 3 pasos para el cliente y toggle para ver los 3 del enfermero, en **ruta escalonada**: la cifra es la pieza grande y un hilo une un paso con el siguiente.
+   - **Recuadro derecho, «Servicios»:** fondo teñido en lavado azul-cyan, **no blanco**, para que sus tarjetas se despeguen. 4 tarjetas en **bento**: cuidado domiciliario domina, turnos hospitalarios y colocación permanente van compactas al lado, y cobertura de eventos cierra a lo ancho.
+
+   **Dentro del recuadro cada panel mide la mitad, así que el contenido vuelve a su forma angosta:** la ruta pierde la diagonal y recupera el hilo vertical, y el bento deja de desplegarse en dos columnas desiguales. Tres pasos en 150 px son ilegibles.
+
+   Los dos recuadros **terminan a la misma altura** (`align-items: stretch`) y la ruta se centra en el alto sobrante. No se reparten los pasos: el hilo que los une mide exactamente el hueco entre uno y otro, y al separarlos se quedaría corto.
+6. **Verificación** — sección que explica el proceso de validación de documentos y cédula. Es el argumento de venta más fuerte; dedicarle diseño.
+7. **Especialidades** — grid de chips clicables que filtran el catálogo.
+8. **Testimonios** — 3 tarjetas con evaluaciones públicas reales de la BD.
+9. **CTA doble** — bloque dividido: izquierda azul "¿Necesitas personal?", derecha blanca "¿Eres enfermero/a?".
+10. **FAQ** — acordeón con 8 preguntas.
+11. **Footer** — logo, contacto, WhatsApp, redes, aviso de privacidad, términos, aviso legal de la agencia.
 
 Todas las secciones aparecen con fade-in al hacer scroll. La página registra la visita en `visitas` con sus UTM.
 

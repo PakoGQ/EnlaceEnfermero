@@ -34,55 +34,211 @@
 
     <!-- ================= 1. HERO ================= -->
     <section class="hero">
-      <svg class="hero-ondas" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <path d="M0,470 C240,390 420,550 720,480 C1020,410 1200,520 1440,450 L1440,700 L0,700 Z" fill="rgba(255,255,255,.07)"/>
-        <path d="M0,540 C260,470 460,600 760,540 C1060,480 1240,580 1440,530 L1440,700 L0,700 Z" fill="rgba(255,255,255,.05)"/>
-        <circle cx="1210" cy="130" r="200" fill="rgba(255,255,255,.05)"/>
-        <circle cx="200" cy="70" r="130" fill="rgba(255,255,255,.04)"/>
-      </svg>
+      <!-- El hero entero es el carrusel, y cada lamina trae su propio color:
+           degradado, mancha, sello y sus datos. Avanza solo, se detiene con el
+           cursor encima o el foco dentro, y se queda quieto si el sistema pidio
+           menos movimiento (CLAUDE.md 3.4, quinto uso del movimiento). -->
+      <div class="hero-carrusel" id="heroCarrusel">
+        <div class="hero-pista">
+            <article class="hero-lamina" id="heroLamina0" role="tabpanel"
+                     aria-label="Enlace Enfermero"
+                     style="--acento: 59, 130, 246; --grad: linear-gradient(145deg, #04263F 0%, #0B5394 52%, #1E5B8A 100%)">
+              <svg class="hero-ondas" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <path d="M0,470 C240,390 420,550 720,480 C1020,410 1200,520 1440,450 L1440,700 L0,700 Z" fill="rgba(255,255,255,.07)"/>
+                <path d="M0,540 C260,470 460,600 760,540 C1060,480 1240,580 1440,530 L1440,700 L0,700 Z" fill="rgba(255,255,255,.05)"/>
+              </svg>
+              <div class="contenedor hero-grid">
+                <div class="hero-contenido">
+                  <span class="hero-sello"><span class="punto-estatus disponible"></span>Cobertura en menos de 24 horas en la ZMG</span>
+                  <h1>Personal de enfermería verificado, cuando lo necesitas</h1>
+                  <p class="hero-subtitulo">Conectamos hospitales, clínicas, asilos y familias con enfermeros titulados. Nosotros validamos cédula, documentos y experiencia antes de que alguien llegue a tu servicio.</p>
+                </div>
 
-      <div class="contenedor hero-grid">
-        <div class="hero-contenido">
-          <span class="hero-sello">
-            <span class="punto-estatus disponible"></span>
-            Cobertura en menos de 24 horas en la ZMG
-          </span>
-          <h1>Personal de enfermería verificado, cuando lo necesitas</h1>
-          <p class="hero-subtitulo">
-            Conectamos hospitales, clínicas, asilos y familias con enfermeros titulados.
-            Nosotros validamos cédula, documentos y experiencia antes de que alguien
-            llegue a tu servicio.
-          </p>
-          <div class="hero-acciones">
-            <a href="solicitar.html" class="btn btn-claro btn-lg">Solicitar personal</a>
-            <a href="unete.html" class="btn btn-contorno-claro btn-lg">Soy enfermero/a</a>
-          </div>
+                <div class="hero-visual">
+                  <span class="hero-visual-icono" data-icono="escudo"></span>
+                  <ul class="hero-visual-datos">
+                  <li>Cédula validada ante la SEP</li>
+                  <li>Documentos vigentes y cotejados</li>
+                  <li>Referencias laborales confirmadas</li>
+                  </ul>
+                </div>
+              </div>
+            </article>
+            <article class="hero-lamina" id="heroLamina1" role="tabpanel"
+                     aria-label="Cuidado domiciliario" aria-hidden="true"
+                     style="--acento: 96, 165, 250; --grad: linear-gradient(145deg, #062A4A 0%, #1D4ED8 55%, #2F6FD0 100%)">
+              <svg class="hero-ondas" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <path d="M0,470 C240,390 420,550 720,480 C1020,410 1200,520 1440,450 L1440,700 L0,700 Z" fill="rgba(255,255,255,.07)"/>
+                <path d="M0,540 C260,470 460,600 760,540 C1060,480 1240,580 1440,530 L1440,700 L0,700 Z" fill="rgba(255,255,255,.05)"/>
+              </svg>
+              <div class="contenedor hero-grid">
+                <div class="hero-contenido">
+                  <span class="hero-sello">En casa del paciente</span>
+                  <h2>Cuidado en el domicilio del paciente</h2>
+                  <p class="hero-subtitulo">Turnos de 8, 12 o 24 horas en casa: adulto mayor, recuperación postoperatoria y cuidados paliativos, con reporte diario a la familia.</p>
+                </div>
+
+                <div class="hero-visual">
+                  <span class="hero-visual-icono" data-icono="casa"></span>
+                  <ul class="hero-visual-datos">
+                  <li>Turnos de 8, 12 o 24 horas</li>
+                  <li>Curaciones, medicamentos y signos vitales</li>
+                  <li>Reporte diario del estado del paciente</li>
+                  </ul>
+                <a href="servicios.html#domiciliario" class="hero-visual-enlace">Ver el servicio completo</a>
+                </div>
+              </div>
+            </article>
+            <article class="hero-lamina" id="heroLamina2" role="tabpanel"
+                     aria-label="Turnos hospitalarios" aria-hidden="true"
+                     style="--acento: 34, 211, 238; --grad: linear-gradient(145deg, #042A36 0%, #0B5F76 52%, #0A6E85 100%)">
+              <svg class="hero-ondas" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <path d="M0,470 C240,390 420,550 720,480 C1020,410 1200,520 1440,450 L1440,700 L0,700 Z" fill="rgba(255,255,255,.07)"/>
+                <path d="M0,540 C260,470 460,600 760,540 C1060,480 1240,580 1440,530 L1440,700 L0,700 Z" fill="rgba(255,255,255,.05)"/>
+              </svg>
+              <div class="contenedor hero-grid">
+                <div class="hero-contenido">
+                  <span class="hero-sello">En tu institución</span>
+                  <h2>Turnos cubiertos en tu institución</h2>
+                  <p class="hero-subtitulo">Cubrimos incapacidades, vacaciones y picos de ocupación en hospitales, clínicas y asilos, con personal verificado y respaldo de la agencia.</p>
+                </div>
+
+                <div class="hero-visual">
+                  <span class="hero-visual-icono" data-icono="hospital"></span>
+                  <ul class="hero-visual-datos">
+                  <li>Incapacidades y vacaciones</li>
+                  <li>Picos de ocupación</li>
+                  <li>Si alguien no llega, respondemos nosotros</li>
+                  </ul>
+                <a href="servicios.html#hospitalario" class="hero-visual-enlace">Ver el servicio completo</a>
+                </div>
+              </div>
+            </article>
+            <article class="hero-lamina" id="heroLamina3" role="tabpanel"
+                     aria-label="Colocación permanente" aria-hidden="true"
+                     style="--acento: 52, 211, 153; --grad: linear-gradient(145deg, #052824 0%, #0C5F59 55%, #0E6E58 100%)">
+              <svg class="hero-ondas" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <path d="M0,470 C240,390 420,550 720,480 C1020,410 1200,520 1440,450 L1440,700 L0,700 Z" fill="rgba(255,255,255,.07)"/>
+                <path d="M0,540 C260,470 460,600 760,540 C1060,480 1240,580 1440,530 L1440,700 L0,700 Z" fill="rgba(255,255,255,.05)"/>
+              </svg>
+              <div class="contenedor hero-grid">
+                <div class="hero-contenido">
+                  <span class="hero-sello">Contratación definitiva</span>
+                  <h2>Personal fijo para tu plantilla</h2>
+                  <p class="hero-subtitulo">Reclutamos, filtramos y verificamos a los candidatos. Tú entrevistas solamente a quienes ya cumplen el perfil que pediste.</p>
+                </div>
+
+                <div class="hero-visual">
+                  <span class="hero-visual-icono" data-icono="maletin"></span>
+                  <ul class="hero-visual-datos">
+                  <li>Reclutamiento y filtro previo</li>
+                  <li>Cédula y referencias validadas</li>
+                  <li>Cuota única por contratación</li>
+                  </ul>
+                <a href="servicios.html#permanente" class="hero-visual-enlace">Ver el servicio completo</a>
+                </div>
+              </div>
+            </article>
+            <article class="hero-lamina" id="heroLamina4" role="tabpanel"
+                     aria-label="Cobertura de eventos" aria-hidden="true"
+                     style="--acento: 251, 191, 36; --grad: linear-gradient(145deg, #33210A 0%, #92500E 55%, #B26410 100%)">
+              <svg class="hero-ondas" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <path d="M0,470 C240,390 420,550 720,480 C1020,410 1200,520 1440,450 L1440,700 L0,700 Z" fill="rgba(255,255,255,.07)"/>
+                <path d="M0,540 C260,470 460,600 760,540 C1060,480 1240,580 1440,530 L1440,700 L0,700 Z" fill="rgba(255,255,255,.05)"/>
+              </svg>
+              <div class="contenedor hero-grid">
+                <div class="hero-contenido">
+                  <span class="hero-sello">Por evento o traslado</span>
+                  <h2>Enfermería para eventos y traslados</h2>
+                  <p class="hero-subtitulo">Personal de enfermería para eventos, filmaciones, jornadas deportivas y traslado de pacientes en toda la Zona Metropolitana de Guadalajara.</p>
+                </div>
+
+                <div class="hero-visual">
+                  <span class="hero-visual-icono" data-icono="usuarios"></span>
+                  <ul class="hero-visual-datos">
+                  <li>Eventos y filmaciones</li>
+                  <li>Jornadas deportivas</li>
+                  <li>Traslado de pacientes</li>
+                  </ul>
+                <a href="servicios.html#eventos" class="hero-visual-enlace">Ver el servicio completo</a>
+                </div>
+              </div>
+            </article>
         </div>
+      </div>
 
-        <!-- Mini-buscador que lleva al catálogo con los filtros aplicados -->
-        <form class="tarjeta buscador-hero" id="buscadorHero">
-          <h2>Encuentra al profesional indicado</h2>
-          <div class="campo">
-            <label for="bhNivel">Nivel de enfermería</label>
-            <select id="bhNivel" name="nivel"></select>
-          </div>
-          <div class="campo">
-            <label for="bhMunicipio">Municipio</label>
-            <select id="bhMunicipio" name="municipio"></select>
-          </div>
-          <div class="campo">
-            <label for="bhFecha">¿Desde cuándo?</label>
-            <input type="date" id="bhFecha" name="fecha">
-          </div>
-          <button type="submit" class="btn btn-primario btn-bloque">Ver disponibles</button>
-          <p class="texto-xs txt-tenue txt-centro">Sin costo por consultar. Te respondemos el mismo día.</p>
-        </form>
+      <!-- Los puntos flotan sobre las laminas: si fueran un bloque aparte, la
+           franja donde viven mostraria un fondo distinto al de la lamina. -->
+      <div class="hero-puntos-zona">
+        <div class="contenedor">
+          <div class="hero-puntos" id="heroPuntos" role="tablist"
+               aria-label="Servicios que ofrecemos"></div>
+        </div>
       </div>
     </section>
 
-    <!-- ================= 2. BARRA DE CONFIANZA ================= -->
-    <div class="contenedor">
-      <div class="barra-confianza" id="metricas">
+
+    <!-- ================= 2. ASESOR: DESCRIBE TU CASO ================= -->
+    <section class="asesor-zona">
+      <div class="contenedor">
+        <div class="asesor">
+
+          <!-- Pieza principal: el caso en las palabras del cliente. El motor
+               de coincidencia vive en publico.js y corre en el navegador. -->
+          <div class="asesor-chat">
+            <div class="asesor-encabezado">
+              <span class="asesor-avatar" data-icono="escudo"></span>
+              <div>
+                <h2>Cuéntanos tu caso</h2>
+                <p>Descríbelo con tus palabras y te decimos qué perfil necesitas.</p>
+              </div>
+            </div>
+
+            <div class="asesor-hilo" id="asesorHilo" role="log" aria-live="polite"></div>
+
+            <div class="asesor-ejemplos" id="asesorEjemplos"></div>
+
+            <form class="asesor-forma" id="asesorForma">
+              <label class="solo-lectores" for="asesorTexto">Describe la situación</label>
+              <textarea id="asesorTexto" name="caso" rows="2" maxlength="600"
+                        placeholder="Mi mamá tiene 82 años, salió del hospital y necesita curaciones diarias en casa…"></textarea>
+              <button type="submit" class="btn btn-primario asesor-enviar" aria-label="Analizar mi caso">
+                <span data-icono="buscar"></span>
+              </button>
+            </form>
+
+            <p class="asesor-nota">
+              Orientación automática y sin costo. No guardamos ni enviamos nada
+              hasta que tú mandes una solicitud.
+            </p>
+          </div>
+
+          <div class="asesor-lado">
+
+          <!-- Camino corto para quien ya sabe qué perfil busca -->
+          <form class="tarjeta buscador-hero" id="buscadorHero">
+            <h2>Encuentra al profesional indicado</h2>
+            <p class="buscador-bajada">Si ya sabes qué perfil necesitas, ve directo al catálogo.</p>
+            <div class="campo">
+              <label for="bhNivel">Nivel de enfermería</label>
+              <select id="bhNivel" name="nivel"></select>
+            </div>
+            <div class="campo">
+              <label for="bhMunicipio">Municipio</label>
+              <select id="bhMunicipio" name="municipio"></select>
+            </div>
+            <div class="campo">
+              <label for="bhFecha">¿Desde cuándo?</label>
+              <input type="date" id="bhFecha" name="fecha">
+            </div>
+            <button type="submit" class="btn btn-primario btn-bloque">Ver disponibles</button>
+            <p class="texto-xs txt-tenue txt-centro">Sin costo por consultar. Te respondemos el mismo día.</p>
+          </form>
+
+            <!-- Contador de confianza. Estaba en una franja aparte a todo lo
+                 ancho; aqui, junto al buscador, responde "¿son de fiar?" en el
+                 mismo momento en que alguien decide si escribe o no. -->
+            <div class="confianza" id="metricas">
         <div class="metrica">
           <div class="valor" data-metrica="verificados">—</div>
           <div class="etiqueta">Enfermeros verificados</div>
@@ -99,103 +255,19 @@
           <div class="valor" data-metrica="respuesta">—</div>
           <div class="etiqueta">Tiempo de respuesta</div>
         </div>
+            </div>
+
+          </div>
+
+        </div>
       </div>
-    </div>
+    </section>
 
     <p class="aviso-demo oculto" id="avisoDemo">
       Estás viendo datos de demostración. Conecta Supabase en <code>js/config.js</code> para usar información real.
     </p>
 
-    <!-- ================= 3. CÓMO FUNCIONA ================= -->
-    <section class="seccion">
-      <div class="contenedor">
-        <div class="encabezado-seccion centro aparece">
-          <span class="antetitulo">Cómo funciona</span>
-          <h2>Tres pasos, sin vueltas</h2>
-        </div>
-
-        <div class="conmutador aparece" role="tablist" aria-label="Elige tu perfil">
-          <button type="button" class="activo" data-pasos="cliente" role="tab" aria-selected="true">Necesito personal</button>
-          <button type="button" data-pasos="enfermero" role="tab" aria-selected="false">Soy enfermero/a</button>
-        </div>
-
-        <div class="grid grid-3 pasos-lista aparece-serie" data-panel-pasos="cliente">
-          <article class="paso-tarjeta aparece">
-            <span class="paso-numero">1</span>
-            <h3>Cuéntanos qué necesitas</h3>
-            <p>Nivel, especialidad, turnos y fechas. Toma menos de tres minutos y recibes un folio de inmediato.</p>
-          </article>
-          <article class="paso-tarjeta aparece">
-            <span class="paso-numero">2</span>
-            <h3>Te proponemos candidatos</h3>
-            <p>Seleccionamos entre nuestro personal verificado según tu solicitud y te enviamos los perfiles compatibles.</p>
-          </article>
-          <article class="paso-tarjeta aparece">
-            <span class="paso-numero">3</span>
-            <h3>Confirmamos y cubrimos</h3>
-            <p>Coordinamos el turno, damos seguimiento a la asistencia y respondemos por el servicio.</p>
-          </article>
-        </div>
-
-        <div class="grid grid-3 pasos-lista oculto aparece-serie" data-panel-pasos="enfermero">
-          <article class="paso-tarjeta aparece">
-            <span class="paso-numero">1</span>
-            <h3>Regístrate y sube documentos</h3>
-            <p>INE, CURP, comprobante de domicilio y, según tu nivel, cédula y título. Sin costo de inscripción.</p>
-          </article>
-          <article class="paso-tarjeta aparece">
-            <span class="paso-numero">2</span>
-            <h3>Verificamos tu perfil</h3>
-            <p>Revisamos tus documentos en 24 a 48 horas y publicamos tu perfil con el sello de verificado.</p>
-          </article>
-          <article class="paso-tarjeta aparece">
-            <span class="paso-numero">3</span>
-            <h3>Recibe turnos y cobra a tiempo</h3>
-            <p>Marcas tu disponibilidad, aceptas las propuestas que te acomoden y cobras por quincena.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= 4. SERVICIOS ================= -->
-    <section class="seccion fondo-claro">
-      <div class="contenedor">
-        <div class="encabezado-seccion centro aparece">
-          <span class="antetitulo">Servicios</span>
-          <h2>Cubrimos cuatro necesidades</h2>
-          <p>Desde un turno suelto hasta la contratación definitiva de tu plantilla.</p>
-        </div>
-
-        <div class="grid grid-4 aparece-serie">
-          <a href="servicios.html#domiciliario" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
-            <span class="servicio-icono" data-icono="casa"></span>
-            <h3>Cuidado domiciliario</h3>
-            <p>Turnos de 8, 12 o 24 horas en casa del paciente. Adulto mayor, postoperatorio y cuidados paliativos.</p>
-            <span class="enlace-flecha">Ver detalle</span>
-          </a>
-          <a href="servicios.html#hospitalario" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
-            <span class="servicio-icono" data-icono="hospital"></span>
-            <h3>Turnos hospitalarios</h3>
-            <p>Cobertura de incapacidades, vacaciones y picos de ocupación en hospitales, clínicas y asilos.</p>
-            <span class="enlace-flecha">Ver detalle</span>
-          </a>
-          <a href="servicios.html#permanente" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
-            <span class="servicio-icono" data-icono="maletin"></span>
-            <h3>Colocación permanente</h3>
-            <p>Reclutamiento para tu plantilla fija. Te presentamos candidatos filtrados y verificados.</p>
-            <span class="enlace-flecha">Ver detalle</span>
-          </a>
-          <a href="servicios.html#eventos" class="tarjeta tarjeta-hover tarjeta-servicio aparece">
-            <span class="servicio-icono" data-icono="usuarios"></span>
-            <h3>Cobertura de eventos</h3>
-            <p>Personal de enfermería para eventos, filmaciones, jornadas deportivas y traslados de pacientes.</p>
-            <span class="enlace-flecha">Ver detalle</span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= 5. PERSONAL DESTACADO ================= -->
+    <!-- ================= 3. PERSONAL DESTACADO ================= -->
     <section class="seccion">
       <div class="contenedor">
         <div class="encabezado-seccion aparece encabezado-con-accion">
@@ -205,11 +277,122 @@
           </div>
           <a href="enfermeros.html" class="btn btn-secundario">Ver todo el personal</a>
         </div>
-        <div class="grid grid-3 aparece-serie" id="destacados"></div>
+        <div class="riel aparece-serie" id="destacados"></div>
       </div>
     </section>
 
-    <!-- ================= 6. VERIFICACIÓN ================= -->
+    <!-- ================= 4. CÓMO FUNCIONA Y SERVICIOS ================= -->
+    <!-- Las dos van en recuadro, una junto a la otra: el recorrido a la
+         izquierda y el catalogo a la derecha. Apiladas gastaban dos pantallas
+         completas para decir lo mismo. -->
+    <section class="seccion">
+      <div class="contenedor">
+        <div class="duo">
+
+          <article class="duo-panel">
+      <div class="encabezado-seccion aparece">
+        <span class="antetitulo">Cómo funciona</span>
+        <h2>Tres pasos, sin vueltas</h2>
+      </div>
+
+      <div class="conmutador aparece" role="tablist" aria-label="Elige tu perfil">
+        <button type="button" class="activo" data-pasos="cliente" role="tab" aria-selected="true">Necesito personal</button>
+        <button type="button" data-pasos="enfermero" role="tab" aria-selected="false">Soy enfermero/a</button>
+      </div>
+
+      <ol class="ruta aparece-serie" data-panel-pasos="cliente">
+        <li class="ruta-paso aparece">
+          <span class="ruta-numero" aria-hidden="true">1</span>
+          <div class="ruta-cuerpo">
+            <h3>Cuéntanos qué necesitas</h3>
+            <p>Nivel, especialidad, turnos y fechas. Toma menos de tres minutos y recibes un folio de inmediato.</p>
+          </div>
+        </li>
+        <li class="ruta-paso aparece">
+          <span class="ruta-numero" aria-hidden="true">2</span>
+          <div class="ruta-cuerpo">
+            <h3>Te proponemos candidatos</h3>
+            <p>Seleccionamos entre nuestro personal verificado según tu solicitud y te enviamos los perfiles compatibles.</p>
+          </div>
+        </li>
+        <li class="ruta-paso aparece">
+          <span class="ruta-numero" aria-hidden="true">3</span>
+          <div class="ruta-cuerpo">
+            <h3>Confirmamos y cubrimos</h3>
+            <p>Coordinamos el turno, damos seguimiento a la asistencia y respondemos por el servicio.</p>
+          </div>
+        </li>
+      </ol>
+
+      <ol class="ruta oculto aparece-serie" data-panel-pasos="enfermero">
+        <li class="ruta-paso aparece">
+          <span class="ruta-numero" aria-hidden="true">1</span>
+          <div class="ruta-cuerpo">
+            <h3>Regístrate y sube documentos</h3>
+            <p>INE, CURP, comprobante de domicilio y, según tu nivel, cédula y título. Sin costo de inscripción.</p>
+          </div>
+        </li>
+        <li class="ruta-paso aparece">
+          <span class="ruta-numero" aria-hidden="true">2</span>
+          <div class="ruta-cuerpo">
+            <h3>Verificamos tu perfil</h3>
+            <p>Revisamos tus documentos en 24 a 48 horas y publicamos tu perfil con el sello de verificado.</p>
+          </div>
+        </li>
+        <li class="ruta-paso aparece">
+          <span class="ruta-numero" aria-hidden="true">3</span>
+          <div class="ruta-cuerpo">
+            <h3>Recibe turnos y cobra a tiempo</h3>
+            <p>Marcas tu disponibilidad, aceptas las propuestas que te acomoden y cobras por quincena.</p>
+          </div>
+        </li>
+      </ol>
+          </article>
+
+          <article class="duo-panel duo-servicios">
+      <div class="encabezado-seccion aparece">
+        <span class="antetitulo">Servicios</span>
+        <h2>Cubrimos cuatro necesidades</h2>
+        <p>Desde un turno suelto hasta la contratación definitiva de tu plantilla.</p>
+      </div>
+
+      <div class="bento-servicios aparece-serie">
+        <a href="servicios.html#domiciliario" class="tarjeta tarjeta-hover tarjeta-servicio servicio-protagonista aparece">
+          <span class="servicio-icono" data-icono="casa"></span>
+          <h3>Cuidado domiciliario</h3>
+          <p>Turnos de 8, 12 o 24 horas en casa del paciente. Adulto mayor, postoperatorio y cuidados paliativos.</p>
+          <ul class="servicio-puntos">
+            <li>Acompañamiento continuo, también de noche y en fin de semana</li>
+            <li>Curaciones, medicamentos y control de signos vitales</li>
+            <li>Reporte diario del estado del paciente a la familia</li>
+          </ul>
+          <span class="enlace-flecha">Ver detalle</span>
+        </a>
+        <a href="servicios.html#hospitalario" class="tarjeta tarjeta-hover tarjeta-servicio servicio-compacto aparece">
+          <span class="servicio-icono" data-icono="hospital"></span>
+          <h3>Turnos hospitalarios</h3>
+          <p>Cobertura de incapacidades, vacaciones y picos de ocupación en hospitales, clínicas y asilos.</p>
+          <span class="enlace-flecha">Ver detalle</span>
+        </a>
+        <a href="servicios.html#permanente" class="tarjeta tarjeta-hover tarjeta-servicio servicio-compacto aparece">
+          <span class="servicio-icono" data-icono="maletin"></span>
+          <h3>Colocación permanente</h3>
+          <p>Reclutamiento para tu plantilla fija. Te presentamos candidatos filtrados y verificados.</p>
+          <span class="enlace-flecha">Ver detalle</span>
+        </a>
+        <a href="servicios.html#eventos" class="tarjeta tarjeta-hover tarjeta-servicio servicio-pie aparece">
+          <span class="servicio-icono" data-icono="usuarios"></span>
+          <h3>Cobertura de eventos</h3>
+          <p>Personal de enfermería para eventos, filmaciones, jornadas deportivas y traslados de pacientes.</p>
+          <span class="enlace-flecha">Ver detalle</span>
+        </a>
+      </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+    <!-- ================= 5. VERIFICACIÓN ================= -->
     <section class="seccion verificacion">
       <div class="contenedor">
         <div class="verificacion-grid">
@@ -265,7 +448,7 @@
       </div>
     </section>
 
-    <!-- ================= 7. ESPECIALIDADES ================= -->
+    <!-- ================= 6. ESPECIALIDADES ================= -->
     <section class="seccion fondo-claro">
       <div class="contenedor">
         <div class="encabezado-seccion centro aparece">
@@ -277,7 +460,7 @@
       </div>
     </section>
 
-    <!-- ================= 8. TESTIMONIOS ================= -->
+    <!-- ================= 7. TESTIMONIOS ================= -->
     <section class="seccion">
       <div class="contenedor">
         <div class="encabezado-seccion centro aparece">
@@ -288,7 +471,7 @@
       </div>
     </section>
 
-    <!-- ================= 9. CTA DOBLE ================= -->
+    <!-- ================= 8. CTA DOBLE ================= -->
     <section class="cta-doble">
       <div class="cta-mitad cta-azul">
         <div class="cta-contenido">
@@ -306,7 +489,7 @@
       </div>
     </section>
 
-    <!-- ================= 10. PREGUNTAS FRECUENTES ================= -->
+    <!-- ================= 9. PREGUNTAS FRECUENTES ================= -->
     <section class="seccion">
       <div class="contenedor contenedor-angosto">
         <div class="encabezado-seccion centro aparece">

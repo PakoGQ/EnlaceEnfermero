@@ -371,7 +371,9 @@ function activarPasos() {
 
 /** Arranque de la landing. */
 function iniciarLanding() {
+  activarHeroCarrusel();
   activarBuscadorHero();
+  activarAsesor();
   pintarEspecialidades();
   activarAcordeones();
   activarPasos();
@@ -384,6 +386,395 @@ function iniciarLanding() {
   if (usandoDemo()) {
     document.getElementById('avisoDemo')?.classList.remove('oculto');
   }
+}
+
+/* ==========================================================================
+   ASESOR DE CASO — index.html (CLAUDE.md 8.1)
+
+   El cliente describe su situacion con sus palabras y aqui se traduce a los
+   campos con los que ya trabaja el catalogo: nivel, especialidad, entorno y
+   turno. Todo ocurre en el navegador: el texto no viaja a ningun lado ni se
+   guarda, porque casi siempre trae datos de salud de un tercero (LFPDPPP) y
+   en este punto del recorrido todavia no hay consentimiento.
+
+   Esto NO es el agente conversacional de la Fase 4. Ese necesita la Claude
+   API detras de un backend, porque la llave no puede vivir en el frontend.
+   Esto es coincidencia por palabras; cuando llegue el agente real se
+   sustituye analizarCaso() y la interfaz no se toca.
+   ========================================================================== */
+
+/** Minusculas y sin acentos, para que "cirugía" y "cirugia" pesen igual. */
+function sinAcentos(texto) {
+  return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/* Señales de urgencia clinica. Si aparece una, el asesor NO recomienda a
+   nadie: manda al 911. La agencia coloca personal, no da atencion medica
+   (CLAUDE.md 11), y esa linea no se cruza ni para "orientar". */
+const ASESOR_URGENCIA = [
+  'no respira', 'no puede respirar', 'se esta ahogando', 'dificultad para respirar',
+  'convulsion', 'convulsionando', 'ataque epileptico',
+  'infarto', 'paro cardiaco', 'dolor en el pecho', 'derrame', 'embolia',
+  'sangrado abundante', 'hemorragia', 'sangra mucho',
+  'inconsciente', 'no responde', 'se desmayo', 'perdio el conocimiento',
+  'intoxicacion', 'envenenamiento', 'sobredosis', 'se quiere matar', 'suicid'
+];
+
+/* Especialidades. Se elige la de mayor puntaje: pedir dos a la vez estrecha
+   demasiado, porque el catalogo exige que el perfil cubra TODAS las pedidas. */
+const ASESOR_ESPECIALIDAD = [
+  { id: 'geriatria',       claves: ['adulto mayor', 'anciano', 'anciana', 'abuelit', 'abuelo', 'abuela', 'tercera edad', 'demencia', 'alzheimer', 'asilo', 'casa de retiro', 'postrado', 'edad avanzada', 'de 80', 'de 90'] },
+  { id: 'paliativos',      claves: ['paliativ', 'fase terminal', 'enfermo terminal', 'ultimos dias', 'hospicio', 'sin tratamiento curativo'] },
+  { id: 'postoperatorio',  claves: ['cirugia', 'operaron', 'operacion', 'postoperatorio', 'post operatorio', 'lo operaron', 'la operaron', 'salio de quirofano', 'reciente operacion'] },
+  { id: 'heridas',         claves: ['herida', 'curacion', 'curaciones', 'ulcera', 'escara', 'llaga', 'estoma', 'colostomia', 'pie diabetico'] },
+  { id: 'oncologia',       claves: ['cancer', 'quimio', 'oncolog', 'tumor', 'radioterapia', 'leucemia'] },
+  { id: 'nefrologia',      claves: ['dialisis', 'hemodialisis', 'riñon', 'rinon', 'insuficiencia renal', 'nefrolog'] },
+  { id: 'cardiologia',     claves: ['del corazon', 'cardiac', 'cardiolog', 'marcapasos', 'insuficiencia cardiaca'] },
+  { id: 'neonatologia',    claves: ['recien nacido', 'neonat', 'prematuro', 'cunero'] },
+  { id: 'pediatria',       claves: ['mi hijo', 'mi hija', 'pediatr', 'el niño', 'la niña', 'el nino', 'la nina', 'menor de edad'] },
+  { id: 'materno_infantil',claves: ['embaraz', 'parto', 'puerperio', 'lactancia', 'cesarea', 'recien parida'] },
+  { id: 'uci',             claves: ['terapia intensiva', 'cuidados intensivos', 'uci', 'uti', 'ventilador', 'ventilacion mecanica', 'intubad', 'traqueo'] },
+  { id: 'urgencias',       claves: ['area de urgencias', 'sala de urgencias', 'triage'] },
+  { id: 'quirofano',       claves: ['quirofano', 'instrumentista', 'cirugias programadas'] },
+  { id: 'salud_mental',    claves: ['psiquiatr', 'salud mental', 'depresion', 'esquizofren', 'bipolar', 'crisis de ansiedad'] },
+  { id: 'rehabilitacion',  claves: ['rehabilitacion', 'fisioterapia', 'terapia fisica', 'fractura', 'protesis', 'volver a caminar'] },
+  { id: 'medicina_interna',claves: ['diabet', 'hipertens', 'presion alta', 'epoc', 'enfermedad cronica'] }
+];
+
+/* Nivel requerido. Gana el primero de la lista que tenga coincidencia: el
+   orden va de mayor a menor exigencia, porque un caso que menciona ventilador
+   y tambien "acompañar" necesita al especialista, no al cuidador. */
+const ASESOR_NIVEL = [
+  { id: 'especialista', claves: ['ventilador', 'ventilacion', 'traqueo', 'intubad', 'dialisis', 'hemodialisis', 'cateter', 'via central', 'quimio', 'terapia intensiva', 'nutricion parenteral', 'bomba de infusion', 'sonda nasogastrica'] },
+  { id: 'licenciado',   claves: ['medicament', 'intravenos', 'suero', 'inyec', 'sonda', 'curacion', 'curaciones', 'herida', 'oxigeno', 'nebuliz', 'insulina', 'glucosa', 'signos vitales'] },
+  { id: 'general',      claves: ['toma de presion', 'control de medicamentos', 'monitoreo', 'vigilancia medica', 'pastillas'] },
+  { id: 'cuidador',     claves: ['acompan', 'compañia', 'compania', 'bañar', 'banar', 'asear', 'aseo', 'alimentar', 'darle de comer', 'pasear', 'vigilar', 'hacerle compañia'] }
+];
+
+const ASESOR_ENTORNO = [
+  { id: 'domicilio', claves: ['en casa', 'en su casa', 'en mi casa', 'a domicilio', 'domicilio', 'en el hogar', 'departamento', 'salio del hospital', 'lo dieron de alta', 'la dieron de alta', 'dado de alta'] },
+  { id: 'hospital',  claves: ['hospital', 'clinica', 'sanatorio', 'hospitalizad', 'internado'] },
+  { id: 'asilo',     claves: ['asilo', 'casa de retiro', 'residencia geriatrica'] }
+];
+
+const ASESOR_TURNO = [
+  { id: 'guardia_24', claves: ['24 horas', 'dia y noche', 'todo el dia', 'tiempo completo', 'de planta'] },
+  { id: 'nocturno',   claves: ['de noche', 'por la noche', 'nocturno', 'en la madrugada', 'turno de noche'] },
+  { id: 'fin_semana', claves: ['fin de semana', 'sabado', 'domingo'] }
+];
+
+const ASESOR_PRISA = ['urgente', 'hoy mismo', 'para hoy', 'para mañana', 'para manana',
+                      'lo antes posible', 'de inmediato', 'cuanto antes', 'esta noche', 'ya mismo'];
+
+/** Traduce el caso en texto libre a los campos del catalogo. */
+function analizarCaso(texto) {
+  const t = sinAcentos(texto);
+  const hay = (claves) => claves.some(k => t.includes(sinAcentos(k)));
+  const puntaje = (claves) => claves.filter(k => t.includes(sinAcentos(k))).length;
+
+  if (hay(ASESOR_URGENCIA)) return { urgenciaClinica: true };
+
+  // Especialidad: la de mas coincidencias, y solo si hubo alguna
+  let especialidad = '';
+  let mejor = 0;
+  ASESOR_ESPECIALIDAD.forEach(regla => {
+    const p = puntaje(regla.claves);
+    if (p > mejor) { mejor = p; especialidad = regla.id; }
+  });
+
+  const primero = (lista) => (lista.find(r => hay(r.claves)) || {}).id || '';
+
+  return {
+    urgenciaClinica: false,
+    especialidad,
+    nivel:     primero(ASESOR_NIVEL),
+    entorno:   primero(ASESOR_ENTORNO),
+    turno:     primero(ASESOR_TURNO),
+    prisa:     hay(ASESOR_PRISA),
+    municipio: (MUNICIPIOS.find(m => t.includes(sinAcentos(m.nombre))) || {}).id || '',
+    señales:   [especialidad, primero(ASESOR_NIVEL), primero(ASESOR_ENTORNO)].filter(Boolean).length
+  };
+}
+
+/** Agrega una burbuja al hilo y deja la vista al final. */
+function asesorBurbuja(quien, html) {
+  const hilo = document.getElementById('asesorHilo');
+  const burbuja = document.createElement('div');
+  burbuja.className = `asesor-burbuja asesor-${quien}`;
+  burbuja.innerHTML = html;
+  hilo.appendChild(burbuja);
+  hilo.scrollTop = hilo.scrollHeight;
+  return burbuja;
+}
+
+/** Ficha compacta: en el ancho del hilo no cabe la tarjeta completa. */
+function asesorFicha(e) {
+  const foto = e.foto_url
+    ? `<img src="${esc(e.foto_url)}" alt="" loading="lazy">`
+    : `<span class="inicial" aria-hidden="true">${esc(iniciales(e.nombre_completo))}</span>`;
+  return `
+    <a class="asesor-ficha" href="perfil.html?id=${encodeURIComponent(e.id)}">
+      <span class="asesor-ficha-foto">${foto}</span>
+      <span class="asesor-ficha-datos">
+        <strong>${esc(e.nombre_completo)}</strong>
+        <span class="texto-xs txt-secundario">
+          ${esc(etiqueta(NIVELES, e.nivel))} &middot; ${esc(e.anios_experiencia)} años
+          ${e.disponible_inmediato ? '&middot; <span class="txt-exito">disponible ya</span>' : ''}
+        </span>
+      </span>
+      <span class="asesor-ficha-cal">★ ${Number(e.calificacion_promedio || 0).toFixed(1)}</span>
+    </a>`;
+}
+
+/** Redacta la lectura del caso en una frase, solo con lo que si se detecto. */
+function asesorLectura(l) {
+  // El sujeto va siempre, aunque el caso no haya dicho el nivel: sin el, la
+  // frase se queda coja ("necesitas para cobertura de turnos en institucion").
+  const partes = [l.nivel
+    ? `un perfil de <strong>${esc(etiqueta(NIVELES, l.nivel).toLowerCase())}</strong>`
+    : '<strong>personal de enfermería verificado</strong>'];
+  if (l.especialidad) partes.push(`con experiencia en <strong>${esc(etiqueta(ESPECIALIDADES, l.especialidad).toLowerCase())}</strong>`);
+  if (l.entorno === 'domicilio') partes.push('para atención <strong>en domicilio</strong>');
+  if (l.entorno === 'hospital')  partes.push('para <strong>cobertura de turnos en institución</strong>');
+  if (l.entorno === 'asilo')     partes.push('para <strong>una casa de retiro o asilo</strong>');
+  if (l.turno === 'nocturno')    partes.push('en <strong>turno nocturno</strong>');
+  if (l.turno === 'guardia_24')  partes.push('en <strong>guardia de 24 horas</strong>');
+  if (l.turno === 'fin_semana')  partes.push('en <strong>fin de semana</strong>');
+
+  return partes.join(', ');
+}
+
+/** Busca en el catalogo aflojando filtros hasta encontrar algo que mostrar. */
+async function asesorBuscar(l) {
+  const intentos = [
+    { nivel: l.nivel, especialidades: l.especialidad ? [l.especialidad] : [],
+      domicilio: l.entorno === 'domicilio' || undefined,
+      nocturno:  l.turno === 'nocturno' || undefined,
+      municipio: l.municipio },
+    { especialidades: l.especialidad ? [l.especialidad] : [] },
+    { nivel: l.nivel },
+    {}
+  ];
+
+  for (const filtros of intentos) {
+    const limpio = Object.fromEntries(
+      Object.entries(filtros).filter(([, v]) => v && (!Array.isArray(v) || v.length)));
+    if (!Object.keys(limpio).length && filtros !== intentos[intentos.length - 1]) continue;
+
+    const r = await buscarEnfermeros(limpio, { orden: 'calificacion', limite: 3 });
+    if (r.error) return r;
+    if (r.datos.length) return { ...r, exacto: filtros === intentos[0] };
+  }
+  return { datos: [], total: 0, error: null, exacto: false };
+}
+
+/** Enlace al catalogo con la lectura ya aplicada como filtros. */
+function asesorEnlaceCatalogo(l) {
+  const p = new URLSearchParams();
+  if (l.nivel)        p.set('nivel', l.nivel);
+  if (l.especialidad) p.set('esp', l.especialidad);
+  if (l.municipio)    p.set('municipio', l.municipio);
+  if (l.turno === 'nocturno')    p.set('nocturno', '1');
+  if (l.entorno === 'domicilio') p.set('domicilio', '1');
+  return 'enfermeros.html' + (p.toString() ? '?' + p : '');
+}
+
+/** Responde a un caso: lo lee, busca y propone. */
+async function asesorResponder(texto) {
+  asesorBurbuja('cliente', esc(texto));
+  const lectura = analizarCaso(texto);
+
+  // Primero lo que no se negocia: una urgencia no se atiende con una tarjeta
+  if (lectura.urgenciaClinica) {
+    asesorBurbuja('agencia alarma', `
+      <p><strong>Eso suena a una urgencia médica.</strong></p>
+      <p>Enlace Enfermero es una agencia de colocación de personal y no da
+         atención médica. Llama al <strong>911</strong> o acude al servicio de
+         urgencias más cercano ahora mismo.</p>
+      <p>Cuando el paciente esté estable, aquí estamos para el cuidado que siga.</p>`);
+    return;
+  }
+
+  if (lectura.señales === 0) {
+    asesorBurbuja('agencia', `
+      <p>Con eso todavía no alcanzo a ubicar el perfil. Ayúdame con tres datos:
+         <strong>quién es el paciente</strong>, <strong>qué necesita</strong>
+         (curaciones, medicamentos, acompañamiento…) y <strong>dónde</strong>
+         sería el servicio.</p>`);
+    return;
+  }
+
+  const pensando = asesorBurbuja('agencia',
+    '<span class="asesor-puntos" aria-label="Buscando"><i></i><i></i><i></i></span>');
+
+  const { datos, total, error, exacto } = await asesorBuscar(lectura);
+  pensando.remove();
+
+  if (error) {
+    asesorBurbuja('agencia', `<p>${esc(error)} Vuelve a intentarlo en un momento,
+      o cuéntanoslo por WhatsApp y lo revisamos contigo.</p>`);
+    return;
+  }
+
+  const lecturaTexto = asesorLectura(lectura);
+  const prisa = lectura.prisa
+    ? ' Marcaste que corre prisa, así que lo atendemos con prioridad.'
+    : '';
+
+  if (!datos.length) {
+    asesorBurbuja('agencia', `
+      <p>Por lo que me cuentas necesitas ${lecturaTexto}.</p>
+      <p>Ahora mismo no tengo a nadie con ese perfil publicado, pero eso no
+         quiere decir que no lo consigamos: déjanos tu solicitud y lo buscamos
+         por ti.${prisa}</p>
+      <div class="asesor-acciones">
+        <a href="solicitar.html" class="btn btn-primario btn-sm">Dejar mi solicitud</a>
+      </div>`);
+    return;
+  }
+
+  // El resultado y el aviso van en la misma frase: decir "encaja" y despues
+  // "no es coincidencia exacta" se contradice y le resta credibilidad al resto.
+  const veredicto = exacto
+    ? `Tengo <strong>${total}</strong> ${total === 1 ? 'perfil que encaja' : 'perfiles que encajan'}.
+       ${total === 1 ? 'Este es' : 'Estos son los mejor calificados'}:`
+    : `No tengo una coincidencia exacta publicada, pero
+       ${datos.length === 1 ? 'este es el perfil más cercano' : 'estos son los más cercanos'}:`;
+
+  asesorBurbuja('agencia', `
+    <p>Por lo que me cuentas necesitas ${lecturaTexto}.${prisa}</p>
+    <p>${veredicto}</p>
+    <div class="asesor-fichas">${datos.map(asesorFicha).join('')}</div>
+    <div class="asesor-acciones">
+      <a href="${asesorEnlaceCatalogo(lectura)}" class="btn btn-secundario btn-sm">Ver todos</a>
+      <a href="solicitar.html" class="btn btn-primario btn-sm">Solicitar personal</a>
+    </div>`);
+}
+
+/** Carrusel del hero. Lo que rota es la seccion completa —titulo, panel y
+    tinte de fondo—, no un panel suelto. Avanza solo, se detiene cuando alguien
+    esta mirando o navegando con teclado dentro, y no se mueve si el sistema
+    pidio menos movimiento: ahi los puntos siguen sirviendo para cambiar a
+    mano (CLAUDE.md 3.4, quinto uso del movimiento). */
+function activarHeroCarrusel() {
+  const zona = document.getElementById('heroCarrusel');
+  if (!zona) return;
+
+  const pista   = zona.querySelector('.hero-pista');
+  const laminas = Array.from(pista.children);
+  const puntos  = document.getElementById('heroPuntos');
+  if (laminas.length < 2) return;
+
+  let actual = 0;
+  let reloj  = null;
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  puntos.innerHTML = laminas.map((lamina, i) => `
+    <button type="button" class="hero-punto" role="tab"
+            aria-selected="${i === 0}" aria-controls="${lamina.id}"
+            aria-label="${esc(lamina.getAttribute('aria-label') || `Lámina ${i + 1}`)}"></button>`).join('');
+  const botones = Array.from(puntos.children);
+
+  const mostrar = (i) => {
+    actual = (i + laminas.length) % laminas.length;
+    pista.style.transform = `translateX(-${actual * 100}%)`;
+    laminas.forEach((lamina, n) => {
+      // La lamina fuera de vista sigue en el DOM: se oculta para que ni el
+      // lector de pantalla ni el tabulador entren en algo que no se ve.
+      lamina.toggleAttribute('aria-hidden', n !== actual);
+      lamina.querySelectorAll('a').forEach(a => { a.tabIndex = n === actual ? 0 : -1; });
+    });
+    botones.forEach((b, n) => b.setAttribute('aria-selected', String(n === actual)));
+  };
+
+  const arrancar = () => {
+    if (quieto || reloj) return;
+    reloj = setInterval(() => mostrar(actual + 1), 6000);
+  };
+  const detener = () => { clearInterval(reloj); reloj = null; };
+
+  botones.forEach((boton, i) => boton.addEventListener('click', () => {
+    mostrar(i);
+    detener();          // si ya eligio a mano, dejar de moverle debajo
+  }));
+
+  // Flechas para recorrerlo con teclado, como manda el patron de pestañas
+  puntos.addEventListener('keydown', (evento) => {
+    const paso = { ArrowRight: 1, ArrowLeft: -1 }[evento.key];
+    if (!paso) return;
+    evento.preventDefault();
+    detener();
+    mostrar(actual + paso);
+    botones[actual].focus();
+  });
+
+  zona.addEventListener('mouseenter', detener);
+  zona.addEventListener('mouseleave', arrancar);
+  zona.addEventListener('focusin', detener);
+  zona.addEventListener('focusout', (evento) => {
+    if (!zona.contains(evento.relatedTarget)) arrancar();
+  });
+
+  // Fuera de pantalla no tiene sentido gastar cuadros de animacion
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([entrada]) => entrada.isIntersecting ? arrancar() : detener())
+      .observe(zona);
+  } else {
+    arrancar();
+  }
+
+  mostrar(0);
+}
+
+/** Arranque del asesor: saludo, ejemplos y envio. */
+function activarAsesor() {
+  const forma = document.getElementById('asesorForma');
+  if (!forma) return;
+
+  const campo = document.getElementById('asesorTexto');
+
+  asesorBurbuja('agencia', `
+    <p>Hola. Cuéntame qué necesitas y te digo qué perfil de enfermería te
+       conviene, sin llenar formularios.</p>`);
+
+  const EJEMPLOS = [
+    'Mi papá de 78 años salió de cirugía y necesita curaciones en casa',
+    'Busco quien acompañe a mi abuela de noche, en su casa',
+    'Necesito cubrir turnos en mi clínica la próxima semana'
+  ];
+  const zona = document.getElementById('asesorEjemplos');
+  zona.innerHTML = EJEMPLOS
+    .map(e => `<button type="button" class="asesor-ejemplo">${esc(e)}</button>`).join('');
+
+  const enviar = (texto) => {
+    const limpio = (texto || '').trim();
+    // Solo se ignora el vacio. Un "hola" si entra: lo atiende la rama de
+    // señales insuficientes, que pide los datos que faltan. Descartarlo en
+    // silencio dejaba al usuario picando Enter sin que pasara nada.
+    if (!limpio) {
+      campo.focus();
+      return;
+    }
+    zona.classList.add('oculto');   // los ejemplos ya cumplieron su trabajo
+    campo.value = '';
+    asesorResponder(limpio);
+  };
+
+  zona.querySelectorAll('.asesor-ejemplo').forEach(boton =>
+    boton.addEventListener('click', () => enviar(boton.textContent)));
+
+  forma.addEventListener('submit', (evento) => {
+    evento.preventDefault();
+    enviar(campo.value);
+  });
+
+  // Enter envia, Shift+Enter hace salto de linea: es un chat, no un ensayo
+  campo.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Enter' && !evento.shiftKey) {
+      evento.preventDefault();
+      enviar(campo.value);
+    }
+  });
 }
 
 /* ==========================================================================

@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #FFFFFF; font-family: 'Inter', system-ui, sans-serif; color: #0F172A; }
+    h1, h2, h3 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; margin: 0; line-height: 1.15; }
+    p { margin: 0; }
+    a { color: #0D6EFD; text-decoration: none; }
+    a:hover { color: #0B5394; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    .late { animation: late 2.4s ease-in-out infinite; }
+    @keyframes late { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+    .traza { stroke-dasharray: 260; stroke-dashoffset: 260; animation: traza 2.2s ease-out .3s forwards; }
+    @keyframes traza { to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .late, .traza { animation: none; opacity: 1; stroke-dashoffset: 0; }
+    }
+  </style>
+</helmet>
+
+<div style="width: 390px">
+
+  <!-- Encabezado -->
+  <div style="position: relative; overflow: hidden; background: linear-gradient(145deg, #04263F 0%, #0B5394 55%, #1E5B8A 100%); padding: 34px 20px 30px">
+    <div style="position: absolute; top: -110px; right: -70px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(34,211,238,.34), transparent 68%)"></div>
+    <div style="position: relative">
+      <div style="font-size: 12px; color: rgba(255,255,255,.62); margin-bottom: 14px">Inicio / Servicios</div>
+      <h1 style="font-size: 32px; font-weight: 800; color: #FFFFFF; letter-spacing: -.02em">Cuatro formas de resolverlo</h1>
+      <p style="margin-top: 14px; font-size: 14px; line-height: 1.65; color: rgba(255,255,255,.88)">
+        Todas con el mismo respaldo: verificamos, coordinamos y respondemos por el servicio.
+      </p>
+    </div>
+  </div>
+
+  <!-- El selector se desliza: cuatro tarjetas apiladas comen media pantalla -->
+  <div style="padding: 18px 0 22px; background: #F4F9FF; border-bottom: 1px solid #E2E8F0">
+    <div style="display: flex; gap: 10px; overflow-x: auto; padding: 0 20px">
+      <sc-for list="{{servicios}}" as="s" hint-placeholder-count="4">
+        <div style="flex: 0 0 62%; padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid {{s.borde}}">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: {{s.tinte}}; color: #FFFFFF; font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 12px">{{s.num}}</span>
+            <span style="font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 13px; line-height: 1.25">{{s.corto}}</span>
+          </div>
+          <p style="margin-top: 8px; font-size: 12px; line-height: 1.45; color: #475569">{{s.gancho}}</p>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- Los cuatro bloques -->
+  <sc-for list="{{bloques}}" as="b" hint-placeholder-count="4">
+    <div style="background: {{b.fondo}}; padding: 34px 20px; border-bottom: 1px solid rgba(4,38,63,.06)">
+
+      <!-- La escena va arriba: en vertical no hay columna al lado -->
+      <div style="position: relative; border-radius: 18px; overflow: hidden; background: {{b.escenaFondo}}; height: 176px; display: grid; place-items: center; margin-bottom: 24px">
+        <sc-if value="{{b.esCasa}}" hint-placeholder-val="{{ true }}">
+          <svg width="130" height="130" viewBox="0 0 120 120" fill="none" stroke="#2563EB" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 54 L60 22 L100 54 V98 a4 4 0 0 1-4 4 H24 a4 4 0 0 1-4-4 Z"/><path class="traza" d="M32 76 h14 l6-12 8 24 6-12 h22" stroke-width="3"/><circle cx="60" cy="46" r="5" class="late"/></svg>
+        </sc-if>
+        <sc-if value="{{b.esHospital}}" hint-placeholder-val="{{ false }}">
+          <svg width="130" height="130" viewBox="0 0 120 120" fill="none" stroke="#0891B2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 102 h84"/><path d="M28 102 V38 l32-18 32 18 v64"/><path d="M60 48 v22 M49 59 h22"/><rect x="38" y="80" width="16" height="22" rx="2" class="late"/><rect x="66" y="80" width="16" height="22" rx="2"/></svg>
+        </sc-if>
+        <sc-if value="{{b.esMaletin}}" hint-placeholder-val="{{ false }}">
+          <svg width="130" height="130" viewBox="0 0 120 120" fill="none" stroke="#0F766E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="42" width="84" height="60" rx="8"/><path d="M44 42 V32 a6 6 0 0 1 6-6 h20 a6 6 0 0 1 6 6 v10"/><path class="traza" d="M40 72 l12 12 28-26" stroke-width="3"/><circle cx="60" cy="42" r="3" class="late"/></svg>
+        </sc-if>
+        <sc-if value="{{b.esRuta}}" hint-placeholder-val="{{ false }}">
+          <svg width="130" height="130" viewBox="0 0 120 120" fill="none" stroke="#B45309" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path class="traza" d="M24 92 C24 62 54 66 54 44 C54 26 82 26 92 40"/><circle cx="24" cy="92" r="7"/><circle cx="92" cy="40" r="7" class="late"/><circle cx="54" cy="44" r="4"/><path d="M14 106 h92"/></svg>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span style="font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 40px; line-height: .8; color: {{b.numColor}}">{{b.num}}</span>
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: {{b.acento}}">{{b.etiqueta}}</span>
+      </div>
+      <h2 style="margin-top: 12px; font-size: 26px; font-weight: 800; letter-spacing: -.01em">{{b.titulo}}</h2>
+      <p style="margin-top: 12px; font-size: 14px; line-height: 1.7; color: #475569">{{b.lead}}</p>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 22px">
+        <sc-for list="{{b.datos}}" as="d" hint-placeholder-count="3">
+          <div style="padding: 12px 10px; border-radius: 12px; background: #FFFFFF; border: 1px solid {{b.borde}}">
+            <div style="font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 14px; color: {{b.acento}}">{{d.cifra}}</div>
+            <div style="margin-top: 3px; font-size: 11px; line-height: 1.35; color: #475569">{{d.pie}}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin-top: 26px; display: flex; gap: 20px; border-bottom: 1px solid {{b.borde}}">
+        <sc-for list="{{b.tabs}}" as="t" hint-placeholder-count="2">
+          <div onClick="{{t.elegir}}" style="padding-bottom: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: {{t.color}}; border-bottom: 2px solid {{t.linea}}; margin-bottom: -1px">{{t.nombre}}</div>
+        </sc-for>
+      </div>
+
+      <ul style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px">
+        <sc-for list="{{b.puntos}}" as="p" hint-placeholder-count="4">
+          <li style="display: flex; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid {{b.borde}}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{b.acento}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style="font-size: 13px; line-height: 1.55; color: #334155">{{p}}</span>
+          </li>
+        </sc-for>
+      </ul>
+
+      <a href="#" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 24px; min-height: 48px; border-radius: 999px; background: {{b.acento}}; color: #FFFFFF; font-weight: 600; font-size: 15px">Solicitar este servicio</a>
+    </div>
+  </sc-for>
+
+  <div style="padding: 34px 20px; background: linear-gradient(150deg, #04263F, #0B5394)">
+    <h2 style="font-size: 24px; font-weight: 800; color: #FFFFFF">¿No sabes cuál necesitas?</h2>
+    <p style="margin-top: 12px; font-size: 14px; line-height: 1.7; color: rgba(255,255,255,.86)">Cuéntanos el caso en dos líneas y te decimos qué perfil te conviene. Sin costo.</p>
+    <a href="#" style="display: flex; align-items: center; justify-content: center; margin-top: 22px; min-height: 48px; border-radius: 999px; background: #FFFFFF; color: #0B5394; font-weight: 600; font-size: 15px">Describir mi caso</a>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":3320}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: [0, 1, 0, 1] };
+  }
+
+  renderVals() {
+    const S = [
+      { num: '01', corto: 'Cuidado domiciliario', gancho: 'En casa, 8, 12 o 24 h', tinte: '#2563EB', borde: '#DBE9FF' },
+      { num: '02', corto: 'Turnos hospitalarios', gancho: 'Cobertura en tu institución', tinte: '#0891B2', borde: '#CFF0F7' },
+      { num: '03', corto: 'Colocación permanente', gancho: 'Personal fijo, ya filtrado', tinte: '#0F766E', borde: '#CFEDE4' },
+      { num: '04', corto: 'Eventos y traslados', gancho: 'Por jornada o trayecto', tinte: '#B45309', borde: '#F3DFC4' }
+    ];
+
+    const crudos = [
+      { num: '01', etiqueta: 'En casa del paciente', titulo: 'Cuidado domiciliario', figura: 'casa',
+        acento: '#2563EB', fondo: '#F4F9FF', borde: '#DBE9FF', escenaFondo: 'linear-gradient(150deg, #E8F2FF, #DCEBFF)',
+        lead: 'Personal de enfermería en casa del paciente. Es el servicio más solicitado por familias que necesitan acompañamiento continuo.',
+        datos: [{ cifra: '8-24 h', pie: 'Turno' }, { cifra: 'Mismo día', pie: 'Respuesta' }, { cifra: 'Diario', pie: 'Reporte' }],
+        tabs: ['Para quién es', 'Qué incluye'],
+        listas: [
+          ['Adultos mayores con apoyo permanente o por temporadas', 'Pacientes en recuperación postoperatoria', 'Personas con movilidad reducida o enfermedad crónica', 'Cuidados paliativos en domicilio'],
+          ['Signos vitales y medicamentos bajo indicación médica', 'Apoyo en higiene, alimentación y movilización', 'Curación de heridas, sondas y catéteres', 'Reporte de la evolución a la familia', 'Sustitución inmediata si el profesional no asiste']
+        ] },
+      { num: '02', etiqueta: 'En tu institución', titulo: 'Turnos hospitalarios', figura: 'hospital',
+        acento: '#0891B2', fondo: '#FFFFFF', borde: '#CFF0F7', escenaFondo: 'linear-gradient(150deg, #E4F8FC, #D3F2F9)',
+        lead: 'Cobertura de plantilla para hospitales, clínicas y asilos. Cubrimos incapacidades, vacaciones y picos de ocupación sin abrir vacante.',
+        datos: [{ cifra: 'Sin vacante', pie: 'No contratas' }, { cifra: 'Registrada', pie: 'Asistencia' }, { cifra: 'Por periodo', pie: 'Factura' }],
+        tabs: ['Cómo funciona', 'Niveles'],
+        listas: [
+          ['Nos dices nivel, especialidad y turnos por cubrir', 'Te proponemos personal compatible el mismo día', 'Confirmamos asistencia con entrada y salida', 'Facturamos por periodo, con desglose por turno'],
+          ['Auxiliar y técnico en enfermería', 'Licenciados en enfermería', 'Especialistas en cuidados intensivos y urgencias', 'Quirófano, neonatología y materno-infantil']
+        ] },
+      { num: '03', etiqueta: 'Contratación definitiva', titulo: 'Colocación permanente', figura: 'maletin',
+        acento: '#0F766E', fondo: '#F3FBF8', borde: '#CFEDE4', escenaFondo: 'linear-gradient(150deg, #E3F7F1, #D2F0E7)',
+        lead: 'Reclutamos para tu plantilla fija. Tú entrevistas solamente a quienes ya cumplen el perfil que pediste.',
+        datos: [{ cifra: 'Única', pie: 'Cuota' }, { cifra: 'Validados', pie: 'Cédula' }, { cifra: 'Filtrados', pie: 'Candidatos' }],
+        tabs: ['Qué hacemos', 'Qué recibes'],
+        listas: [
+          ['Definimos el perfil junto contigo', 'Buscamos y filtramos candidatos', 'Validamos cédula ante la SEP y referencias', 'Coordinamos las entrevistas'],
+          ['Terna de candidatos que cumplen el perfil', 'Expediente completo de cada uno', 'Acompañamiento hasta la contratación']
+        ] },
+      { num: '04', etiqueta: 'Por evento o traslado', titulo: 'Eventos y traslados', figura: 'ruta',
+        acento: '#B45309', fondo: '#FFFFFF', borde: '#F3DFC4', escenaFondo: 'linear-gradient(150deg, #FDF3E4, #FAE8D2)',
+        lead: 'Personal de enfermería para eventos, filmaciones, jornadas deportivas y traslado de pacientes en toda la ZMG.',
+        datos: [{ cifra: 'Jornada', pie: 'O trayecto' }, { cifra: 'ZMG', pie: 'Cobertura' }, { cifra: 'Botiquín', pie: 'Equipo' }],
+        tabs: ['Casos', 'Qué llevamos'],
+        listas: [
+          ['Eventos masivos y jornadas deportivas', 'Filmaciones y producciones', 'Traslado entre domicilio y hospital', 'Acompañamiento en viajes'],
+          ['Personal verificado para el tipo de evento', 'Botiquín y material de curación básico', 'Coordinación con el servicio de emergencias']
+        ] }
+    ];
+
+    const bloques = crudos.map((b, i) => {
+      const abierta = this.state.tab[i];
+      return {
+        ...b,
+        esCasa: b.figura === 'casa',
+        esHospital: b.figura === 'hospital',
+        esMaletin: b.figura === 'maletin',
+        esRuta: b.figura === 'ruta',
+        numColor: b.acento + '33',
+        puntos: b.listas[abierta],
+        tabs: b.tabs.map((nombre, t) => ({
+          nombre,
+          color: t === abierta ? '#0F172A' : '#94A3B8',
+          linea: t === abierta ? b.acento : 'transparent',
+          elegir: () => {
+            const tab = this.state.tab.slice();
+            tab[i] = t;
+            this.setState({ tab });
+          }
+        }))
+      };
+    });
+
+    return { servicios: S, bloques };
+  }
+}
+</script>
+</body>
+</html>

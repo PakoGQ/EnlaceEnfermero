@@ -1,0 +1,273 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: #FFFFFF; font-family: 'Inter', system-ui, sans-serif; color: #0F172A; }
+    h1, h2, h3 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; margin: 0; line-height: 1.15; }
+    p { margin: 0; }
+    a { color: #0D6EFD; text-decoration: none; }
+    a:hover { color: #0B5394; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    .sube { animation: sube .62s cubic-bezier(.2,.7,.3,1) both; }
+    @keyframes sube { from { opacity: 0; transform: translateY(14px); } }
+    .late { animation: late 2.4s ease-in-out infinite; transform-origin: center; }
+    @keyframes late { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+    .traza { stroke-dasharray: 260; stroke-dashoffset: 260; animation: traza 2.2s ease-out .3s forwards; }
+    @keyframes traza { to { stroke-dashoffset: 0; } }
+    .ficha:hover { transform: translateY(-4px); box-shadow: 0 12px 26px rgba(4,38,63,.10); }
+    .chip-serv:hover { transform: translateY(-3px); }
+    .tab:hover { color: #0F172A; }
+    @media (prefers-reduced-motion: reduce) {
+      .sube, .late, .traza { animation: none; opacity: 1; stroke-dashoffset: 0; transform: none; }
+      .ficha:hover, .chip-serv:hover { transform: none; }
+    }
+  </style>
+</helmet>
+
+<div style="width: 1440px">
+
+  <!-- ===== Encabezado: deja de ser una franja gris y se vuelve el mapa de los 4 ===== -->
+  <div style="position: relative; overflow: hidden; background: linear-gradient(145deg, #04263F 0%, #0B5394 55%, #1E5B8A 100%); padding: 72px 120px 88px">
+    <div style="position: absolute; top: -160px; right: -80px; width: 460px; height: 460px; border-radius: 50%; background: radial-gradient(circle, rgba(34,211,238,.34), transparent 68%)"></div>
+    <div style="position: relative">
+      <div style="display: flex; gap: 8px; align-items: center; font-size: 13px; color: rgba(255,255,255,.62); margin-bottom: 20px">
+        <span>Inicio</span><span>/</span><span style="color: #FFFFFF">Servicios</span>
+      </div>
+      <h1 class="sube" style="font-size: 56px; font-weight: 800; color: #FFFFFF; letter-spacing: -.02em; max-width: 15ch">Cuatro formas de resolverlo</h1>
+      <p class="sube" style="margin-top: 20px; max-width: 60ch; font-size: 17px; line-height: 1.7; color: rgba(255,255,255,.88)">
+        Todas con el mismo respaldo: verificamos al profesional, coordinamos el turno y respondemos por el servicio. Cada uno se cotiza a la medida.
+      </p>
+
+      <!-- Selector vivo: cada servicio con su color, y salta a su bloque -->
+      <div style="display: flex; gap: 14px; margin-top: 40px">
+        <sc-for list="{{servicios}}" as="s" hint-placeholder-count="4">
+          <div class="chip-serv" style="flex: 1; padding: 20px; border-radius: 18px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.20); cursor: pointer; transition: transform .24s cubic-bezier(.2,.75,.3,1), background .24s">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: {{s.tinte}}; color: #FFFFFF; font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 13px">{{s.num}}</span>
+              <span style="font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 15px; color: #FFFFFF">{{s.corto}}</span>
+            </div>
+            <p style="margin-top: 12px; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.76)">{{s.gancho}}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Los cuatro servicios, cada uno en su mundo de color ===== -->
+  <sc-for list="{{bloques}}" as="b" hint-placeholder-count="4">
+    <div style="background: {{b.fondo}}; padding: 88px 120px; border-bottom: 1px solid rgba(4,38,63,.06)">
+      <div style="display: grid; grid-template-columns: {{b.columnas}}; gap: 72px; align-items: start">
+
+        <!-- Columna de texto -->
+        <div style="order: {{b.ordenTexto}}">
+          <div style="display: flex; align-items: baseline; gap: 16px">
+            <span style="font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 64px; line-height: .8; color: {{b.numColor}}">{{b.num}}</span>
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: {{b.acento}}">{{b.etiqueta}}</span>
+          </div>
+          <h2 style="margin-top: 18px; font-size: 40px; font-weight: 800; letter-spacing: -.015em; max-width: 16ch">{{b.titulo}}</h2>
+          <p style="margin-top: 18px; font-size: 16px; line-height: 1.75; color: #475569; max-width: 54ch">{{b.lead}}</p>
+
+          <!-- Los tres datos duros, en línea: antes eran prosa -->
+          <div style="display: flex; gap: 12px; margin-top: 32px">
+            <sc-for list="{{b.datos}}" as="d" hint-placeholder-count="3">
+              <div style="flex: 1; padding: 16px; border-radius: 14px; background: #FFFFFF; border: 1px solid {{b.borde}}">
+                <div style="font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 19px; color: {{b.acento}}">{{d.cifra}}</div>
+                <div style="margin-top: 4px; font-size: 12px; line-height: 1.4; color: #475569">{{d.pie}}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- Pestañas: las dos listas largas dejan de apilarse -->
+          <div style="margin-top: 36px; display: flex; gap: 26px; border-bottom: 1px solid {{b.borde}}">
+            <sc-for list="{{b.tabs}}" as="t" hint-placeholder-count="2">
+              <div class="tab" onClick="{{t.elegir}}" style="padding-bottom: 12px; font-size: 14px; font-weight: 600; cursor: pointer; color: {{t.color}}; border-bottom: 2px solid {{t.linea}}; margin-bottom: -1px; transition: color .2s">{{t.nombre}}</div>
+            </sc-for>
+          </div>
+
+          <ul style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 22px">
+            <sc-for list="{{b.puntos}}" as="p" hint-placeholder-count="4">
+              <li class="ficha" style="display: flex; gap: 12px; padding: 14px 16px; border-radius: 12px; background: #FFFFFF; border: 1px solid {{b.borde}}; transition: transform .24s cubic-bezier(.2,.75,.3,1), box-shadow .24s">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{b.acento}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size: 14px; line-height: 1.55; color: #334155">{{p}}</span>
+              </li>
+            </sc-for>
+          </ul>
+
+          <a href="#" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 34px; padding: 14px 26px; border-radius: 999px; background: {{b.acento}}; color: #FFFFFF; font-weight: 600; font-size: 15px; box-shadow: 0 10px 24px {{b.sombra}}">
+            Solicitar este servicio
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <!-- Columna visual: escena SVG, no foto de banco -->
+        <div style="order: {{b.ordenVisual}}; position: relative; border-radius: 24px; overflow: hidden; background: {{b.escenaFondo}}; min-height: 420px; display: grid; place-items: center">
+          <div style="position: absolute; inset: 0; opacity: .5; background: radial-gradient(circle at 70% 25%, {{b.sombra}}, transparent 62%)"></div>
+          <div style="position: relative; padding: 40px">
+            <!-- Marcado real por servicio: `innerHTML` no es un atributo que este
+                 formato sepa mapear, y la escena se quedaria en blanco. -->
+            <sc-if value="{{b.esCasa}}" hint-placeholder-val="{{ true }}">
+              <svg width="220" height="220" viewBox="0 0 120 120" fill="none" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 54 L60 22 L100 54 V98 a4 4 0 0 1-4 4 H24 a4 4 0 0 1-4-4 Z"/>
+                <path class="traza" d="M32 76 h14 l6-12 8 24 6-12 h22" stroke-width="2.8"/>
+                <circle cx="60" cy="46" r="5" class="late"/>
+              </svg>
+            </sc-if>
+            <sc-if value="{{b.esHospital}}" hint-placeholder-val="{{ false }}">
+              <svg width="220" height="220" viewBox="0 0 120 120" fill="none" stroke="#0891B2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 102 h84"/>
+                <path d="M28 102 V38 l32-18 32 18 v64"/>
+                <path d="M60 48 v22 M49 59 h22"/>
+                <rect x="38" y="80" width="16" height="22" rx="2" class="late"/>
+                <rect x="66" y="80" width="16" height="22" rx="2"/>
+              </svg>
+            </sc-if>
+            <sc-if value="{{b.esMaletin}}" hint-placeholder-val="{{ false }}">
+              <svg width="220" height="220" viewBox="0 0 120 120" fill="none" stroke="#0F766E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="18" y="42" width="84" height="60" rx="8"/>
+                <path d="M44 42 V32 a6 6 0 0 1 6-6 h20 a6 6 0 0 1 6 6 v10"/>
+                <path class="traza" d="M40 72 l12 12 28-26" stroke-width="3"/>
+                <circle cx="60" cy="42" r="3" class="late"/>
+              </svg>
+            </sc-if>
+            <sc-if value="{{b.esRuta}}" hint-placeholder-val="{{ false }}">
+              <svg width="220" height="220" viewBox="0 0 120 120" fill="none" stroke="#B45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path class="traza" d="M24 92 C24 62 54 66 54 44 C54 26 82 26 92 40"/>
+                <circle cx="24" cy="92" r="7"/>
+                <circle cx="92" cy="40" r="7" class="late"/>
+                <circle cx="54" cy="44" r="4"/>
+                <path d="M14 106 h92"/>
+              </svg>
+            </sc-if>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </sc-for>
+
+  <!-- ===== Cierre ===== -->
+  <div style="display: grid; grid-template-columns: 1.1fr .9fr">
+    <div style="padding: 72px 120px; background: linear-gradient(150deg, #04263F, #0B5394)">
+      <h2 style="font-size: 32px; font-weight: 800; color: #FFFFFF; max-width: 18ch">¿No sabes cuál necesitas?</h2>
+      <p style="margin-top: 14px; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.86); max-width: 46ch">Cuéntanos el caso en dos líneas y te decimos qué perfil y qué servicio te conviene. Sin costo.</p>
+      <a href="#" style="display: inline-block; margin-top: 28px; padding: 14px 28px; border-radius: 999px; background: #FFFFFF; color: #0B5394; font-weight: 600; font-size: 15px">Describir mi caso</a>
+    </div>
+    <div style="padding: 72px 60px; background: #F4F9FF">
+      <h2 style="font-size: 28px; font-weight: 800; max-width: 16ch">Ver el personal disponible</h2>
+      <p style="margin-top: 14px; font-size: 15px; line-height: 1.7; color: #475569; max-width: 40ch">Todos los perfiles del catálogo están verificados y publicados con su nivel y especialidad.</p>
+      <a href="#" style="display: inline-block; margin-top: 28px; padding: 14px 28px; border-radius: 999px; border: 1px solid #BFDBFE; color: #0D6EFD; font-weight: 600; font-size: 15px">Ir al catálogo</a>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":3560}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Una pestaña abierta por bloque. Arrancan en distinta para que se vea
+    // que cambian y que el contenido no es el mismo cuatro veces.
+    this.state = { tab: [0, 1, 0, 1] };
+  }
+
+  renderVals() {
+    const S = [
+      { num: '01', corto: 'Cuidado domiciliario', gancho: 'En casa del paciente, 8, 12 o 24 h', tinte: '#2563EB' },
+      { num: '02', corto: 'Turnos hospitalarios', gancho: 'Cobertura de plantilla en tu institución', tinte: '#0891B2' },
+      { num: '03', corto: 'Colocación permanente', gancho: 'Personal fijo, ya filtrado', tinte: '#0F766E' },
+      { num: '04', corto: 'Eventos y traslados', gancho: 'Por jornada o por trayecto', tinte: '#B45309' }
+    ];
+
+    const crudos = [
+      {
+        num: '01', etiqueta: 'En casa del paciente', titulo: 'Cuidado domiciliario',
+        acento: '#2563EB', fondo: '#F4F9FF', borde: '#DBE9FF', sombra: 'rgba(37,99,235,.22)',
+        escenaFondo: 'linear-gradient(150deg, #E8F2FF, #DCEBFF)', figura: 'casa',
+        lead: 'Personal de enfermería en casa del paciente. Es nuestro servicio más solicitado por familias que necesitan acompañamiento continuo sin trasladar a nadie.',
+        datos: [{ cifra: '8, 12 o 24 h', pie: 'Duración del turno' }, { cifra: 'Mismo día', pie: 'Tiempo de respuesta' }, { cifra: 'Diario', pie: 'Reporte a la familia' }],
+        tabs: ['Para quién es', 'Qué incluye'],
+        listas: [
+          ['Adultos mayores con apoyo permanente o por temporadas', 'Pacientes en recuperación postoperatoria', 'Personas con movilidad reducida o enfermedad crónica', 'Cuidados paliativos en domicilio'],
+          ['Signos vitales y medicamentos bajo indicación médica', 'Apoyo en higiene, alimentación y movilización', 'Curación de heridas, sondas y catéteres según el nivel', 'Reporte de la evolución a la familia', 'Sustitución inmediata si el profesional no puede asistir']
+        ]
+      },
+      {
+        num: '02', etiqueta: 'En tu institución', titulo: 'Turnos hospitalarios',
+        acento: '#0891B2', fondo: '#FFFFFF', borde: '#CFF0F7', sombra: 'rgba(8,145,178,.22)',
+        escenaFondo: 'linear-gradient(150deg, #E4F8FC, #D3F2F9)', figura: 'hospital',
+        lead: 'Cobertura de plantilla para hospitales, clínicas, asilos y casas de retiro. Cubrimos incapacidades, vacaciones y picos de ocupación sin que abras una vacante.',
+        datos: [{ cifra: 'Sin vacante', pie: 'No contratas tú' }, { cifra: 'Entrada y salida', pie: 'Asistencia registrada' }, { cifra: 'Por periodo', pie: 'Factura con desglose' }],
+        tabs: ['Cómo funciona', 'Niveles disponibles'],
+        listas: [
+          ['Nos dices nivel, especialidad y turnos por cubrir', 'Te proponemos personal compatible el mismo día', 'Confirmamos asistencia con registro de entrada y salida', 'Facturamos por periodo, con desglose por turno'],
+          ['Auxiliar y técnico en enfermería', 'Licenciados en enfermería', 'Especialistas en cuidados intensivos y urgencias', 'Quirófano, neonatología y materno-infantil']
+        ]
+      },
+      {
+        num: '03', etiqueta: 'Contratación definitiva', titulo: 'Colocación permanente',
+        acento: '#0F766E', fondo: '#F3FBF8', borde: '#CFEDE4', sombra: 'rgba(15,118,110,.22)',
+        escenaFondo: 'linear-gradient(150deg, #E3F7F1, #D2F0E7)', figura: 'maletin',
+        lead: 'Reclutamos para tu plantilla fija. Filtramos y verificamos a los candidatos, y tú entrevistas solamente a quienes ya cumplen el perfil que pediste.',
+        datos: [{ cifra: 'Cuota única', pie: 'Al contratar' }, { cifra: 'Verificados', pie: 'Cédula y referencias' }, { cifra: 'Filtrados', pie: 'Antes de tu entrevista' }],
+        tabs: ['Qué hacemos por ti', 'Qué recibes'],
+        listas: [
+          ['Definimos el perfil junto contigo', 'Buscamos y filtramos candidatos', 'Validamos cédula ante la SEP y referencias', 'Coordinamos las entrevistas'],
+          ['Terna de candidatos que cumplen el perfil', 'Expediente completo de cada uno', 'Acompañamiento hasta la contratación']
+        ]
+      },
+      {
+        num: '04', etiqueta: 'Por evento o traslado', titulo: 'Eventos y traslados',
+        acento: '#B45309', fondo: '#FFFFFF', borde: '#F3DFC4', sombra: 'rgba(180,83,9,.20)',
+        escenaFondo: 'linear-gradient(150deg, #FDF3E4, #FAE8D2)', figura: 'ruta',
+        lead: 'Personal de enfermería para eventos, filmaciones, jornadas deportivas y traslado de pacientes en toda la Zona Metropolitana de Guadalajara.',
+        datos: [{ cifra: 'Por jornada', pie: 'O por trayecto' }, { cifra: 'ZMG', pie: 'Cobertura completa' }, { cifra: 'Con equipo', pie: 'Botiquín y traslado' }],
+        tabs: ['Casos que atendemos', 'Qué llevamos'],
+        listas: [
+          ['Eventos masivos y jornadas deportivas', 'Filmaciones y producciones', 'Traslado de pacientes entre domicilio y hospital', 'Acompañamiento en viajes'],
+          ['Personal verificado para el tipo de evento', 'Botiquín y material de curación básico', 'Coordinación con el servicio de emergencias']
+        ]
+      }
+    ];
+
+    const bloques = crudos.map((b, i) => {
+      const abierta = this.state.tab[i];
+      // Los pares invierten el orden: sin esto son cuatro bloques calcados.
+      const par = i % 2 === 1;
+      return {
+        ...b,
+        esCasa: b.figura === 'casa',
+        esHospital: b.figura === 'hospital',
+        esMaletin: b.figura === 'maletin',
+        esRuta: b.figura === 'ruta',
+        numColor: b.acento + '33',
+        columnas: par ? '.85fr 1.15fr' : '1.15fr .85fr',
+        ordenTexto: par ? 2 : 1,
+        ordenVisual: par ? 1 : 2,
+        puntos: b.listas[abierta],
+        tabs: b.tabs.map((nombre, t) => ({
+          nombre,
+          color: t === abierta ? '#0F172A' : '#94A3B8',
+          linea: t === abierta ? b.acento : 'transparent',
+          elegir: () => {
+            const tab = this.state.tab.slice();
+            tab[i] = t;
+            this.setState({ tab });
+          }
+        }))
+      };
+    });
+
+    return { servicios: S, bloques };
+  }
+}
+</script>
+</body>
+</html>

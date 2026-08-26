@@ -1,0 +1,13 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 3560, "title": "Servicios — escritorio" },
+    { "file": "Movil.dc.html", "x": 1620, "y": 0, "w": 390, "h": 3320, "title": "Servicios — celular" }
+  ],
+  "annotations": [
+    { "id": "diagnostico", "x": 0, "y": -230, "w": 620, "text": "El problema, medido: hoy .servicio-detalle esta limitado a 720px dentro de un contenedor de 1200. Son cuatro columnas de texto identicas, una tras otra. Por eso se lee como documento y no como pagina." },
+    { "id": "color", "x": 660, "y": -230, "w": 560, "text": "Cada servicio recibe el mismo tono que ya tiene en el carrusel del hero y en el bento de la landing: azul, cyan, verde y ambar. El color identifica el servicio, no decora." },
+    { "id": "tabs", "x": 1620, "y": -230, "w": 390, "text": "Las dos listas largas de cada servicio se vuelven pestanas. Se puede tocar: cambia el contenido. Eso es lo que corta la sensacion de lista infinita." },
+    { "id": "fotos", "x": 0, "y": 3640, "w": 620, "text": "Sin fotos: no hay banco de imagenes en el proyecto y CLAUDE.md 3.4 prohibe fotos de stock clinicas. En su lugar cada servicio tiene una escena SVG de trazo con animacion de entrada, en su color." }
+  ],
+  "launch": { "view": "canvas" }
+}

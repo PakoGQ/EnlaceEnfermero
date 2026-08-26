@@ -20,7 +20,8 @@
 /* --- Encabezado de seccion --- */
 .encabezado-seccion { margin-bottom: var(--e6); }
 .encabezado-seccion.centro { text-align: center; margin-inline: auto; max-width: 640px; }
-.encabezado-seccion .antetitulo {
+.encabezado-seccion .antetitulo,
+.encabezado-partido .antetitulo {
   display: inline-block;
   font-family: var(--fuente-titulo);
   font-size: .8125rem;
@@ -31,6 +32,25 @@
   margin-bottom: var(--e2);
 }
 .encabezado-seccion p { color: var(--gris-600); margin-top: var(--e3); }
+
+/* --- Encabezado partido: titulo a la izquierda, bajada a la derecha --------
+   Diez secciones seguidas con el titulo centrado dan un ritmo plano. Este
+   rompe la simetria sin cambiar el contenido. */
+.encabezado-partido {
+  display: grid;
+  gap: var(--e3);
+  margin-bottom: var(--e6);
+}
+.encabezado-partido p { color: var(--gris-600); }
+
+@media (min-width: 768px) {
+  .encabezado-partido {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: var(--e6);
+  }
+  .encabezado-partido p { max-width: 34ch; }
+}
 
 /* ==========================================================================
    HEADER
@@ -131,6 +151,50 @@
   border-top: 1px solid var(--gris-200);
 }
 .nav-acciones .btn { width: 100%; }
+
+/* --- Los dos botones del header ------------------------------------------
+   Son la accion permanente del sitio: el hero ya no repite estos botones, asi
+   que aqui es donde se decide si alguien pide personal o no. Por eso el
+   primario lleva degradado, sombra con tinte y un barrido lento de brillo, y
+   el secundario deja de ser blanco sobre blanco. */
+.nav-acciones .btn-primario {
+  position: relative;
+  overflow: hidden;
+  background: var(--grad-turno);
+  box-shadow: var(--sombra-azul);
+}
+.nav-acciones .btn-primario::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, .42) 50%, transparent 62%);
+  background-size: 220% 100%;
+  animation: ee-brilla 4.5s linear infinite;
+}
+.nav-acciones .btn-primario > * { position: relative; z-index: 1; }
+.nav-acciones .btn-primario:hover:not(:disabled) {
+  background: var(--grad-turno);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 16px 34px rgba(11, 83, 148, .40);
+}
+
+.nav-acciones .btn-secundario {
+  background: var(--azul-050);
+  border-color: var(--azul-400);
+  color: var(--azul-700);
+}
+.nav-acciones .btn-secundario:hover:not(:disabled) {
+  background: var(--azul-100);
+  border-color: var(--azul-600);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-acciones .btn-primario::after { animation: none; opacity: 0; }
+  .nav-acciones .btn-primario:hover:not(:disabled) { transform: none; }
+  .nav-acciones .btn-secundario:hover:not(:disabled) { transform: none; }
+}
 
 /* Capa oscura detras del menu movil */
 .velo-nav {
