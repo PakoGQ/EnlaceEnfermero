@@ -695,6 +695,17 @@ Secciones en orden:
 
 Todas las secciones aparecen con fade-in al hacer scroll. La página registra la visita en `visitas` con sus UTM.
 
+### 8.1-bis `servicios.html` — Detalle de los servicios
+
+Los cuatro servicios, cada uno en su bloque. **No es una lista de secciones iguales**: era exactamente eso —una columna de texto de 720 px dentro de un contenedor de 1200, repetida cuatro veces— y se leía como documento, no como página.
+
+- **Cada servicio lleva su tono** en `--acento`, y es el **mismo** que tiene en el carrusel del hero y en el bento de la landing: azul, cyan, verde y ámbar. El color identifica el servicio en las tres partes del sitio (§3.2). Tiñe el número, el antetítulo, las viñetas, los bordes, el botón y la mancha del fondo.
+- **Los bloques pares invierten el orden** (escena a la izquierda). Hay que invertir también las columnas: `order` solo cambia en qué celda cae cada uno, así que sin eso el texto se queda con la columna angosta.
+- **Las dos listas largas de cada servicio son pestañas**, con el patrón `tablist` completo: una sola pestaña en el orden de tabulación, flechas para moverse, `Home`/`End`, `aria-selected` y `aria-controls`. Vive en `activarPestanas()` de `js/componentes.js` y sirve para cualquier página.
+- **Los datos duros salen de la prosa** a tres recuadros por servicio (duración del turno, tiempo de respuesta, qué recibes).
+- **Sin fotos.** No hay banco de imágenes en el proyecto y §3.4 prohíbe la fotografía clínica de stock: cada servicio tiene una escena SVG de trazo en su tono, con una línea que se dibuja al entrar y un punto que late. Todo se apaga con `prefers-reduced-motion`.
+- El encabezado deja de ser una franja gris y abre con un **índice de los cuatro**, cada uno con su color, que salta a su bloque.
+
 ### 8.2 `enfermeros.html` — Catálogo
 
 - Barra de filtros lateral (colapsable en móvil como bottom-sheet): nivel, especialidades (multi), municipio, disponibilidad inmediata, años de experiencia (rango), calificación mínima, acepta nocturno/domicilio.

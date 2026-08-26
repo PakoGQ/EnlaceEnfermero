@@ -440,3 +440,49 @@ function iniciarPagina(paginaActiva = '') {
   activarAparicion();
   registrarVisita();
 }
+
+/* ==========================================================================
+   PESTAÑAS
+   Patron de tablist del estandar: una sola pestaña en el orden de tabulacion
+   y las flechas mueven entre ellas. Sin eso, quien navega con teclado tiene
+   que pasar por todas las pestañas para llegar al contenido.
+   ========================================================================== */
+
+/** Activa todos los [role="tablist"] de la pagina. */
+function activarPestanas() {
+  document.querySelectorAll('[role="tablist"]').forEach(lista => {
+    const pestanas = Array.from(lista.querySelectorAll('[role="tab"]'));
+    if (pestanas.length < 2) return;
+
+    const mostrar = (indice, mover = true) => {
+      pestanas.forEach((pestana, i) => {
+        const activa = i === indice;
+        pestana.setAttribute('aria-selected', String(activa));
+        // Solo la activa queda tabulable: es lo que define el patron
+        pestana.tabIndex = activa ? 0 : -1;
+        const panel = document.getElementById(pestana.getAttribute('aria-controls'));
+        if (panel) panel.classList.toggle('oculto', !activa);
+      });
+      if (mover) pestanas[indice].focus();
+    };
+
+    pestanas.forEach((pestana, i) => {
+      pestana.addEventListener('click', () => mostrar(i, false));
+    });
+
+    lista.addEventListener('keydown', (evento) => {
+      const actual = pestanas.findIndex(p => p.getAttribute('aria-selected') === 'true');
+      const salto = { ArrowRight: 1, ArrowLeft: -1 }[evento.key];
+      if (salto) {
+        evento.preventDefault();
+        mostrar((actual + salto + pestanas.length) % pestanas.length);
+      } else if (evento.key === 'Home') {
+        evento.preventDefault();
+        mostrar(0);
+      } else if (evento.key === 'End') {
+        evento.preventDefault();
+        mostrar(pestanas.length - 1);
+      }
+    });
+  });
+}

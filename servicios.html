@@ -26,118 +26,274 @@
 
   <main id="contenido" class="con-header-fijo">
 
-    <section class="encabezado-pagina">
+    <section class="encabezado-pagina encabezado-servicios">
       <div class="contenedor">
         <nav class="miga" aria-label="Ruta">
           <a href="index.html">Inicio</a> <span aria-hidden="true">/</span> <span>Servicios</span>
         </nav>
-        <h1>Nuestros servicios</h1>
-        <p>Cuatro formas de resolver tu necesidad de personal de enfermería,
-           todas con el mismo respaldo de verificación y coordinación de la agencia.
-           Cada servicio se cotiza a la medida: cuéntanos qué necesitas y te damos
-           la tarifa.</p>
+        <h1>Cuatro formas de resolverlo</h1>
+        <p>Todas con el mismo respaldo: verificamos al profesional, coordinamos el turno
+           y respondemos por el servicio. Cada uno se cotiza a la medida.</p>
+
+        <!-- Indice vivo: cada servicio con su color, y salta a su bloque -->
+        <ul class="servicios-indice">
+          <li><a href="#domiciliario" style="--acento: 37, 99, 235"><span>01</span>Cuidado domiciliario</a></li>
+          <li><a href="#hospitalario" style="--acento: 8, 145, 178"><span>02</span>Turnos hospitalarios</a></li>
+          <li><a href="#permanente" style="--acento: 15, 118, 110"><span>03</span>Colocación permanente</a></li>
+          <li><a href="#eventos" style="--acento: 180, 83, 9"><span>04</span>Eventos y traslados</a></li>
+        </ul>
       </div>
     </section>
 
-    <section class="seccion" id="domiciliario">
+    <section class="seccion servicio"
+             id="domiciliario" style="--acento: 37, 99, 235">
       <div class="contenedor">
-        <div class="servicio-detalle aparece">
+        <div class="servicio-grid aparece">
+
           <div class="servicio-texto">
-            <span class="antetitulo">Servicio 01</span>
+            <div class="servicio-marca">
+              <span class="servicio-num" aria-hidden="true">01</span>
+              <span class="antetitulo">En casa del paciente</span>
+            </div>
             <h2>Cuidado domiciliario</h2>
-            <p>Personal de enfermería en casa del paciente, en turnos de 8, 12 o 24 horas.
-               Es nuestro servicio más solicitado por familias que necesitan acompañamiento
-               continuo sin trasladar al paciente.</p>
-            <h3>Para quién es</h3>
-            <ul class="lista-marcada">
+            <p class="servicio-lead">Personal de enfermería en casa del paciente, en turnos de 8, 12 o 24 horas. Es nuestro servicio más solicitado por familias que necesitan acompañamiento continuo sin trasladar al paciente.</p>
+
+            <ul class="servicio-datos">
+            <li><strong>8, 12 o 24 h</strong><span>Duración del turno</span></li>
+            <li><strong>Mismo día</strong><span>Tiempo de respuesta</span></li>
+            <li><strong>Diario</strong><span>Reporte a la familia</span></li>
+            </ul>
+
+            <div class="servicio-tabs" role="tablist" aria-label="Detalle de cuidado domiciliario">
+            <button type="button" role="tab" id="tab-dom-0"
+                    aria-controls="panel-dom-0"
+                    aria-selected="true">Para quién es</button>
+            <button type="button" role="tab" id="tab-dom-1"
+                    aria-controls="panel-dom-1"
+                    aria-selected="false" tabindex="-1">Qué incluye</button>
+            </div>
+
+          <div class="servicio-panel" role="tabpanel"
+               id="panel-dom-0" aria-labelledby="tab-dom-0">
+            <ul class="lista-fichas">
               <li>Adultos mayores que requieren apoyo permanente o por temporadas</li>
               <li>Pacientes en recuperación postoperatoria</li>
               <li>Personas con movilidad reducida o enfermedad crónica</li>
               <li>Cuidados paliativos en domicilio</li>
             </ul>
-            <h3>Qué incluye</h3>
-            <ul class="lista-marcada">
+          </div>
+          <div class="servicio-panel oculto" role="tabpanel"
+               id="panel-dom-1" aria-labelledby="tab-dom-1">
+            <ul class="lista-fichas">
               <li>Control de signos vitales y administración de medicamentos bajo indicación médica</li>
               <li>Apoyo en higiene, alimentación y movilización</li>
               <li>Curación de heridas y manejo de sondas o catéteres según el nivel del profesional</li>
               <li>Reporte de la evolución del paciente a la familia</li>
               <li>Sustitución inmediata si el profesional asignado no puede asistir</li>
             </ul>
-            <a href="solicitar.html?tipo=cuidado_domiciliario" class="btn btn-primario">Solicitar este servicio</a>
           </div>
+
+            <a href="solicitar.html?tipo=cuidado_domiciliario" class="btn btn-primario servicio-cta">Solicitar este servicio</a>
+          </div>
+
+          <div class="servicio-escena" aria-hidden="true">
+            <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 54 L60 22 L100 54 V98 a4 4 0 0 1-4 4 H24 a4 4 0 0 1-4-4 Z"/>
+            <path class="escena-traza" d="M32 76 h14 l6-12 8 24 6-12 h22" stroke-width="2.8"/>
+            <circle class="escena-late" cx="60" cy="46" r="5"/>
+          </svg>
+          </div>
+
         </div>
       </div>
     </section>
 
-    <section class="seccion fondo-claro" id="hospitalario">
+    <section class="seccion servicio servicio-invertido"
+             id="hospitalario" style="--acento: 8, 145, 178">
       <div class="contenedor">
-        <div class="servicio-detalle aparece">
+        <div class="servicio-grid aparece">
+
           <div class="servicio-texto">
-            <span class="antetitulo">Servicio 02</span>
+            <div class="servicio-marca">
+              <span class="servicio-num" aria-hidden="true">02</span>
+              <span class="antetitulo">En tu institución</span>
+            </div>
             <h2>Turnos hospitalarios</h2>
-            <p>Cobertura de plantilla para hospitales, clínicas, asilos y casas de retiro.
-               Cubrimos incapacidades, vacaciones, renuncias imprevistas y picos de ocupación
-               sin que tengas que abrir una vacante.</p>
-            <h3>Cómo funciona</h3>
-            <ul class="lista-marcada">
+            <p class="servicio-lead">Cobertura de plantilla para hospitales, clínicas, asilos y casas de retiro. Cubrimos incapacidades, vacaciones, renuncias imprevistas y picos de ocupación sin que tengas que abrir una vacante.</p>
+
+            <ul class="servicio-datos">
+            <li><strong>Sin vacante</strong><span>No contratas tú</span></li>
+            <li><strong>Entrada y salida</strong><span>Asistencia registrada</span></li>
+            <li><strong>Por periodo</strong><span>Factura con desglose</span></li>
+            </ul>
+
+            <div class="servicio-tabs" role="tablist" aria-label="Detalle de turnos hospitalarios">
+            <button type="button" role="tab" id="tab-hos-0"
+                    aria-controls="panel-hos-0"
+                    aria-selected="true">Cómo funciona</button>
+            <button type="button" role="tab" id="tab-hos-1"
+                    aria-controls="panel-hos-1"
+                    aria-selected="false" tabindex="-1">Niveles disponibles</button>
+            </div>
+
+          <div class="servicio-panel" role="tabpanel"
+               id="panel-hos-0" aria-labelledby="tab-hos-0">
+            <ul class="lista-fichas">
               <li>Nos dices el nivel, la especialidad y los turnos que necesitas cubrir</li>
               <li>Te proponemos personal compatible el mismo día</li>
               <li>Confirmamos asistencia con registro de entrada y salida</li>
               <li>Facturamos por periodo, con desglose por turno</li>
             </ul>
-            <h3>Niveles disponibles</h3>
-            <p>Desde auxiliar y técnico en enfermería hasta licenciados y especialistas
-               en cuidados intensivos, urgencias, quirófano, neonatología y más.</p>
-            <a href="solicitar.html?tipo=turno_hospitalario" class="btn btn-primario">Solicitar este servicio</a>
           </div>
+          <div class="servicio-panel oculto" role="tabpanel"
+               id="panel-hos-1" aria-labelledby="tab-hos-1">
+            <ul class="lista-fichas">
+              <li>Auxiliar y técnico en enfermería</li>
+              <li>Licenciados en enfermería</li>
+              <li>Especialistas en cuidados intensivos y urgencias</li>
+              <li>Quirófano, neonatología y materno-infantil</li>
+            </ul>
+          </div>
+
+            <a href="solicitar.html?tipo=turno_hospitalario" class="btn btn-primario servicio-cta">Solicitar este servicio</a>
+          </div>
+
+          <div class="servicio-escena" aria-hidden="true">
+            <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 102 h84"/>
+            <path d="M28 102 V38 l32-18 32 18 v64"/>
+            <path d="M60 48 v22 M49 59 h22"/>
+            <rect class="escena-late" x="38" y="80" width="16" height="22" rx="2"/>
+            <rect x="66" y="80" width="16" height="22" rx="2"/>
+          </svg>
+          </div>
+
         </div>
       </div>
     </section>
 
-    <section class="seccion" id="permanente">
+    <section class="seccion servicio"
+             id="permanente" style="--acento: 15, 118, 110">
       <div class="contenedor">
-        <div class="servicio-detalle aparece">
+        <div class="servicio-grid aparece">
+
           <div class="servicio-texto">
-            <span class="antetitulo">Servicio 03</span>
+            <div class="servicio-marca">
+              <span class="servicio-num" aria-hidden="true">03</span>
+              <span class="antetitulo">Contratación definitiva</span>
+            </div>
             <h2>Colocación permanente</h2>
-            <p>Reclutamiento para tu plantilla fija. Buscamos, filtramos y verificamos
-               candidatos, y te presentamos solo a quienes cumplen tu perfil. La contratación
-               es directa entre tu institución y el profesional.</p>
-            <h3>Qué hacemos por ti</h3>
-            <ul class="lista-marcada">
+            <p class="servicio-lead">Reclutamiento para tu plantilla fija. Buscamos, filtramos y verificamos candidatos, y te presentamos solo a quienes cumplen tu perfil. La contratación es directa entre tu institución y el profesional.</p>
+
+            <ul class="servicio-datos">
+            <li><strong>Cuota única</strong><span>Al firmar el candidato</span></li>
+            <li><strong>Cédula y referencias</strong><span>Validadas por nosotros</span></li>
+            <li><strong>Terna</strong><span>Con expediente completo</span></li>
+            </ul>
+
+            <div class="servicio-tabs" role="tablist" aria-label="Detalle de colocación permanente">
+            <button type="button" role="tab" id="tab-per-0"
+                    aria-controls="panel-per-0"
+                    aria-selected="true">Qué hacemos por ti</button>
+            <button type="button" role="tab" id="tab-per-1"
+                    aria-controls="panel-per-1"
+                    aria-selected="false" tabindex="-1">Cómo se cobra</button>
+            </div>
+
+          <div class="servicio-panel" role="tabpanel"
+               id="panel-per-0" aria-labelledby="tab-per-0">
+            <ul class="lista-fichas">
               <li>Definimos el perfil del puesto contigo</li>
               <li>Buscamos en nuestra base y en fuentes externas</li>
               <li>Validamos cédula, título, certificaciones y referencias laborales</li>
               <li>Te entregamos una terna con el expediente completo de cada candidato</li>
               <li>Acompañamos el proceso hasta la contratación</li>
             </ul>
-            <p class="nota-servicio">
-              El costo es una cuota única por contratación, que se cobra cuando el
-              candidato firma. Te la cotizamos por escrito antes de empezar la búsqueda.
-            </p>
-            <a href="solicitar.html?tipo=colocacion_permanente" class="btn btn-primario">Solicitar este servicio</a>
           </div>
+          <div class="servicio-panel oculto" role="tabpanel"
+               id="panel-per-1" aria-labelledby="tab-per-1">
+            <ul class="lista-fichas">
+              <li>Es una cuota única por contratación, no una comisión mensual</li>
+              <li>Se cobra cuando el candidato firma, no antes</li>
+              <li>Te la cotizamos por escrito antes de empezar la búsqueda</li>
+            </ul>
+          </div>
+
+            <a href="solicitar.html?tipo=colocacion_permanente" class="btn btn-primario servicio-cta">Solicitar este servicio</a>
+          </div>
+
+          <div class="servicio-escena" aria-hidden="true">
+            <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="18" y="42" width="84" height="60" rx="8"/>
+            <path d="M44 42 V32 a6 6 0 0 1 6-6 h20 a6 6 0 0 1 6 6 v10"/>
+            <path class="escena-traza" d="M40 72 l12 12 28-26" stroke-width="3"/>
+            <circle class="escena-late" cx="60" cy="42" r="3"/>
+          </svg>
+          </div>
+
         </div>
       </div>
     </section>
 
-    <section class="seccion fondo-claro" id="eventos">
+    <section class="seccion servicio servicio-invertido"
+             id="eventos" style="--acento: 180, 83, 9">
       <div class="contenedor">
-        <div class="servicio-detalle aparece">
+        <div class="servicio-grid aparece">
+
           <div class="servicio-texto">
-            <span class="antetitulo">Servicio 04</span>
+            <div class="servicio-marca">
+              <span class="servicio-num" aria-hidden="true">04</span>
+              <span class="antetitulo">Por evento o traslado</span>
+            </div>
             <h2>Cobertura de eventos y traslados</h2>
-            <p>Personal de enfermería para eventos deportivos, conciertos, filmaciones,
-               jornadas empresariales de salud y traslado de pacientes.</p>
-            <h3>Casos que atendemos</h3>
-            <ul class="lista-marcada">
+            <p class="servicio-lead">Personal de enfermería para eventos deportivos, conciertos, filmaciones, jornadas empresariales de salud y traslado de pacientes.</p>
+
+            <ul class="servicio-datos">
+            <li><strong>Por jornada</strong><span>O por trayecto</span></li>
+            <li><strong>Toda la ZMG</strong><span>Zona de cobertura</span></li>
+            <li><strong>Con botiquín</strong><span>Material de curación</span></li>
+            </ul>
+
+            <div class="servicio-tabs" role="tablist" aria-label="Detalle de cobertura de eventos y traslados">
+            <button type="button" role="tab" id="tab-eve-0"
+                    aria-controls="panel-eve-0"
+                    aria-selected="true">Casos que atendemos</button>
+            <button type="button" role="tab" id="tab-eve-1"
+                    aria-controls="panel-eve-1"
+                    aria-selected="false" tabindex="-1">Qué llevamos</button>
+            </div>
+
+          <div class="servicio-panel" role="tabpanel"
+               id="panel-eve-0" aria-labelledby="tab-eve-0">
+            <ul class="lista-fichas">
               <li>Puesto de primeros auxilios en eventos masivos</li>
               <li>Acompañamiento de enfermería en producciones y rodajes</li>
               <li>Jornadas de salud ocupacional en empresas</li>
               <li>Traslado de pacientes entre domicilio y unidad médica</li>
             </ul>
-            <a href="solicitar.html?tipo=evento" class="btn btn-primario">Solicitar este servicio</a>
           </div>
+          <div class="servicio-panel oculto" role="tabpanel"
+               id="panel-eve-1" aria-labelledby="tab-eve-1">
+            <ul class="lista-fichas">
+              <li>Personal verificado para el tipo de evento</li>
+              <li>Botiquín y material de curación básico</li>
+              <li>Coordinación con el servicio de emergencias si hace falta</li>
+            </ul>
+          </div>
+
+            <a href="solicitar.html?tipo=evento" class="btn btn-primario servicio-cta">Solicitar este servicio</a>
+          </div>
+
+          <div class="servicio-escena" aria-hidden="true">
+            <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path class="escena-traza" d="M24 92 C24 62 54 66 54 44 C54 26 82 26 92 40"/>
+            <circle cx="24" cy="92" r="7"/>
+            <circle class="escena-late" cx="92" cy="40" r="7"/>
+            <circle cx="54" cy="44" r="4"/>
+            <path d="M14 106 h92"/>
+          </svg>
+          </div>
+
         </div>
       </div>
     </section>
@@ -171,6 +327,7 @@
 
   <script>
     iniciarPagina('servicios.html');
+    activarPestanas();
 
   </script>
 

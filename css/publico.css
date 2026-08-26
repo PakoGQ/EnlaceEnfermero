@@ -1529,11 +1529,207 @@ fieldset[data-paso] h2 {
 /* ==========================================================================
    PAGINAS INTERIORES: servicios, contacto, legales y 404
    ========================================================================== */
-.servicio-detalle { max-width: var(--ancho-max-texto); }
-.servicio-texto h2 { margin-bottom: var(--e4); }
-.servicio-texto h3 { margin-top: var(--e6); margin-bottom: var(--e3); font-size: 1.0625rem; }
-.servicio-texto p  { color: var(--gris-600); line-height: 1.75; }
-.servicio-texto .btn { margin-top: var(--e6); }
+/* --- servicios.html --------------------------------------------------------
+   Antes cada servicio era una columna de texto de 720px dentro de un
+   contenedor de 1200, cuatro veces seguidas: se leia como documento, no como
+   pagina. Ahora cada uno tiene su color, su escena y sus dos listas en
+   pestañas, y los pares invierten el orden para romper la repeticion.
+
+   El tono de cada servicio lo pone el HTML en --acento, y es el MISMO que ya
+   tiene en el carrusel del hero y en el bento de la landing: el color
+   identifica el servicio en las tres partes del sitio (CLAUDE.md 3.2). */
+.servicio { position: relative; overflow: hidden; }
+.servicio:nth-of-type(even) { background: var(--gris-050); }
+/* Un lavado del tono propio, muy bajo: el fondo dice de que servicio es antes
+   de que se lea el titulo. */
+.servicio::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset-block-start: -180px;
+  inset-inline-end: -140px;
+  width: 460px; height: 460px;
+  border-radius: var(--radio-full);
+  background: radial-gradient(circle, rgba(var(--acento), .10), transparent 68%);
+  pointer-events: none;
+}
+.servicio > .contenedor { position: relative; z-index: 1; }
+
+.servicio-grid { display: grid; gap: var(--e6); align-items: start; }
+
+.servicio-marca { display: flex; align-items: baseline; gap: var(--e4); }
+.servicio-num {
+  font-family: var(--fuente-titulo);
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: .8;
+  color: rgba(var(--acento), .24);
+}
+.servicio-marca .antetitulo { color: rgb(var(--acento)); margin-bottom: 0; }
+.servicio-texto h2 { margin-block: var(--e4) var(--e3); }
+.servicio-lead { color: var(--gris-600); line-height: 1.75; max-width: 54ch; }
+
+/* Los tres datos duros: antes iban enterrados en prosa */
+.servicio-datos {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--e3);
+  margin-top: var(--e5);
+}
+.servicio-datos li {
+  padding: var(--e3);
+  border-radius: var(--radio-md);
+  background: var(--blanco);
+  border: 1px solid rgba(var(--acento), .22);
+}
+.servicio-datos strong {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: 1.0625rem;
+  color: rgb(var(--acento));
+}
+.servicio-datos span { display: block; margin-top: 2px; font-size: .75rem; line-height: 1.4; color: var(--gris-600); }
+
+/* Pestañas: las dos listas largas dejaban la pagina interminable */
+.servicio-tabs {
+  display: flex;
+  gap: var(--e5);
+  margin-top: var(--e6);
+  border-bottom: 1px solid rgba(var(--acento), .22);
+}
+.servicio-tabs button {
+  padding-bottom: var(--e3);
+  margin-bottom: -1px;
+  font-family: var(--fuente-texto);
+  font-size: .9375rem;
+  font-weight: 600;
+  color: var(--gris-400);
+  border-bottom: 2px solid transparent;
+  transition: color var(--trans), border-color var(--trans);
+}
+.servicio-tabs button:hover { color: var(--gris-900); }
+.servicio-tabs button[aria-selected="true"] {
+  color: var(--gris-900);
+  border-bottom-color: rgb(var(--acento));
+}
+
+.servicio-panel { margin-top: var(--e4); }
+.lista-fichas { list-style: none; display: grid; gap: var(--e3); }
+.lista-fichas li {
+  position: relative;
+  padding: var(--e3) var(--e4) var(--e3) var(--e6);
+  border-radius: var(--radio-md);
+  background: var(--blanco);
+  border: 1px solid var(--gris-200);
+  color: var(--gris-600);
+  font-size: .9375rem;
+  line-height: 1.6;
+  transition: transform var(--trans-suave), box-shadow var(--trans-suave);
+}
+/* La palomita se dibuja, no se pone como caracter: asi toma el tono del
+   servicio y no depende de una fuente. */
+.lista-fichas li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: var(--e3);
+  inset-block-start: 1.15em;
+  width: 10px; height: 6px;
+  border-inline-start: 2px solid rgb(var(--acento));
+  border-block-end: 2px solid rgb(var(--acento));
+  transform: rotate(-45deg);
+}
+.lista-fichas li:hover { transform: translateY(-3px); box-shadow: var(--sombra-sm); }
+
+.servicio-cta {
+  margin-top: var(--e6);
+  background: rgb(var(--acento));
+  box-shadow: 0 10px 24px rgba(var(--acento), .30);
+}
+.servicio-cta:hover:not(:disabled) { background: rgb(var(--acento)); filter: brightness(.92); color: var(--blanco); }
+
+/* La escena: trazo en el tono del servicio, nunca foto de banco (CLAUDE.md 3.4) */
+.servicio-escena {
+  display: grid;
+  place-items: center;
+  padding: var(--e6);
+  border-radius: var(--radio-2xl);
+  background: linear-gradient(150deg, rgba(var(--acento), .10), rgba(var(--acento), .18));
+  color: rgb(var(--acento));
+}
+.servicio-escena svg { width: 100%; max-width: 220px; height: auto; }
+.escena-late { animation: ee-escena-late 2.6s ease-in-out infinite; }
+@keyframes ee-escena-late { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+.escena-traza {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  animation: ee-escena-traza 2.2s ease-out .3s forwards;
+}
+@keyframes ee-escena-traza { to { stroke-dashoffset: 0; } }
+
+/* Indice del encabezado */
+.encabezado-servicios { padding-block: var(--e7); }
+.servicios-indice {
+  list-style: none;
+  display: grid;
+  gap: var(--e3);
+  margin-top: var(--e6);
+}
+.servicios-indice a {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  border-radius: var(--radio-md);
+  background: var(--blanco);
+  border: 1px solid rgba(var(--acento), .26);
+  font-family: var(--fuente-titulo);
+  font-weight: 700;
+  font-size: .9375rem;
+  color: var(--gris-900);
+  transition: transform var(--trans-suave), box-shadow var(--trans-suave);
+}
+.servicios-indice a:hover {
+  text-decoration: none;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(var(--acento), .22);
+}
+.servicios-indice span {
+  display: grid;
+  place-items: center;
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+  border-radius: var(--radio-sm);
+  background: rgb(var(--acento));
+  color: var(--blanco);
+  font-size: .75rem;
+}
+
+@media (min-width: 768px) {
+  .servicios-indice { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .servicio-grid { grid-template-columns: 1.15fr .85fr; gap: var(--e8); align-items: center; }
+  /* Los pares invierten el orden. Sin esto son cuatro bloques calcados, que es
+     justo lo que hacia que la pagina se leyera como lista.
+
+     Las columnas se invierten tambien: `order` cambia en que celda cae cada
+     uno, asi que sin esto el texto se quedaba con la columna angosta y la
+     escena con la ancha. */
+  .servicio-invertido .servicio-grid { grid-template-columns: .85fr 1.15fr; }
+  .servicio-invertido .servicio-texto { order: 2; }
+  .servicio-invertido .servicio-escena { order: 1; }
+  .servicio-invertido::before { inset-inline: -140px auto; }
+  .lista-fichas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .servicios-indice { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escena-late, .escena-traza { animation: none; opacity: 1; stroke-dashoffset: 0; }
+  .lista-fichas li, .servicios-indice a { transition: none; }
+  .lista-fichas li:hover, .servicios-indice a:hover { transform: none; }
+}
 
 .lista-marcada { list-style: none; display: flex; flex-direction: column; gap: var(--e3); }
 .lista-marcada li {
