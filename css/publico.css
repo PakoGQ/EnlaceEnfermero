@@ -76,7 +76,7 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--e1);
   margin-top: var(--e6);
-  padding: var(--e2);
+  padding: var(--e1);
   border-radius: var(--radio-md);
   /* Turquesa, pero en lavado: es un dato de respaldo, no una pieza que compita.
      Saturado terminaba pesando mas que el buscador que tiene al lado, que si es
@@ -84,9 +84,21 @@
   background: linear-gradient(160deg, #E4FBFF 0%, #CFFAFE 100%);
   border: 1px solid rgba(8, 145, 178, .28);
 }
-.confianza .metrica { padding: var(--e1) var(--e2); border-radius: var(--radio-sm); }
+/* Acostada: la cifra a la izquierda y la etiqueta a su lado. Apiladas ocupan
+   dos renglones, y con eso la tira no baja de unos 60px. */
+.confianza .metrica {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--e2);
+  padding: var(--e1) var(--e2);
+  border-radius: var(--radio-sm);
+}
 .confianza .metrica .valor {
-  font-size: 1.0625rem;
+  font-size: 1rem;
+  line-height: 1.15;
+  white-space: nowrap;
   /* Teal oscuro, no --cyan-600: sobre este lavado el cyan se queda en 3.28:1 y
      no llega a AA. Este da 4.79. */
   background: none;
@@ -94,9 +106,10 @@
   color: #0E7490;
 }
 .confianza .metrica .etiqueta {
-  font-size: .625rem;
-  line-height: 1.3;
+  font-size: .6875rem;
+  line-height: 1.2;
   color: #155E75;
+  margin-top: 0;
 }
 .confianza .metrica:hover { background: rgba(255, 255, 255, .55); }
 
