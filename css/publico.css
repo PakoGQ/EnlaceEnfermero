@@ -75,7 +75,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--e1);
-  margin-top: var(--e6);
+  margin-top: var(--e4);
   padding: var(--e1);
   border-radius: var(--radio-md);
   /* Turquesa, pero en lavado: es un dato de respaldo, no una pieza que compita.
@@ -320,8 +320,10 @@
   position: relative;
   z-index: 2;
   /* Antes subia 48px sobre el hero. Se baja del todo: encabalgado, el degradado
-     del hero y el fondo oscuro del chat quedaban pegados y se ensuciaban. */
-  padding-block: var(--e7) var(--e6);
+     del hero y el fondo oscuro del chat quedaban pegados y se ensuciaban.
+     Arriba va corto porque quien lo separa del hero es la tira del contador,
+     que ya trae su propio margen: sumados dejaban 80px de blanco. */
+  padding-block: var(--e4) var(--e6);
 }
 .asesor { display: grid; gap: var(--e4); align-items: start; }
 
