@@ -68,10 +68,14 @@
    Va saturado a proposito. Es la unica pieza pequeña de la zona con degradado
    —el chat es oscuro y el buscador es un lavado claro—, asi que el ojo la
    encuentra sin que compita con nada por tamaño. */
+/* Tira horizontal entre el hero y el asesor. Como recuadro tendido necesita
+   ancho: dentro de una columna al borde derecho solo caben 150px y ahi no hay
+   forma de acostarlo, por eso vive en su propia franja. */
 .confianza {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--e1);
+  margin-top: var(--e6);
   padding: var(--e3);
   border-radius: var(--radio-md);
   /* Turquesa, pero en lavado: es un dato de respaldo, no una pieza que compita.
@@ -95,6 +99,10 @@
   color: #155E75;
 }
 .confianza .metrica:hover { background: rgba(255, 255, 255, .55); }
+
+@media (min-width: 768px) {
+  .confianza { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 .metrica { text-align: center; }
 .metrica .valor {
   font-family: var(--fuente-titulo);
@@ -303,9 +311,6 @@
   padding-block: var(--e7) var(--e6);
 }
 .asesor { display: grid; gap: var(--e4); align-items: start; }
-/* Buscador y contador comparten columna: sin este envoltorio, la rejilla del
-   asesor mandaria el contador al renglon de abajo, bajo el chat. */
-.asesor-lado { display: grid; gap: var(--e4); align-content: start; }
 
 .asesor-chat {
   position: relative;
@@ -542,12 +547,6 @@
   .asesor { grid-template-columns: 1fr 1fr; gap: var(--e5); align-items: stretch; }
   .asesor-chat { padding: var(--e5); }
 
-  /* El contador sale de la columna del buscador y se tiende a lo ancho debajo
-     de los dos. Compartiendo columna desnivelaba ese lado 110px, y con eso no
-     hay simetria posible. */
-  .asesor-lado { display: contents; }
-  .confianza { grid-column: 1 / -1; grid-template-columns: repeat(4, 1fr); }
-
   /* El alto minimo va en la tarjeta, no en el hilo. Al primer envio los chips
      de ejemplo se ocultan, y si el alto dependiera del contenido la tarjeta
      encogeria 115px y la seccion entera brincaria justo cuando llega la
@@ -572,30 +571,6 @@
    `display: contents` disuelve el envoltorio que los agrupaba en una pila:
    sin eso, buscador y contador seguirian contando como una sola celda y no
    habria forma de darles columnas distintas. */
-@media (min-width: 1280px) {
-  /* Ya hay ancho para las tres: el contador sube de la franja de abajo a su
-     propia columna `auto`, que se ajusta a su ancho fijo y no acapara nada. */
-  .asesor { grid-template-columns: 1fr 1fr auto; }
-
-  /* En una columna angosta el 2x2 aprieta las etiquetas: van en fila unica. */
-  .confianza {
-    grid-column: auto;
-    grid-template-columns: 1fr;
-    align-self: start;
-    padding: var(--e2);
-    /* Ancho fijo y anclado al final de su celda: sin esto el margen negativo
-       de abajo estira la caja en vez de solo correrla, y termina mas grande
-       que antes. */
-    width: 150px;
-    justify-self: end;
-    /* Se sale del contenedor hacia el margen de la pagina, hasta quedar contra
-       la orilla. El min() lo deja en cero por debajo de 1200px, donde no hay
-       margen que aprovechar; los 8px son la holgura para no meterse debajo de
-       la barra de desplazamiento. */
-    margin-inline-end: min(0px, calc((var(--ancho-max) - 100vw) / 2 + var(--e2)));
-  }
-  .confianza .metrica { padding: var(--e2) var(--e1); }
-}
 
 /* --- Aviso de datos de demostracion --- */
 .aviso-demo {
